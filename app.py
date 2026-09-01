@@ -147,9 +147,42 @@ def withdraw():
 @app.route('/invest')
 def invest():
     if not require_login(): return redirect('/login')
+    u=users[session['phone']]
     plan=request.args.get('plan','')
-    m=f"<p style='color:#FFD700'>Selected: {plan}</p>" if plan else ""
-    return base(card_wrap("INVESTMENT PLANS",m+"<p>Starter - 50k <a href='/invest?plan=starter'><button class='btn-red'>Invest Now</button></a></p><p>Silver - 250k <a href='/invest?plan=silver'><button class='btn-red'>Invest Now</button></a></p><p>Gold - 500k <a href='/invest?plan=gold'><button class='btn-red'>Invest Now</button></a></p><p>Platinum - 1M <a href='/invest?plan=platinum'><button class='btn-red'>Invest Now</button></a></p>"),"invest")
+    msg=""
+    plans_data={
+      'starter':50000,'bronze':100000,'silver':250000,'gold':500000,
+      'platinum':1000000,'diamond':2000000,'vip':5000000,'exclusive':10000000
+    }
+    if plan in plans_data:
+        price=plans_data[plan]
+        if u['wallet'] < price:
+            msg=f"<p style='color:red;text-align:center'>Insufficient balance for {plan}. Please Deposit.</p>"
+        else:
+            u['wallet']-=price; u['invested']+=price; u['active']+=1
+            u['investments'].append({'plan':plan,'amount':price,'status':'Active'})
+            u['tx'].append({'date':str(date.today()),'type':'Invest '+plan,'amount':price,'status':'Active','ref':plan.upper()})
+            msg=f"<p style='color:#00ff88;text-align:center'>Successfully invested in {plan.upper()}!</p>"
+    def card(id_,name,price,daily,total,received,emoji):
+        return f'''<div style="background:#0f0f0f;border:1px solid #FFD70044;border-radius:15px;overflow:hidden">
+        <div style="position:relative;height:110px;background:linear-gradient(#3a2800,#000);display:flex;align-items:center;justify-content:center;font-size:50px">{emoji}
+        <span style="position:absolute;top:8px;left:8px;background:#cc1111;color:#fff;font-size:11px;padding:3px 8px;border-radius:20px">🔥 HOT</span></div>
+        <div style="padding:10px"><div style="color:#ff2222;font-weight:900">{name} 🔒</div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:8px"><div>PRICE<br><b style="color:#ff2222">UGX {price:,}</b><br>DAILY RETURN (20%)<br><b style="color:#ff2222">UGX {daily:,}</b></div><div style="text-align:right">DURATION<br><b style="color:#ff2222">30 Days</b><br>TOTAL RETURN<br><b style="color:#ff2222">UGX {total:,}</b></div></div>
+        <div style="text-align:center;margin:10px 0;background:#1a0a0a;border-radius:8px;padding:8px"><small>TOTAL RECEIVED</small><br><b style="color:#ff2222;font-size:18px">UGX {received:,}</b></div>
+        <a href="/invest?plan={id_}"><button style="width:100%;background:#cc1111;color:#fff;border:none;padding:12px;border-radius:10px;font-weight:bold">🛒 Invest Now</button></a></div></div>'''
+    grid = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px">'
+    grid+=card('starter','Starter Plan',50000,20000,600000,600000,'🪴')
+    grid+=card('bronze','Bronze Plan',100000,50000,1500000,1500000,'🪙')
+    grid+=card('silver','Silver Plan',250000,100000,3000000,3000000,'🧱')
+    grid+=card('gold','Gold Plan',500000,100000,3000000,3000000,'🏆')
+    grid+=card('platinum','Platinum Plan',1000000,200000,6000000,7000000,'👑')
+    grid+=card('diamond','Diamond Plan',2000000,400000,12000000,14000000,'💎')
+    grid+=card('vip','VIP Plan',5000000,1000000,30000000,35000000,'👑')
+    grid+=card('exclusive','Exclusive Plan',10000000,2000000,60000000,70000000,'🔐')
+    grid+='</div>'
+    body=f'''<div style="padding:15px"><h2 style="color:#ff2222;margin:0">📈 INVESTMENT PLANS</h2><p style="color:#ff2222;font-size:13px">Choose a plan that suits you</p><p style="color:#fff">Wallet: <b style="color:#FFD700">UGX {u['wallet']:,}</b></p>{msg}</div>{grid}'''
+    return base(body,"invest")
 
 @app.route('/investments')
 def investments():
