@@ -321,6 +321,79 @@ body{background:#000;color:#fff;font-family:Arial;padding-bottom:70px}
 .btn-red{background:#cc0000;color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:8px;font-size:13px}
 .info-bar{display:flex;justify-content:space-between;align-items:center;margin:10px;background:#0f0f0f;border:1px solid #333;border-radius:12px;padding:12px}
 .info-bar b{color:red;font-size:20px}
+.buy{border:1px solid red;color:#ffcc99;padding:8px 12px;border-radius:8px;text-decoration:none;background:#1a0000}
+.prize-list{margin:10px;background:#0f0f0f;border:1px solid #333;border-radius:12px;padding:12px}
+.prize-list h4{color:#ffaa00;margin-bottom:10px}
+.prow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #222;font-size:13px}
+.winners{margin:10px;background:#0f0f0f;border:1px solid #333;border-radius:12px;padding:12px}
+.wlist{display:flex;gap:8px;overflow-x:auto;margin-top:10px}
+.wcard{min-width:130px;background:#111;border:1px solid #333;border-radius:10px;padding:10px;text-align:center;font-size:11px}
+.wcard .av{width:50px;height:50px;border-radius:50%;background:#444;margin:0 auto 5px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.navbar{position:fixed;bottom:0;left:0;right:0;background:#111;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #333}
+.navbar a{color:#ffcc33;text-decoration:none;font-size:11px;text-align:center}
+</style>
+<div class="top"><a href="/dashboard">←</a><b>RAFFLE DRAW</b><div>🔔👤</div></div>
+<div class="banner"><div style="font-size:50px">🏆</div><div><h3>WIN AMAZING PRIZES</h3><small>Every ticket gives you a chance<br>to be a winner!</small><br><a class="btn-red" href="#prizes">View Prizes 🎁</a></div></div>
+<div class="info-bar">
+<div>🎟️<br><small>Your Tickets</small><br><b>0</b></div>
+<div style="text-align:center">📅<br><small>Next Draw</small><br><b style="font-size:14px" id="drawdate">30 Sep 2026</b><br><small style="color:red" id="timer">00d : 00h : 00m : 00s</small></div>
+<a class="buy" href="/raffle/buy">Buy Tickets 🛒</a>
+</div>
+<div style="margin:10px;background:#0f0f0f;border:1px solid #333;border-radius:12px;padding:12px"><h4 style="color:#ffaa00;text-align:center">HOW IT WORKS</h4><p style="font-size:12px;text-align:center">1 Buy Tickets → 2 Wait for Draw → 3 Win Prizes</p></div>
+<div class="prize-list" id="prizes"><h4>🎁 VIEW PRIZES - Grand Draw 30 Sep 2026</h4>
+<div class="prow"><span>🚗 Toyota Corolla 2022</span><span style="color:red">Grand</span></div>
+<div class="prow"><span>🚗 Suzuki Swift 2023</span><span style="color:red">2nd</span></div>
+<div class="prow"><span>🏍️ Yamaha YBR 125</span><span style="color:red">3rd</span></div>
+<div class="prow"><span>🏍️ Bajaj Boxer 150</span><span style="color:red">4th</span></div>
+<div class="prow"><span>🚲 Mountain Bicycle</span><span>5th</span></div>
+<div class="prow"><span>📱 iPhone 15 Pro Max 256GB</span><span>6th</span></div>
+<div class="prow"><span>📱 Samsung S24 Ultra</span><span>7th</span></div>
+<div class="prow"><span>📱 Samsung A55</span><span>8th</span></div>
+<div class="prow"><span>💻 MacBook Air M2</span><span>9th</span></div>
+<div class="prow"><span>💻 HP Pavilion 15 Laptop</span><span>10th</span></div>
+<div style="margin-top:10px;font-size:12px">Total Tickets: <b style="color:red">10,000</b> | Ticket Price: <b style="color:red">UGX 5,000</b> | Draw Date: <b style="color:red">30 Sep 2026, 12:00 EAT Uganda</b></div>
+<div style="text-align:center;margin-top:10px"><a class="btn-red" href="/raffle/buy">Buy Tickets Now</a></div>
+</div>
+<div class="winners"><h4 style="color:#ffaa00">PREVIOUS WINNERS</h4><div class="wlist">
+<div class="wcard"><div class="av">👨🏾</div>Brian M.<br>Won Toyota Wish<br><b>28 Aug 2026</b><br><b>Draw #128</b></div>
+<div class="wcard"><div class="av">👩🏾</div>Aisha K.<br>Won iPhone 14<br><b>25 Aug 2026</b><br><b>Draw #127</b></div>
+<div class="wcard"><div class="av">👨🏾</div>Peter O.<br>Won Yamaha MT15<br><b>20 Aug 2026</b><br><b>Draw #126</b></div>
+<div class="wcard"><div class="av">👩🏾</div>Grace A.<br>Won Samsung S23<br><b>15 Aug 2026</b><br><b>Draw #125</b></div>
+<div class="wcard"><div class="av">👨🏾</div>John K.<br>Won UGX 500,000<br><b>10 Aug 2026</b><br><b>Draw #124</b></div>
+<div class="wcard"><div class="av">👩🏾</div>Sarah N.<br>Won MacBook Pro<br><b>05 Aug 2026</b><br><b>Draw #123</b></div>
+<div class="wcard"><div class="av">👨🏾</div>David M.<br>Won Bicycle<br><b>02 Sep 2026</b><br><b>Draw #129</b></div>
+<div class="wcard"><div class="av">👩🏾</div>Faith T.<br>Won HP Laptop<br><b>01 Sep 2026</b><br><b>Draw #130</b></div>
+</div></div>
+<div class="navbar"><a href="/dashboard">🏠<br>Home</a><a href="/invest">📈<br>Invest</a><a href="#">⇄<br>Transactions</a><a href="#">👥<br>Referrals</a><a href="#">👤<br>Account</a></div>
+<script>
+// Next draw: 30 Sep 2026 12:00 Uganda time (EAT = UTC+3)
+var draw = new Date('2026-09-30T12:00:00+03:00').getTime();
+function tick(){
+  var now = new Date().getTime();
+  var d = draw - now;
+  if(d<0) d=0;
+  var days=Math.floor(d/86400000);
+  var h=Math.floor(d%86400000/3600000);
+  var m=Math.floor(d%3600000/60000);
+  var s=Math.floor(d%60000/1000);
+  document.getElementById('timer').innerHTML = days+'d : '+h+'h : '+m+'m : '+s+'s';
+}
+setInterval(tick,1000); tick();
+</script>
+"""
+"""
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;color:#fff;font-family:Arial;padding-bottom:70px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px}
+.top a{color:#ffcc33;text-decoration:none;font-size:20px}
+.top b{color:red;font-size:18px}
+.banner{margin:10px;background:linear-gradient(90deg,#1a0d00,#3a2500);border:1px solid #664400;border-radius:12px;padding:15px;display:flex;gap:10px;align-items:center}
+.banner h3{color:#ffaa00}
+.btn-red{background:#cc0000;color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:8px;font-size:13px}
+.info-bar{display:flex;justify-content:space-between;align-items:center;margin:10px;background:#0f0f0f;border:1px solid #333;border-radius:12px;padding:12px}
+.info-bar b{color:red;font-size:20px}
 .info-bar small{color:#aaa}
 .buy{border:1px solid red;color:#ffcc99;padding:8px 12px;border-radius:8px;text-decoration:none;background:#1a0000}
 .how{margin:10px;background:#0f0f0f;border:1px solid #333;border-radius:12px;padding:12px}
