@@ -38,7 +38,8 @@ def credit_daily_returns(u):
         rid=f"{inv['id']}_{today}"
         if rid not in u['return_ledger']:
             u['return_ledger'].add(rid)
-            u['tx'].append({'date':str(today),'type':'Daily Return','amount':inv['daily_return'],'status':'Completed','ref':inv['id'][:8]})
+            add_notif(session.get('phone',''), 'Daily Return Credited', f"UGX {inv['daily_return']:,} credited.")
+ u['tx'].append({'date':str(today),'type':'Daily Return','amount':inv['daily_return'],'status':'Completed','ref':inv['id'][:8]})
 def base(body, active="home"):
     return f"""<head><meta name="viewport" content="width=device-width,initial-scale=1"><style>
     body{{background:#000;color:#fff;font-family:Arial;margin:0;padding-bottom:75px}}a{{text-decoration:none;color:inherit}}
@@ -138,7 +139,8 @@ def invest_confirm():
     start=date.today(); end=start+timedelta(days=p['duration'])
     inv={'id':inv_id,'user_id':session['phone'],'plan_id':pid,'plan_name':p['name'],'amount':p['price'],'daily_return':p['daily'],'duration_days':p['duration'],'start_date':str(start),'end_date':str(end),'status':'ACTIVE','total_accrued':0,'last_return_at':'','created_at':str(datetime.now())}
     u['investments'].append(inv)
-    u['tx'].append({'date':str(start),'type':'Investment','amount':p['price'],'status':'Active','ref':inv_id[:8]+' '+p['name']})
+    add_notif(session.get('phone',''), 'Investment Activated', f"{p['name']} UGX {p['price']:,} active.")
+ u['tx'].append({'date':str(start),'type':'Investment','amount':p['price'],'status':'Active','ref':inv_id[:8]+' '+p['name']})
     u['active']=len([x for x in u['investments'] if x['status']=='ACTIVE'])
     body=f'''<div class="card" style="text-align:center"><h2 style="color:#00ff88">INVESTMENT ACTIVATED</h2>
     <p>Plan: {p['name']}</p><p>Amount: UGX {p['price']:,}</p><p>Start Date: {start}</p><p>End Date: {end}</p><p>Status: ACTIVE</p>
@@ -274,3 +276,44 @@ def admin_chat_detail(ph):
         html+="<div style='margin:8px;padding:10px;border-radius:10px;max-width:80%;background:"+bg+";color:"+fg+"'><small>"+m['frm']+" "+m['time']+"</small><br>"+m['text']+"</div>"
     body="<div class='card'><h3>Chat with "+ph+"</h3><div style='height:300px;overflow-y:auto;background:#0a0a0a;padding:10px;border-radius:10px'>"+html+"</div><form method='post' style='display:flex;gap:8px;margin-top:10px'><input name='msg' placeholder='Reply privately...' style='flex:1;padding:12px;border-radius:10px;background:#1a1a1a;color:#fff;border:1px solid #333'><button class='btn-red' style='width:80px'>Reply</button></form><br><a href='/admin/chats'>Back</a></div>"
     return base(body)
+
+# --- NOTIFICATIONS SYSTEM ---
+def add_notif(phone, title, body=""):
+    if phone in users:
+        from datetime import datetime as dtn
+        users[phone]['notif'].insert(0, {'title':title,'body':body,'time':dtn.now().strftime("%Y-%m-%d %H:%M"),'read':False})
+
+@app.route('/notifications')
+def notifications2():
+    if not require_login(): return redirect('/login')
+    u=get_user()
+    # mark read
+    for n in u['notif']: n['read']=True
+    items=""
+    for n in u['notif'][:30]:
+        items+="<div class='card'><b>"+n['title']+"</b><br><small style='color:#888'>"+n['time']+"</small><p>"+n['body']+"</p></div>"
+    if not items: items="<div class='card'><p>No new notifications.</p></div>"
+    return base("<h2 style='padding:15px;color:#FFD700'>Notifications</h2>"+items)
+
+@app.route('/admin/notify', methods=['GET','POST'])
+def admin_notify():
+    if not require_login(): return redirect('/login')
+    msg=""
+    if request.method=='POST':
+        title=request.form.get('title','').strip()
+        body=request.form.get('body','').strip()
+        target=request.form.get('target','all').strip()
+        if title:
+            if target=='all':
+                for ph in users: add_notif(ph,title,body)
+            elif target in users:
+                add_notif(target,title,body)
+            msg="Sent to "+target
+    opts="".join([f"<option value='{ph}'>{users[ph]['name']} {ph}</option>" for ph in users])
+    body_html=f"""<div class='card'><h2 style='color:#FFD700'>Send Notification</h2><p style='color:green'>{msg}</p>
+    <form method='post'><input name='title' placeholder='Title' style='width:100%;padding:12px;margin:6px 0;background:#1a1a1a;color:#fff;border:1px solid #333;border-radius:8px'>
+    <textarea name='body' placeholder='Message body' style='width:100%;padding:12px;background:#1a1a1a;color:#fff;border:1px solid #333;border-radius:8px'></textarea>
+    <select name='target' style='width:100%;padding:12px;margin:6px 0;background:#1a1a1a;color:#fff'><option value='all'>All users</option>{opts}</select>
+    <button class='btn-red'>Send Notification</button></form>
+    <br><a href='/admin/chats'>Go to Chat Inbox</a></div>"""
+    return base(body_html)
