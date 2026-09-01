@@ -4,6 +4,8 @@ import uuid
 app = Flask(__name__)
 app.secret_key="codex700secret"
 users={}
+chats={} # phone -> list of {from, text, time}
+ADMIN_PHONE="256700000000"
 PLANS={
  'starter':{'name':'Starter Plan','price':50000,'daily':20000,'duration':30,'total':600000,'received':600000,'emoji':'🪴'},
  'bronze':{'name':'Bronze Plan','price':100000,'daily':50000,'duration':30,'total':1500000,'received':1500000,'emoji':'🪙'},
@@ -217,10 +219,37 @@ def account():
     if not require_login(): return redirect('/login')
     u=get_user()
     return base(f'<div class="card"><h2>{u["name"]}</h2><p>Wallet: UGX {u["wallet"]:,}</p><a href="/logout"><button class="btn-red">Logout</button></a></div>')
-@app.route('/chat')
+@app.route('/chat', methods=['GET','POST'])
 def chat():
     if not require_login(): return redirect('/login')
-    return base('<div class="card"><h2>Chat</h2></div>')
+    phone=session['phone']
+    if phone not in chats: chats[phone]=[]
+    if request.method=='POST':
+        msg=request.form.get('msg','').strip()
+        if msg:
+            from datetime import datetime
+            chats[phone].append({'from':'user','text':msg,'time':datetime.now().strftime("%H:%M")})
+    msgs="".join([f"<div style='margin:8px;padding:10px;border-radius:10px;max-width:80%;{'background:#cc1111;margin-left:auto' if m['from']=='admin' else 'background:#222'}><small>{'Manager' if m['from']=='admin' else 'You'} {m['time']}</small><br>{m['text']}</div>" for m in chats[phone]])
+    body=f"""<div class="card"><h2 style="color:#ff2222">💬 Chat Manager</h2><div style="height:300px;overflow-y:auto;background:#0a0a0a;border-radius:10px;padding:10px">{msgs or '<p style=color:#888>Start chatting with your manager...</p>'}</div><form method="post" style="display:flex;gap:8px;margin-top:10px"><input name="msg" placeholder="Type message..." style="flex:1;padding:12px;border-radius:10px;border:1px solid #333;background:#1a1a1a;color:#fff"><button class="btn-red" style="width:80px">Send</button></form></div>"""
+    return base(body)
+@app.route('/admin/chats')
+def admin_chats():
+    if not require_login(): return redirect('/login')
+    # simple admin check - allow any logged user for now, shows all chats
+    ll="".join([f"<a href='/admin/chat/{ph}'><div class='card'><b>{ph}</b> - {len(msgs)} msgs - {msgs[-1]['text'][:30] if msgs else 'no msgs'}</div></a>" for ph,msgs in chats.items()]) or "<div class='card'><p>No chats yet</p></div>"
+    return base(f"<h2 style='padding:15px;color:#FFD700'>Admin Inbox</h2>{ll}")
+@app.route('/admin/chat/<ph>', methods=['GET','POST'])
+def admin_chat_detail(ph):
+    if not require_login(): return redirect('/login')
+    if ph not in chats: chats[ph]=[]
+    if request.method=='POST':
+        msg=request.form.get('msg','').strip()
+        if msg:
+            from datetime import datetime
+            chats[ph].append({'from':'admin','text':msg,'time':datetime.now().strftime("%H:%M")})
+    msgs="".join([f"<div style='margin:8px;padding:10px;border-radius:10px;max-width:80%;{'background:#FFD700;color:#000;margin-left:auto' if m['from']=='admin' else 'background:#222'}'}><small>{m['from']} {m['time']}</small><br>{m['text']}</div>" for m in chats[ph]])
+    body=f"""<div class="card"><h3>Chat with {ph}</h3><div style="height:300px;overflow-y:auto;background:#0a0a0a;padding:10px;border-radius:10px">{msgs}</div><form method="post" style="display:flex;gap:8px;margin-top:10px"><input name="msg" placeholder="Reply privately..." style="flex:1;padding:12px;border-radius:10px;background:#1a1a1a;border:1px solid #333;color:#fff"><button class="btn-red" style="width:80px">Reply</button></form><br><a href="/admin/chats">← Back to inbox</a></div>"""
+    return base(body)
 @app.route('/logout')
 def logout(): session.clear();return redirect('/login')
 @app.route('/dashboard')
