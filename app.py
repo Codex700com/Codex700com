@@ -305,3 +305,8 @@ def admin_notify():
     opts="".join(["<option value='"+ph+"'>"+ph+"</option>" for ph in users])
     html="<div class='card'><h2>Send Notification</h2><p style='color:green'>"+msg+"</p><form method='post'><input name='title' placeholder='Title' style='width:100%;padding:12px;margin:6px 0'><textarea name='body' placeholder='Message' style='width:100%;padding:12px'></textarea><select name='target' style='width:100%;padding:12px;margin:6px 0'><option value='all'>All users</option>"+opts+"</select><button class='btn-red'>Send</button></form></div>"
     return base(html)
+
+@app.route('/home_ui')
+def home_ui():
+    if not require_login(): return redirect('/login')
+    return redirect('/home')
