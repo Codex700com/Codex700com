@@ -72,7 +72,11 @@ def register():
         name=request.form.get('name','').strip();pr=request.form.get('phone','').strip()
         phone=''.join(filter(str.isdigit,pr))
         pw=request.form.get('password','').strip();cpw=request.form.get('confirm','').strip()
-        if not name or len(phone)<9 or pw!=cpw or len(pw)<4 or phone in users: msg="Dear user,u have entered a wrong information"
+        if not name: msg="Please enter name"
+        elif len(phone)<9: msg="Phone must be at least 9 digits"
+        elif len(pw)<4: msg="Password must be at least 4 characters"
+        elif pw!=cpw: msg="Passwords do not match"
+        elif phone in users: msg="Phone already registered, please login"
         else:
             users[phone]={'name':name,'pw':pw,'phone':pr,'wallet':0,'invested':0,'income':0,'active':0,'tx':[],'notif':[],'last_checkin':'','referrals':0,'investments':[],'return_ledger':set()}
             session['phone']=phone;return redirect('/home')
