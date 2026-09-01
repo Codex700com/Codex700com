@@ -21,16 +21,18 @@ def init():
 init()
 
 STYLE = """
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <style>
-body{background:#000;color:#ffcc33;font-family:Arial;margin:0;padding:20px}
-.header{text-align:center;font-size:28px;font-weight:bold;margin:20px 0;color:#ffcc33}
-.card{max-width:400px;margin:0 auto;background:#0a0a0a;border:2px solid #ffcc33;border-radius:20px;padding:30px 25px;box-shadow:0 0 20px #ffcc3388}
-h2{text-align:center;color:#ffcc33;margin-bottom:25px}
-label{display:block;margin:15px 0 5px;color:#ffcc33}
-input{width:100%;padding:14px;border-radius:12px;border:1px solid #ffcc33;background:#111;color:#fff;box-sizing:border-box}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;color:#ffcc33;font-family:Arial;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:10px}
+.header{text-align:center;font-size:22px;font-weight:bold;margin:10px 0;color:#ffcc33}
+.card{width:100%;max-width:340px;background:#0a0a0a;border:2px solid #ffcc33;border-radius:16px;padding:20px 18px;box-shadow:0 0 15px #ffcc3388}
+h2{text-align:center;color:#ffcc33;margin-bottom:15px;font-size:22px}
+label{display:block;margin:10px 0 4px;color:#ffcc33;font-size:14px}
+input{width:100%;padding:11px;border-radius:10px;border:1px solid #ffcc33;background:#111;color:#fff;font-size:14px}
 input::placeholder{color:#777}
-.btn{width:100%;margin-top:25px;padding:15px;border:none;border-radius:12px;background:linear-gradient(#ffdd44,#ff9900);font-weight:bold;font-size:18px;cursor:pointer}
-.link{text-align:center;margin-top:15px;color:#fff}
+.btn{width:100%;margin-top:18px;padding:13px;border:none;border-radius:10px;background:linear-gradient(#ffdd44,#ff9900);font-weight:bold;font-size:16px;cursor:pointer}
+.link{text-align:center;margin-top:12px;color:#fff;font-size:14px}
 .link a{color:#ffcc33}
 </style>
 """
