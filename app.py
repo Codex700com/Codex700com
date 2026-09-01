@@ -41,13 +41,27 @@ def credit_daily_returns(u):
             u['tx'].append({'date':str(today),'type':'Daily Return','amount':inv['daily_return'],'status':'Completed','ref':inv['id'][:8]})
 def base(body, active="home"):
     return f"""<head><meta name="viewport" content="width=device-width,initial-scale=1"><style>
-    body{{background:#000;color:#fff;font-family:Arial;margin:0;padding-bottom:75px}}a{{text-decoration:none;color:inherit}}
-  .top{{display:flex;justify-content:space-between;padding:12px 15px}}.logo{{color:#FFD700;font-weight:900;font-size:22px}}.logo span{{color:#ff2222}}
-  .btn-red{{background:#cc1111;color:#fff;border:none;padding:12px 20px;border-radius:10px;font-weight:bold;width:100%}}
-  .card{{background:#111;border:1px solid #333;border-radius:12px;padding:15px;margin:10px}}
-  .nav{{position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;display:flex;justify-content:space-around;padding:10px;border-top:1px solid #222}}
-  .nav a{{font-size:11px;color:#888;text-align:center}}.nav a.on{{color:#ff2222}}
-    </style></head><body><div class="top"><a href="/home2">☰</a><div class="logo">🪙 <span>CODEX</span></div><div><a href="/notifications">🔔</a> <a href="/account">👤</a></div></div>{body}
+    body{background:#000;color:#fff;font-family:Arial;margin:0;padding-bottom:80px}
+    a{text-decoration:none;color:inherit}
+    .top{display:flex;justify-content:space-between;align-items:center;padding:12px 15px}
+    .logo{color:#FFD700;font-weight:900;font-size:22px}
+    .hero{background:linear-gradient(135deg,#220a0a,#000);border:1px solid #331111;border-radius:15px;margin:10px;padding:20px;display:flex;justify-content:space-between;align-items:center}
+    .btn-red{background:#cc1111;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:bold;display:inline-block}
+    .stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px}
+    .stat{background:#111;border:1px solid #222;border-radius:12px;padding:10px;text-align:center;font-size:12px}
+    .stat b{color:#ff3333}
+    .grid8{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px}
+    .gitem{background:#111;border:1px solid #222;border-radius:12px;padding:14px 5px;text-align:center;font-size:12px}
+    .gitem div{font-size:24px;margin-bottom:5px}
+    .banner{background:#111;border:1px solid #222;border-radius:12px;margin:10px;padding:15px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .plans{display:flex;overflow-x:auto;gap:10px;padding:10px}
+    .plan{min-width:165px;background:#111;border:1px solid #222;border-radius:12px;padding:12px}
+    .nav{position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;display:flex;justify-content:space-around;padding:10px;border-top:1px solid #222}
+    .nav a{font-size:11px;color:#888;text-align:center}.nav a.on{color:#ff2222}
+    .card{background:#111;border:1px solid #222;border-radius:12px;padding:15px;margin:10px}
+    </style></head><body>
+    <div class="top"><div style="display:flex;align-items:center;gap:10px"><span>☰</span><div class="logo">🪙 CODEX</div></div><div style="display:flex;gap:15px"><a href="/notifications2">🔔</a><a href="/account">👤</a></div></div>
+    {body}
     <div class="nav"><a href="/home" class="{'on' if active=='home' else ''}">🏠<br>Home</a><a href="/invest" class="{'on' if active=='invest' else ''}">📈<br>Invest</a><a href="/transactions">🔄<br>Transactions</a><a href="/referrals">👥<br>Referrals</a><a href="/account">👤<br>Account</a></div></body>"""
 @app.route('/')
 def root(): return redirect('/home' if require_login() else '/register')
@@ -310,3 +324,53 @@ def admin_notify():
 def home_ui():
     if not require_login(): return redirect('/login')
     return redirect('/home')
+
+@app.route('/home_screenshot')
+def home_screenshot():
+    if not require_login(): return redirect('/login')
+    u=get_user()
+    name=u.get('name','User').upper()
+    active_cnt=len([x for x in u.get('investments',[]) if x.get('status')=='active'])
+    body=f"""
+    <div class="hero"><div><div style="font-size:12px;letter-spacing:1px">WELCOME BACK,</div><div style="color:#ff2222;font-weight:900;font-size:20px">{name}</div><div style="color:#aaa;font-size:13px;margin:5px 0">Let's grow your wealth together</div><a href="/invest" class="btn-red">Invest Now →</a></div><div style="font-size:65px">🏦</div></div>
+    <div class="stats">
+      <div class="stat">💼<br>Wallet Balance<br><b>UGX {u.get('wallet',0):,}</b><br>👁️</div>
+      <div class="stat">📈<br>Total Invested<br><b>UGX {u.get('total_invested',0):,}</b></div>
+      <div class="stat">💰<br>Total Income<br><b>UGX {u.get('income',0):,}</b></div>
+      <div class="stat">📊<br>Active Plans<br><b>{active_cnt}</b></div>
+    </div>
+    <div class="banner"><div style="font-size:32px">🎁</div><div><b>Daily Check-In Reward</b><br><small>Check in daily and get <span style="color:#ff2222">UGX 500</span></small></div><a href="/checkin2" class="btn-red">Check In →</a></div>
+    <div class="grid8">
+      <a href="/invest" class="gitem"><div>📈</div>Invest</a>
+      <a href="/deposit" class="gitem"><div>💰</div>Deposit</a>
+      <a href="/withdraw" class="gitem"><div>💳</div>Withdraw</a>
+      <a href="/referrals" class="gitem"><div>👥</div>Referrals</a>
+      <a href="/transactions" class="gitem"><div>🧾</div>Transactions</a>
+      <a href="/raffle" class="gitem"><div>🎁</div>Raffle</a>
+      <a href="/chat2" class="gitem"><div>🎧</div>Support</a>
+      <a href="/chat2" class="gitem"><div>💬</div>Chat Manager</a>
+    </div>
+    <div class="banner"><div style="font-size:40px">🏆</div><div><b style="color:#ff2222">RAFFLE DRAW</b><br><small>Win amazing prizes daily</small><br><a href="/raffle" class="btn-red" style="margin-top:6px">View Prizes →</a></div><div style="font-size:32px">🎁</div></div>
+    <div style="padding:10px;font-weight:bold;color:#ff2222">📈 INVESTMENT PLANS <a href="/invest" style="float:right;color:#fff;font-size:12px">View All Plans ></a></div>
+    <div class="plans">
+      <div class="plan"><div style="font-size:36px;text-align:center">🌱</div><b>Starter Plan</b><br><small>Daily Return <span style="color:#ff2222;float:right">20%</span></small><br><small>Duration <span style="float:right">30 Days</span></small><br><small>Min Invest <span style="color:#ff2222;float:right">UGX 50K</span></small></div>
+      <div class="plan"><div style="font-size:36px;text-align:center">🥈</div><b>Silver Plan</b><br><small>Daily Return <span style="color:#ff2222;float:right">20%</span></small><br><small>Duration <span style="float:right">30 Days</span></small><br><small>Min Invest <span style="color:#ff2222;float:right">UGX 250K</span></small></div>
+      <div class="plan"><div style="font-size:36px;text-align:center">🥇</div><b>Gold Plan</b><br><small>Daily Return <span style="color:#ff2222;float:right">20%</span></small><br><small>Duration <span style="float:right">30 Days</span></small><br><small>Min Invest <span style="color:#ff2222;float:right">UGX 500K</span></small></div>
+      <div class="plan"><div style="font-size:36px;text-align:center">💎</div><b>Platinum Plan</b><br><small>Daily Return <span style="color:#ff2222;float:right">20%</span></small><br><small>Duration <span style="float:right">30 Days</span></small><br><small>Min Invest <span style="color:#ff2222;float:right">UGX 1M</span></small></div>
+    </div>
+    <div class="banner"><div style="font-size:28px;background:#cc1111;border-radius:50%;padding:10px">🎧</div><div><b>Need Help?</b><br><small>Our support team is always here for you.</small></div><a href="/chat2" style="border:1px solid #cc1111;padding:10px;border-radius:8px">📞 Contact Support</a></div>
+    """
+    return base(body,"home")
+
+@app.route('/checkin2')
+def checkin2():
+    if not require_login(): return redirect('/login')
+    u=get_user()
+    from datetime import date
+    td=str(date.today())
+    if u.get('last_checkin')!=td:
+        u['last_checkin']=td
+        u['wallet']=u.get('wallet',0)+500
+        try: add_notif(session['phone'],'Check-in Reward','UGX 500 added')
+        except: pass
+    return redirect('/home_screenshot')
