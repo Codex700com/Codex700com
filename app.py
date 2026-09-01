@@ -1,29 +1,86 @@
-from flask import Flask
-app = Flask(__name__)
+from flask import Flask, request, redirect
 
-@app.route('/')
-def home():
-    return """
-    <head><meta name="viewport" content="width=device-width, initial-scale=1">
+app = Flask(__name__)
+users = {}
+
+def page(title, body, msg=""):
+    color = "#ff4444" if "wrong" in msg.lower() else "#00ff88"
+    msg_html = f"<p style='color:{color};text-align:center;font-weight:bold'>{msg}</p>" if msg else ""
+    return f"""
+    <head><meta name="viewport" content="width=device-width,initial-scale=1">
     <style>
-    body{background:#000;color:#FFD700;font-family:sans-serif;text-align:center;padding:50px;margin:0}
-    .card{border:1px solid #FFD700;border-radius:12px;padding:30px;max-width:500px;margin:auto}
-    h1{margin:0 0 10px}
-    p{color:#fff}
-    a{color:#000;background:#FFD700;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;margin-top:15px}
+    body{{background:#000;color:#FFD700;font-family:sans-serif;margin:0;padding:20px}}
+   .top{{text-align:center;font-size:28px;font-weight:900;margin:20px 0}}
+   .card{{background:#0a0a0a;border:2px solid #FFD700;border-radius:20px;padding:25px;max-width:420px;margin:auto;box-shadow:0 0 20px #FFD70055}}
+    h2{{text-align:center;color:#FFD700;margin:10px 0 20px}}
+    label{{color:#FFD700;font-size:14px}}
+    input{{width:100%;padding:14px;margin:8px 0 16px;background:#111;border:1px solid #FFD70088;border-radius:12px;color:#fff;box-sizing:border-box}}
+    button{{width:100%;padding:15px;background:linear-gradient(#FFD700,#ff9900);border:none;border-radius:12px;font-weight:900;font-size:18px;cursor:pointer}}
+   .link{{text-align:center;margin-top:15px;color:#fff}}.link a{{color:#FFD700}}
     </style></head>
     <body>
-        <div class="card">
-            <h1>CODEX700</h1>
-            <p>New platform live. Black & Gold edition.</p>
-            <a href="/about">Enter Platform</a>
-        </div>
+    <div class="top">👑 CODEX700 🔥</div>
+    <div class="card"><h2>{title}</h2>{msg_html}{body}</div>
     </body>
     """
 
-@app.route('/about')
-def about():
-    return "<body style='background:#000;color:#FFD700;text-align:center;padding:50px;font-family:sans-serif'><h1>Welcome to Codex700</h1><a href='/' style='color:#FFD700'>Back</a></body>"
+@app.route('/')
+def home(): return redirect('/register')
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+@app.route('/register', methods=['GET','POST'])
+def register():
+    msg=""
+    if request.method=='POST':
+        name=request.form.get('name','').strip()
+        phone=request.form.get('phone','').strip()
+        pw=request.form.get('password','')
+        cpw=request.form.get('confirm','')
+        inv=request.form.get('invite','').strip()
+        if not name or not phone or not pw or not cpw or not inv:
+            msg="Dear user,u have entered a wrong information"
+        elif not phone.isdigit() or len(phone)<10:
+            msg="Dear user,u have entered a wrong information"
+        elif pw!=cpw:
+            msg="Dear user,u have entered a wrong information"
+        elif len(pw)<4:
+            msg="Dear user,u have entered a wrong information"
+        elif phone in users:
+            msg="Dear user,u have entered a wrong information"
+        else:
+            users[phone]={'name':name,'pw':pw}
+            msg="Registration successful"
+            body=f"<div class='link'>Have account? <a href='/login'>Login</a></div>"
+            return page("REGISTER", f"<p style='text-align:center;color:#fff'>Welcome {name}!</p>"+body, msg)
+    body="""
+    <form method="post">
+    <label>Name</label><input name="name" placeholder="Enter Name">
+    <label>Phone number</label><input name="phone" placeholder="Enter Phone number">
+    <label>Password</label><input type="password" name="password" placeholder="Enter Password">
+    <label>Confirm password</label><input type="password" name="confirm" placeholder="Confirm Password">
+    <label>Invitation code</label><input name="invite" placeholder="Invitation code">
+    <button>REGISTER</button>
+    </form><div class="link">Have account? <a href="/login">Login</a></div>
+    """
+    return page("REGISTER", body, msg)
+
+@app.route('/login', methods=['GET','POST'])
+def login():
+    msg=""
+    if request.method=='POST':
+        phone=request.form.get('phone','').strip()
+        pw=request.form.get('password','')
+        if phone in users and users[phone]['pw']==pw:
+            return page("LOGIN", f"<p style='text-align:center;color:#fff'>Welcome back {users[phone]['name']}!</p>", "Registration successful")
+        else:
+            msg="Dear user,u have entered a wrong information"
+    body="""
+    <form method="post">
+    <label>Phone number</label><input name="phone" placeholder="Enter Phone number">
+    <label>Password</label><input type="password" name="password" placeholder="Enter Password">
+    <button>LOGIN</button>
+    </form><div class="link">No account? <a href="/register">Register</a></div>
+    """
+    return page("LOGIN", body, msg)
+
+if __name__=='__main__':
+    app.run(host='0.0.0.0',port=5000)
