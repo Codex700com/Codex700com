@@ -40,7 +40,9 @@ def credit_daily_returns(u):
             u['return_ledger'].add(rid)
             u['tx'].append({'date':str(today),'type':'Daily Return','amount':inv['daily_return'],'status':'Completed','ref':inv['id'][:8]})
 def base(body, active="home"):
-    return f"""<head><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+    on_home = 'on' if active=='home' else ''
+    on_invest = 'on' if active=='invest' else ''
+    html = """<head><meta name="viewport" content="width=device-width,initial-scale=1"><style>
     body{background:#000;color:#fff;font-family:Arial;margin:0;padding-bottom:80px}
     a{text-decoration:none;color:inherit}
     .top{display:flex;justify-content:space-between;align-items:center;padding:12px 15px}
@@ -61,8 +63,10 @@ def base(body, active="home"):
     .card{background:#111;border:1px solid #222;border-radius:12px;padding:15px;margin:10px}
     </style></head><body>
     <div class="top"><div style="display:flex;align-items:center;gap:10px"><span>☰</span><div class="logo">🪙 CODEX</div></div><div style="display:flex;gap:15px"><a href="/notifications2">🔔</a><a href="/account">👤</a></div></div>
-    {body}
-    <div class="nav"><a href="/home" class="{'on' if active=='home' else ''}">🏠<br>Home</a><a href="/invest" class="{'on' if active=='invest' else ''}">📈<br>Invest</a><a href="/transactions">🔄<br>Transactions</a><a href="/referrals">👥<br>Referrals</a><a href="/account">👤<br>Account</a></div></body>"""
+    __BODY__
+    <div class="nav"><a href="/home" class="__ON_HOME__">🏠<br>Home</a><a href="/invest" class="__ON_INVEST__">📈<br>Invest</a><a href="/transactions">🔄<br>Transactions</a><a href="/referrals">👥<br>Referrals</a><a href="/account">👤<br>Account</a></div></body>"""
+    html = html.replace("__BODY__", body).replace("__ON_HOME__", on_home).replace("__ON_INVEST__", on_invest)
+    return html
 @app.route('/')
 def root(): return redirect('/home' if require_login() else '/register')
 @app.route('/register', methods=['GET','POST'])
