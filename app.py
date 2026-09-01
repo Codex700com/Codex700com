@@ -281,7 +281,7 @@ input{{width:100%;padding:12px;border-radius:10px;border:1px solid #444;backgrou
 <label>Account Name</label><input name="accname" placeholder="Enter account name" required>
 <div class="card sum"><h4>WITHDRAWAL SUMMARY</h4>
 <div><span>Withdrawal Amount</span><span id="s1">UGX 0</span></div>
-<div><span>Withdrawal Fee (0%)</span><span>UGX 0</span></div>
+<div><span>Withdrawal Fee (9%)</span><span id="fee">UGX 0</span></div>
 <div><span>You Will Receive</span><span class="recv" id="s2">UGX 0</span></div>
 </div>
 <div class="warn">⚠️ <b>IMPORTANT</b><br>
@@ -296,8 +296,11 @@ function setM(v){{document.getElementById('method').value=v;
 document.getElementById('a').className=v=='airtel'?'sel':'';
 document.getElementById('m').className=v=='mtn'?'sel':'';}}
 function upd(){{let v=document.getElementById('amt').value||0;
+let fee=Math.round(v*0.09);
+let recv=v-fee;
 document.getElementById('s1').innerText='UGX '+Number(v).toLocaleString();
-document.getElementById('s2').innerText='UGX '+Number(v).toLocaleString();}}
+document.getElementById('fee').innerText='UGX '+fee.toLocaleString();
+document.getElementById('s2').innerText='UGX '+recv.toLocaleString();}}
 </script>
 """
 
