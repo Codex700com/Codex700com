@@ -118,9 +118,9 @@ def dashboard():
     <div class="checkin"><div>🎁 <b>Daily Check-In Reward</b><br><small>Check in daily and get <span style="color:red">UGX 500</span></small></div><a href="#">Check In →</a></div>
     <div class="grid">
       <a href="/invest">📈<span>Invest</span></a><a href="/deposit">💰<span>Deposit</span></a><a href="/withdraw">🏧<span>Withdraw</span></a><a href="#">👥<span>Referrals</span></a>
-      <a href="#">📄<span>Transactions</span></a><a href="#">🎁<span>Raffle</span></a><a href="#">🎧<span>Support</span></a><a href="#">💬<span>Chat Manager</span></a>
+      <a href="#">📄<span>Transactions</span></a><a href="/raffle">🎁<span>Raffle</span></a><a href="#">🎧<span>Support</span></a><a href="#">💬<span>Chat Manager</span></a>
     </div>
-    <div class="raffle">🏆 <b style="color:red">RAFFLE DRAW</b><br><small>Win amazing prizes daily</small><br><a href="#">View Prizes →</a></div>
+    <div class="raffle">🏆 <b style="color:red">RAFFLE DRAW</b><br><small>Win amazing prizes daily</small><br><a href="/raffle#prizes">View Prizes →</a></div>
     <h3 style="color:red;margin:15px 10px">📈 INVESTMENT PLANS <a href="/invest" style="float:right;font-size:12px;color:red">View All Plans ></a></h3>
     <div class="plans">
       <div class="plan"><b>Starter Plan</b><br><small>Daily Return <span style="color:red">20%</span></small><br><small>Duration 30 Days</small><br><small>Min. Invest <span style="color:red">UGX 50,000</span></small></div>
@@ -303,6 +303,106 @@ document.getElementById('fee').innerText='UGX '+fee.toLocaleString();
 document.getElementById('s2').innerText='UGX '+recv.toLocaleString();}}
 </script>
 """
+
+
+@app.route('/raffle')
+def raffle():
+    if 'uid' not in session: return redirect('/login')
+    return """
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;color:#fff;font-family:Arial;padding-bottom:70px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px}
+.top a{color:#ffcc33;text-decoration:none;font-size:20px}
+.top b{color:red;font-size:18px}
+.banner{margin:10px;background:linear-gradient(90deg,#1a0d00,#3a2500);border:1px solid #664400;border-radius:12px;padding:15px;display:flex;gap:10px;align-items:center}
+.banner h3{color:#ffaa00}
+.btn-red{background:#cc0000;color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:8px;font-size:13px}
+.info-bar{display:flex;justify-content:space-between;align-items:center;margin:10px;background:#0f0f0f;border:1px solid #333;border-radius:12px;padding:12px}
+.info-bar b{color:red;font-size:20px}
+.info-bar small{color:#aaa}
+.buy{border:1px solid red;color:#ffcc99;padding:8px 12px;border-radius:8px;text-decoration:none;background:#1a0000}
+.how{margin:10px;background:#0f0f0f;border:1px solid #333;border-radius:12px;padding:12px}
+.how h4{text-align:center;color:#ffaa00;margin-bottom:10px}
+.steps{display:flex;gap:8px;align-items:center}
+.step{flex:1;background:#111;border:1px solid #444;border-radius:10px;padding:10px;text-align:center;font-size:11px}
+.step div{width:24px;height:24px;background:#ffaa00;color:#000;border-radius:50%;margin:0 auto 5px;font-weight:bold;line-height:24px}
+.upcoming{margin:10px;background:#0f0f0f;border:1px solid #333;border-radius:12px;padding:12px}
+.upcoming h4{color:#ffaa00;margin-bottom:10px}
+.prize{display:flex;gap:10px}
+.prize-img{width:110px;height:110px;background:radial-gradient(#332200,#000);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:50px}
+.badge{background:red;color:#fff;font-size:10px;padding:3px 8px;border-radius:5px}
+.meta{display:flex;gap:10px;margin-top:10px;font-size:11px}
+.meta b{color:red;display:block}
+.bar{height:8px;background:#333;border-radius:5px;margin-top:10px}
+.bar div{height:8px;background:red;border-radius:5px;width:72%}
+.winners{margin:10px;background:#0f0f0f;border:1px solid #333;border-radius:12px;padding:12px}
+.winners h4{color:#ffaa00;display:flex;justify-content:space-between}
+.winners h4 a{color:red;font-size:12px;text-decoration:none}
+.wlist{display:flex;gap:8px;overflow-x:auto;margin-top:10px}
+.wcard{min-width:110px;background:#111;border:1px solid #333;border-radius:10px;padding:10px;text-align:center;font-size:11px}
+.wcard .av{width:50px;height:50px;border-radius:50%;background:#444;margin:0 auto 5px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.wcard b{color:red;font-size:10px}
+.navbar{position:fixed;bottom:0;left:0;right:0;background:#111;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #333}
+.navbar a{color:#ffcc33;text-decoration:none;font-size:11px;text-align:center}
+.navbar span{display:block}
+</style>
+<div class="top"><a href="/dashboard">←</a><b>RAFFLE DRAW</b><div>🔔👤</div></div>
+
+<div class="banner">
+<div style="font-size:50px">🏆</div>
+<div><h3>WIN AMAZING PRIZES</h3><small>Every ticket gives you a chance<br>to be a winner!</small><br><a class="btn-red" href="#prizes">View Prizes 🎁</a></div>
+</div>
+
+<div class="info-bar">
+<div>🎟️<br><small>Your Tickets</small><br><b>12</b></div>
+<div>📅<br><small>Next Draw</small><br><b style="font-size:14px">29 May 2025</b><br><small style="color:red">02d : 14h : 35m : 20s</small></div>
+<a class="buy" href="/raffle/buy">Buy Tickets 🛒</a>
+</div>
+
+<div class="how"><h4>HOW IT WORKS</h4>
+<div class="steps">
+<div class="step"><div>1</div>🎟️<br><b>Buy Tickets</b><br>Choose the number of tickets you want to enter.</div><div>→</div>
+<div class="step"><div>2</div>🎁<br><b>Wait for Draw</b><br>Stay tuned and wait for the draw date.</div><div>→</div>
+<div class="step"><div>3</div>🏆<br><b>Win Prizes</b><br>Winners will be announced and prizes delivered.</div>
+</div></div>
+
+<div class="upcoming" id="prizes"><h4>UPCOMING RAFFLE</h4>
+<div class="prize">
+<div class="prize-img">📱</div>
+<div><span class="badge">GRAND PRIZE</span><br><b style="color:#ffaa00">iPhone 15 Pro Max (256GB)</b><br><small>Be the next lucky winner!</small>
+<div class="meta"><div>🎟️ Total Tickets<br><b>10,000</b></div><div>🎫 Ticket Price<br><b>UGX 5,000</b></div><div>📅 Draw Date<br><b>29 May 2025</b></div></div>
+</div></div>
+<div class="bar"><div></div></div>
+<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:5px"><span><span style="color:red">7,250</span> / 10,000 Tickets Sold</span><span style="color:red">72%</span></div>
+<div style="text-align:center;margin-top:10px"><a class="btn-red" href="/raffle/buy">Buy Tickets Now</a></div>
+</div>
+
+<div class="winners"><h4>PREVIOUS WINNERS <a href="/raffle/winners">View All Winners ></a></h4>
+<div class="wlist">
+<a href="/raffle/winners" style="text-decoration:none;color:#fff"><div class="wcard"><div class="av">👨🏾</div>John K.<br><br>Won UGX 500,000<br><b>Draw #124</b></div></a>
+<a href="/raffle/winners" style="text-decoration:none;color:#fff"><div class="wcard"><div class="av">👩🏾</div>Sarah N.<br><br>Won Samsung S24<br><b>Draw #123</b></div></a>
+<a href="/raffle/winners" style="text-decoration:none;color:#fff"><div class="wcard"><div class="av">👨🏾</div>David M.<br><br>Won UGX 250,000<br><b>Draw #122</b></div></a>
+<a href="/raffle/winners" style="text-decoration:none;color:#fff"><div class="wcard"><div class="av">👩🏾</div>Grace A.<br><br>Won AirPods Pro<br><b>Draw #121</b></div></a>
+</div></div>
+
+<div class="navbar">
+<a href="/dashboard">🏠<span>Home</span></a>
+<a href="/invest">📈<span>Invest</span></a>
+<a href="#">⇄<span>Transactions</span></a>
+<a href="#">👥<span>Referrals</span></a>
+<a href="#">👤<span>Account</span></a>
+</div>
+"""
+@app.route('/raffle/buy')
+def raffle_buy():
+    if 'uid' not in session: return redirect('/login')
+    return '<div style="background:#000;color:#fff;padding:20px;font-family:Arial"><a href="/raffle" style="color:#ffcc33">← Back</a><h2>Buy Tickets</h2><p>Ticket: UGX 5,000</p><a href="/deposit" style="background:red;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none">Deposit to Buy</a></div>'
+@app.route('/raffle/winners')
+def raffle_winners():
+    if 'uid' not in session: return redirect('/login')
+    return '<div style="background:#000;color:#fff;padding:20px;font-family:Arial"><a href="/raffle" style="color:#ffcc33">← Back</a><h2>All Winners</h2><p>John K. - Draw #124<br>Sarah N. - Draw #123<br>David M. - Draw #122<br>Grace A. - Draw #121</p></div>'
 
 @app.route('/invest')
 def invest():
