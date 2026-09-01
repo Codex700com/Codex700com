@@ -4,6 +4,7 @@ import uuid
 app = Flask(__name__)
 app.secret_key="codex700secret"
 users={}
+chats={}
 PLANS={
  'starter':{'name':'Starter Plan','price':50000,'daily':20000,'duration':30,'total':600000,'received':600000,'emoji':'🪴'},
  'bronze':{'name':'Bronze Plan','price':100000,'daily':50000,'duration':30,'total':1500000,'received':1500000,'emoji':'🪙'},
@@ -226,3 +227,50 @@ def logout(): session.clear();return redirect('/login')
 @app.route('/dashboard')
 def dash(): return redirect('/home')
 if __name__=='__main__': app.run(host='0.0.0.0',port=5000)
+
+# --- CHAT MANAGER OVERRIDE ---
+@app.route('/chat2', methods=['GET','POST'])
+def chat2():
+    if not require_login(): return redirect('/login')
+    phone=session['phone']
+    if phone not in chats: chats[phone]=[]
+    if request.method=='POST':
+        msg=request.form.get('msg','').strip()
+        if msg:
+            from datetime import datetime as dt
+            chats[phone].append({'frm':'user','text':msg,'time':dt.now().strftime("%H:%M")})
+    html=""
+    for m in chats.get(phone,[]):
+        bg="#cc1111" if m['frm']=='admin' else "#222"
+        al="margin-left:auto;" if m['frm']=='admin' else ""
+        who="Manager" if m['frm']=='admin' else "You"
+        html+="<div style='margin:8px;padding:10px;border-radius:10px;max-width:80%;background:"+bg+";"+al+"'><small>"+who+" "+m['time']+"</small><br>"+m['text']+"</div>"
+    body="<div class='card'><h2 style='color:#ff2222'>Chat Manager</h2><div style='height:300px;overflow-y:auto;background:#0a0a0a;border-radius:10px;padding:10px'>"+(html or "<p style='color:#888'>Start chatting with your manager...</p>")+"</div><form method='post' style='display:flex;gap:8px;margin-top:10px'><input name='msg' placeholder='Type message...' style='flex:1;padding:12px;border-radius:10px;background:#1a1a1a;color:#fff;border:1px solid #333'><button class='btn-red' style='width:80px'>Send</button></form></div>"
+    return base(body)
+
+@app.route('/admin/chats')
+def admin_chats():
+    if not require_login(): return redirect('/login')
+    ll=""
+    for ph,msgs in chats.items():
+        last=msgs[-1]['text'][:30] if msgs else 'no msgs'
+        ll+="<a href='/admin/chat/"+ph+"'><div class='card'><b>"+ph+"</b> - "+str(len(msgs))+" msgs - "+last+"</div></a>"
+    if not ll: ll="<div class='card'><p>No chats yet</p></div>"
+    return base("<h2 style='padding:15px;color:#FFD700'>Admin Inbox</h2>"+ll)
+
+@app.route('/admin/chat/<ph>', methods=['GET','POST'])
+def admin_chat_detail(ph):
+    if not require_login(): return redirect('/login')
+    if ph not in chats: chats[ph]=[]
+    if request.method=='POST':
+        msg=request.form.get('msg','').strip()
+        if msg:
+            from datetime import datetime as dt2
+            chats[ph].append({'frm':'admin','text':msg,'time':dt2.now().strftime("%H:%M")})
+    html=""
+    for m in chats.get(ph,[]):
+        bg="#FFD700" if m['frm']=='admin' else "#222"
+        fg="#000" if m['frm']=='admin' else "#fff"
+        html+="<div style='margin:8px;padding:10px;border-radius:10px;max-width:80%;background:"+bg+";color:"+fg+"'><small>"+m['frm']+" "+m['time']+"</small><br>"+m['text']+"</div>"
+    body="<div class='card'><h3>Chat with "+ph+"</h3><div style='height:300px;overflow-y:auto;background:#0a0a0a;padding:10px;border-radius:10px'>"+html+"</div><form method='post' style='display:flex;gap:8px;margin-top:10px'><input name='msg' placeholder='Reply privately...' style='flex:1;padding:12px;border-radius:10px;background:#1a1a1a;color:#fff;border:1px solid #333'><button class='btn-red' style='width:80px'>Reply</button></form><br><a href='/admin/chats'>Back</a></div>"
+    return base(body)
