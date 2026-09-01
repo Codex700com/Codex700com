@@ -117,7 +117,7 @@ def dashboard():
     </div>
     <div class="checkin"><div>🎁 <b>Daily Check-In Reward</b><br><small>Check in daily and get <span style="color:red">UGX 500</span></small></div><a href="#">Check In →</a></div>
     <div class="grid">
-      <a href="/invest">📈<span>Invest</span></a><a href="#">💰<span>Deposit</span></a><a href="#">🏧<span>Withdraw</span></a><a href="#">👥<span>Referrals</span></a>
+      <a href="/invest">📈<span>Invest</span></a><a href="/deposit">💰<span>Deposit</span></a><a href="#">🏧<span>Withdraw</span></a><a href="#">👥<span>Referrals</span></a>
       <a href="#">📄<span>Transactions</span></a><a href="#">🎁<span>Raffle</span></a><a href="#">🎧<span>Support</span></a><a href="#">💬<span>Chat Manager</span></a>
     </div>
     <div class="raffle">🏆 <b style="color:red">RAFFLE DRAW</b><br><small>Win amazing prizes daily</small><br><a href="#">View Prizes →</a></div>
@@ -160,6 +160,74 @@ body{background:#000;color:#fff;font-family:Arial;padding-bottom:70px}
 .navbar span{display:block}
 </style>
 """
+
+@app.route('/deposit', methods=['GET','POST'])
+def deposit():
+    if 'uid' not in session: return redirect('/login')
+    msg=""
+    if request.method=='POST':
+        msg="Deposit submitted for review. You will be notified once approved."
+    return """
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0a;color:#fff;font-family:Arial;padding-bottom:20px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px;background:#111}
+.top a{color:#ffcc33;text-decoration:none;font-size:20px}
+.top b{font-size:16px}
+.warn{background:#2a0a0a;border:1px solid #ff3333;margin:10px;padding:10px;border-radius:10px;font-size:12px;color:#ff9999}
+.card{margin:10px;background:#111;border:1px solid #333;border-radius:12px;padding:12px}
+.card h4{color:#ffcc33;margin-bottom:10px;font-size:13px}
+.sendto{display:flex;align-items:center;justify-content:space-between;background:#0a0a0a;border:1px dashed #ffcc33;padding:10px;border-radius:10px}
+.sendto .info{flex:1;margin-left:10px}
+.sendto b{color:#fff}
+.sendto .num{color:#ffcc33;font-size:18px;font-weight:bold;user-select:all}
+.copy{background:#222;color:#ffcc33;border:1px solid #ffcc33;padding:6px 10px;border-radius:8px;font-size:12px;cursor:pointer}
+ol{margin:10px 0 10px 18px;font-size:13px;line-height:1.6;color:#ddd}
+label{font-size:13px;margin:12px 0 5px;display:block}
+input{width:100%;padding:12px;border-radius:10px;border:1px solid #444;background:#0a0a0a;color:#fff}
+.upload{border:2px dashed #444;border-radius:12px;padding:20px;text-align:center;margin-top:5px;color:#aaa}
+.note{background:#2a0a0a;margin:10px;padding:12px;border-radius:10px;font-size:12px;line-height:1.6}
+.note b{color:#ff6666}
+.btn{margin:10px;width:calc(100% - 20px);padding:15px;background:#cc0000;border:none;border-radius:12px;color:#fff;font-weight:bold;font-size:16px}
+.msg{text-align:center;color:#00ff88;margin:10px}
+</style>
+<div class="top"><a href="/dashboard">←</a><b>Deposit Funds</b><a href="#">🧾</a></div>
+<div class="warn">⚠️ <b style="color:red">IMPORTANT:</b> Send money only to the details below. Deposits to other numbers will not be accepted.</div>
+<div class="card"><h4>SEND MONEY TO</h4>
+<div class="sendto">
+<div style="font-size:30px">👤</div>
+<div class="info"><b>Shakira Nantongo</b><br><span class="num" id="num">0758878297</span><br><span style="color:red">airtel money</span></div>
+<button class="copy" onclick="navigator.clipboard.writeText('0758878297');this.innerText='Copied!'">📋<br>Copy Number</button>
+</div></div>
+<div class="card"><h4>HOW TO DEPOSIT</h4>
+<ol>
+<li>Dial *185# on your Airtel line</li>
+<li>Select Send Money</li>
+<li>Send money to 0758878297</li>
+<li>Enter the amount you wish to deposit</li>
+<li>After sending, fill in the details below</li>
+<li>Upload screenshot of successful transaction</li>
+<li>Click "Confirm Deposit"</li>
+</ol></div>
+<div class="card"><h4>FILL IN YOUR DEPOSIT DETAILS</h4>
+<div style="color:#00ff88;text-align:center">"""+msg+"""</div>
+<form method="post" enctype="multipart/form-data">
+<label>Airtel Number Used To Send</label><input name="sender" placeholder="Enter the Airtel number you used" required>
+<label>Amount Deposited (UGX)</label><input name="amount" type="number" placeholder="Enter amount you deposited" required>
+<label>Transaction ID / Reference</label><input name="txid" placeholder="Enter transaction ID" required>
+<label>Upload Screenshot</label><div class="upload">☁️<br>Tap to upload screenshot<br><small>PNG, JPG, JPEG (Max 5MB)</small><br><input type="file" name="shot" accept="image/*" style="margin-top:10px"></div>
+</form></div>
+<div class="note"><b>Please Note</b><br>
+• Minimum deposit: UGX 1,000<br>
+• Maximum deposit: UGX 10,000,000<br>
+• Your deposit will be reviewed and approved within a few minutes.<br>
+• You will be notified once your deposit is approved.
+</div>
+<form method="post"><button class="btn">✈️ CONFIRM DEPOSIT</button></form>
+<script>document.getElementById('num').onclick=()=>{navigator.clipboard.writeText('0758878297');alert('Number copied')}</script>
+"""
+
 @app.route('/invest')
 def invest():
     if 'uid' not in session: return redirect('/login')
