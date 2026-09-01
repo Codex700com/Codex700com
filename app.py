@@ -7,12 +7,12 @@ def page(title, body, msg=""):
     return f"""<head><meta name="viewport" content="width=device-width,initial-scale=1">
     <style>
     body{{background:#000;color:#FFD700;font-family:sans-serif;margin:0;padding:20px}}
-   .top{{text-align:center;font-size:28px;font-weight:900;margin:20px 0}}
-   .card{{background:#0a0a0a;border:2px solid #FFD700;border-radius:20px;padding:25px;max-width:420px;margin:auto;box-shadow:0 0 20px #FFD70055}}
+  .top{{text-align:center;font-size:28px;font-weight:900;margin:20px 0}}
+  .card{{background:#0a0a0a;border:2px solid #FFD700;border-radius:20px;padding:25px;max-width:420px;margin:auto}}
     h2{{text-align:center;color:#FFD700}}label{{color:#FFD700;font-size:14px}}
     input{{width:100%;padding:14px;margin:8px 0 16px;background:#111;border:1px solid #FFD70088;border-radius:12px;color:#fff;box-sizing:border-box}}
     button{{width:100%;padding:15px;background:linear-gradient(#FFD700,#ff9900);border:none;border-radius:12px;font-weight:900;font-size:18px}}
-   .link{{text-align:center;margin-top:15px;color:#fff}}.link a{{color:#FFD700}}
+  .link{{text-align:center;margin-top:15px;color:#fff}}.link a{{color:#FFD700}}
     </style></head><body><div class="top">👑 CODEX700 🔥</div><div class="card"><h2>{title}</h2>{msg_html}{body}</div></body>"""
 @app.route('/')
 def home(): return redirect('/register')
@@ -22,20 +22,27 @@ def register():
     ref_code = request.args.get('ref','')
     if request.method=='POST':
         name=request.form.get('name','').strip()
-        phone=request.form.get('phone','').strip()
-        pw=request.form.get('password','')
-        cpw=request.form.get('confirm','')
+        phone_raw=request.form.get('phone','').strip()
+        phone=phone_raw.replace('+','').replace(' ','').replace('-','')
+        pw=request.form.get('password','').strip()
+        cpw=request.form.get('confirm','').strip()
         inv=request.form.get('invite','').strip()
-        if not name or not phone or not pw or not cpw or not inv:
+        # validation - relaxed
+        if not name or not phone_raw or not pw or not cpw:
             msg="Dear user,u have entered a wrong information"
-        elif not phone.isdigit() or len(phone)<10:
+        elif not phone.isdigit() or len(phone)<9:
             msg="Dear user,u have entered a wrong information"
-        elif pw!=cpw or len(pw)<4:
+        elif pw!=cpw:
+            msg="Dear user,u have entered a wrong information"
+        elif len(pw)<4:
             msg="Dear user,u have entered a wrong information"
         elif phone in users:
             msg="Dear user,u have entered a wrong information"
         else:
-            users[phone]={'name':name,'pw':pw}
+            # invite optional - if empty use ref_code or default
+            if not inv:
+                inv = ref_code if ref_code else "CODEX700"
+            users[phone]={'name':name,'pw':pw,'invite':inv}
             return page("REGISTER", f"<p style='text-align:center;color:#fff'>Welcome {name}!</p><div class='link'>Have account? <a href='/login'>Login</a></div>", "Registration successful")
     body=f"""
     <form method="post">
@@ -52,10 +59,11 @@ def register():
 def login():
     msg=""
     if request.method=='POST':
-        phone=request.form.get('phone','').strip()
-        pw=request.form.get('password','')
+        phone_raw=request.form.get('phone','').strip()
+        phone=phone_raw.replace('+','').replace(' ','').replace('-','')
+        pw=request.form.get('password','').strip()
         if phone in users and users[phone]['pw']==pw:
-            return page("LOGIN", f"<p style='text-align:center;color:#fff'>Welcome back!</p>", "Registration successful")
+            return page("LOGIN", f"<p style='text-align:center;color:#fff'>Welcome back {users[phone]['name']}!</p>", "Registration successful")
         else:
             msg="Dear user,u have entered a wrong information"
     body="""<form method="post"><label>Phone number</label><input name="phone" placeholder="Enter Phone number">
