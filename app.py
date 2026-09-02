@@ -77,7 +77,25 @@ def _col_exists(con, table, col):
         cols=[r[1] for r in con.execute(f"PRAGMA table_info({table})").fetchall()]
         return col in cols
     except: return False
-def init_admin_safe():
+def init_ref():
+    con=db()
+    try:
+        cols=[r[1] for r in con.execute("PRAGMA table_info(users)")]
+        if "ref_code" not in cols: con.execute("ALTER TABLE users ADD COLUMN ref_code TEXT")
+        if "referred_by" not in cols: con.execute("ALTER TABLE users ADD COLUMN referred_by TEXT")
+        if "ref_earn1" not in cols: con.execute("ALTER TABLE users ADD COLUMN ref_earn1 INTEGER DEFAULT 0")
+        if "ref_earn2" not in cols: con.execute("ALTER TABLE users ADD COLUMN ref_earn2 INTEGER DEFAULT 0")
+        if "ref_earn3" not in cols: con.execute("ALTER TABLE users ADD COLUMN ref_earn3 INTEGER DEFAULT 0")
+        # generate codes for existing users
+        for u in con.execute("SELECT id,ref_code FROM users"):
+            if not u[1]:
+                code=''.join(random.choices(string.ascii_uppercase+string.digits,k=6))
+                con.execute("UPDATE users SET ref_code=? WHERE id=?",(code,u[0]))
+        con.commit()
+    except Exception as e: print("ref init",e)
+    con.close()
+init_ref()
+init_admin_safe():
     con=db()
     try:
         if not _col_exists(con,"users","blocked"):
@@ -95,12 +113,33 @@ def is_admin(uid):
         return u and u[0]=="Codex700com"
     finally:
         con.close()
+def init_ref():
+    con=db()
+    try:
+        cols=[r[1] for r in con.execute("PRAGMA table_info(users)")]
+        if "ref_code" not in cols: con.execute("ALTER TABLE users ADD COLUMN ref_code TEXT")
+        if "referred_by" not in cols: con.execute("ALTER TABLE users ADD COLUMN referred_by TEXT")
+        if "ref_earn1" not in cols: con.execute("ALTER TABLE users ADD COLUMN ref_earn1 INTEGER DEFAULT 0")
+        if "ref_earn2" not in cols: con.execute("ALTER TABLE users ADD COLUMN ref_earn2 INTEGER DEFAULT 0")
+        if "ref_earn3" not in cols: con.execute("ALTER TABLE users ADD COLUMN ref_earn3 INTEGER DEFAULT 0")
+        # generate codes for existing users
+        for u in con.execute("SELECT id,ref_code FROM users"):
+            if not u[1]:
+                code=''.join(random.choices(string.ascii_uppercase+string.digits,k=6))
+                con.execute("UPDATE users SET ref_code=? WHERE id=?",(code,u[0]))
+        con.commit()
+    except Exception as e: print("ref init",e)
+    con.close()
+init_ref()
 init_admin_safe()
 
 @app.route('/')
 def home(): return redirect('/register')
 
 @app.route('/register', methods=['GET','POST'])
+def gen_code():
+    import random,string
+    return ''.join(random.choices(string.ascii_uppercase+string.digits,k=6))
 def register():
     msg=""
     if request.method=='POST':
@@ -116,7 +155,7 @@ def register():
         else:
             try:
                 c=db()
-                c.execute("INSERT INTO users(name,phone,password,invite) VALUES(?,?,?,?)",
+                c.execute("INSERT INTO users (name, ref_code, referred_by,phone,password,invite) VALUES(?,?,?,?)",
                           (name,phone,generate_password_hash(pw),invite))
                 c.commit(); c.close()
                 return redirect('/login')
