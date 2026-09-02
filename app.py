@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3, time
 def chat_db():
     c = sqlite3.connect('codex700.db')
-    c.execute('''CREATE TABLE IF NOT EXISTS chats
+    c.executescript(CHAT_SQL) if 'chats' not in open('app.py').read() else c.execute('''CREATE TABLE IF NOT EXISTS chats
     (id INTEGER PRIMARY KEY AUTOINCREMENT, uid TEXT, sender TEXT, msg TEXT, ts TEXT)''')
     return c
 
@@ -24,6 +24,15 @@ def wdb():
 app = Flask(__name__)
 app.secret_key = "codex700-secret"
 DB = "codex.db"
+
+CHAT_SQL = '''
+CREATE TABLE IF NOT EXISTS chats(
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ uid TEXT, username TEXT,
+ msg TEXT, ftype TEXT DEFAULT 'text',
+ fpath TEXT, ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ direction TEXT DEFAULT 'u2a', read INTEGER DEFAULT 0
+);'''
 
 def db():
     c = sqlite3.connect(DB)
@@ -576,6 +585,129 @@ def support_chat():
     mh="".join([f"<div style='margin:6px;padding:8px;border-radius:8px;background:{'#222' if r[0]=='user' else '#3a0000'};text-align:{'right' if r[0]=='user' else 'left'}'>{r[1]}<br><small style='color:#888'>{r[2]}</small></div>" for r in rows])
     return f'''<body style="background:#000;color:#fff;font-family:Arial;max-width:480px;margin:auto"><div style="padding:12px"><a href="/support" style="color:gold;text-decoration:none">←</a> <b>Manager Sarah</b></div><div style="padding:10px">{mh}</div><form method="POST" action="/support/send" style="display:flex;gap:6px;padding:10px;position:fixed;bottom:0;width:100%;max-width:480px;background:#000"><input name="msg" required placeholder="Type a message..." style="flex:1;padding:12px;border-radius:10px;border:1px solid #444;background:#111;color:#fff"><button style="background:red;color:#fff;border:none;padding:12px;border-radius:10px">Send</button></form></body>'''
 
+
+
+import os
+os.makedirs('static/uploads', exist_ok=True)
+# create chats table on startup
+try:
+    import sqlite3
+    _c=sqlite3.connect('codex700.db')
+    _c.execute('''CREATE TABLE IF NOT EXISTS chats(
+     id INTEGER PRIMARY KEY AUTOINCREMENT,
+     uid TEXT, username TEXT, msg TEXT, ftype TEXT DEFAULT 'text',
+     fpath TEXT, ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+     direction TEXT DEFAULT 'u2a', read INTEGER DEFAULT 0)''')
+    _c.commit(); _c.close()
+except Exception as e: print("chat table err",e)
+
+@app.route('/chat', methods=['GET'])
+def chat_page():
+    from flask import session, redirect
+    if 'uid' not in session: return redirect('/login')
+    return '''<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{background:#000;color:#fff;font-family:Arial;max-width:480px;margin:auto}#box{height:60vh;overflow-y:auto;border:1px solid #333;padding:10px;border-radius:10px;margin:10px}.me{text-align:right;color:gold}.them{text-align:left}.inp{display:flex;gap:5px;padding:10px}input[type=text]{flex:1;padding:10px;border-radius:8px;border:1px solid #444;background:#111;color:#fff}button{background:red;color:#fff;border:none;padding:10px 15px;border-radius:8px}</style></head><body>
+<div style="padding:12px"><a href="/dashboard" style="color:gold">←</a> <b>Chat with Manager</b></div>
+<div id="box"></div>
+<div class="inp"><input type="text" id="m" placeholder="Type message..."><button onclick="send()">Send</button></div>
+<div class="inp"><input type="file" id="f" accept="image/*,video/*"><button onclick="sendFile()">📎</button></div>
+<script>
+async function load(){let r=await fetch('/api/chat');let j=await r.json();let b=document.getElementById('box');b.innerHTML=j.map(x=>{
+ let c=x.direction=='a2u'?'them':'me';
+ let media=x.ftype=='image'?`<br><img src="/${x.fpath}" style="max-width:200px;border-radius:8px">`:x.ftype=='video'?`<br><video src="/${x.fpath}" controls style="max-width:200px"></video>`:'';
+ return `<div class="${c}"><small>${x.ts}</small><br>${x.msg||''}${media}</div><hr style="border-color:#222">`
+}).join('');b.scrollTop=b.scrollHeight}
+async function send(){let m=document.getElementById('m').value;if(!m)return;await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({msg:m})});document.getElementById('m').value='';load()}
+async function sendFile(){let fi=document.getElementById('f').files[0];if(!fi)return;let fd=new FormData();fd.append('file',fi);await fetch('/api/chat/upload',{method:'POST',body:fd});load()}
+setInterval(load,3000);load()
+</script></body></html>'''
+
+@app.route('/api/chat', methods=['GET','POST'])
+def api_chat():
+    from flask import session, request, jsonify
+    import sqlite3
+    if 'uid' not in session: return jsonify([])
+    uid=session['uid']
+    con=sqlite3.connect('codex700.db'); con.row_factory=sqlite3.Row
+    if request.method=='POST':
+        d=request.get_json()
+        # get username
+        try:
+            u=con.execute("SELECT username FROM users WHERE id=?",(uid,)).fetchone()
+            uname=u['username'] if u else uid
+        except: uname=uid
+        con.execute("INSERT INTO chats(uid,username,msg,direction) VALUES(?,?,?,?)",(uid,uname,d.get('msg',''),'u2a'))
+        con.commit()
+        return jsonify({"ok":1})
+    rows=con.execute("SELECT * FROM chats WHERE uid=? ORDER BY id ASC",(uid,)).fetchall()
+    return jsonify([dict(r) for r in rows])
+
+@app.route('/api/chat/upload', methods=['POST'])
+def chat_upload():
+    from flask import session, request, jsonify
+    from werkzeug.utils import secure_filename
+    import sqlite3, time
+    if 'uid' not in session: return jsonify({"err":1})
+    f=request.files.get('file')
+    if not f: return jsonify({"err":1})
+    fn=str(int(time.time()))+"_"+secure_filename(f.filename)
+    path=os.path.join('static/uploads',fn); f.save(path)
+    ftype='video' if fn.lower().endswith(('.mp4','.mov','.webm')) else 'image'
+    uid=session['uid']; con=sqlite3.connect('codex700.db'); con.row_factory=sqlite3.Row
+    try: u=con.execute("SELECT username FROM users WHERE id=?",(uid,)).fetchone(); uname=u['username'] if u else uid
+    except: uname=uid
+    con.execute("INSERT INTO chats(uid,username,msg,ftype,fpath,direction) VALUES(?,?,?,?,?,?)",(uid,uname,'',ftype,path,'u2a'))
+    con.commit()
+    return jsonify({"ok":1})
+
+# ADMIN: list users with chats
+@app.route('/admin/chats')
+def admin_chats():
+    import sqlite3
+    from flask import request
+    con=sqlite3.connect('codex700.db'); con.row_factory=sqlite3.Row
+    users=con.execute("SELECT uid,username,MAX(ts) as last, SUM(CASE WHEN direction='u2a' AND read=0 THEN 1 ELSE 0 END) as unread FROM chats GROUP BY uid ORDER BY last DESC").fetchall()
+    html="<h2 style='color:gold'>Chats - select user</h2><a href='/admin'>← Admin</a><br><br>"
+    for u in users:
+        html+=f"<div style='border:1px solid #444;padding:10px;margin:5px'><b>{u['username']}</b> ({u['uid']}) - unread:{u['unread']}<br><small>{u['last']}</small><br><a href='/admin/chat/{u['uid']}' style='color:red'>Open Chat</a></div>"
+    # broadcast form
+    html+="<hr><h3>Broadcast to All</h3><form method='POST' action='/admin/broadcast'><input name='msg' placeholder='Message to all users' style='width:70%;padding:10px'><button>Send to All</button></form>"
+    return html
+
+@app.route('/admin/chat/<uid>')
+def admin_chat_one(uid):
+    import sqlite3
+    con=sqlite3.connect('codex700.db'); con.row_factory=sqlite3.Row
+    con.execute("UPDATE chats SET read=1 WHERE uid=? AND direction='u2a'",(uid,))
+    con.commit()
+    rows=con.execute("SELECT * FROM chats WHERE uid=? ORDER BY id ASC",(uid,)).fetchall()
+    msgs="".join([f"<div><b>{'Admin' if r['direction']=='a2u' else r['username']}:</b> {r['msg'] or ''} {'<br><img src=/'+r['fpath']+' style=max-width:200px>' if r['ftype']=='image' and r['fpath'] else ''} {'<br><video src=/'+r['fpath']+' controls style=max-width:200px></video>' if r['ftype']=='video' and r['fpath'] else ''} <small>{r['ts']}</small></div><hr>" for r in rows])
+    return f"<a href='/admin/chats'>← Back</a><h3>Chat with {uid}</h3><div>{msgs}</div><form method='POST' action='/admin/chat/{uid}/reply'><input name='msg' placeholder='Reply privately' style='width:70%;padding:10px'><button>Reply</button></form>"
+
+@app.route('/admin/chat/<uid>/reply', methods=['POST'])
+def admin_reply(uid):
+    import sqlite3
+    from flask import request, redirect
+    msg=request.form.get('msg','')
+    con=sqlite3.connect('codex700.db')
+    con.execute("INSERT INTO chats(uid,username,msg,direction) VALUES(?,?,?,?)",(uid,'Admin',msg,'a2u'))
+    con.commit()
+    return redirect(f'/admin/chat/{uid}')
+
+@app.route('/admin/broadcast', methods=['POST'])
+def admin_broadcast():
+    import sqlite3
+    from flask import request, redirect
+    msg=request.form.get('msg','')
+    con=sqlite3.connect('codex700.db')
+    users=con.execute("SELECT DISTINCT uid FROM chats").fetchall()
+    # also get all users
+    try: allu=con.execute("SELECT id FROM users").fetchall(); uids=set([r[0] for r in users] + [r[0] for r in allu])
+    except: uids=set([r[0] for r in users])
+    for uid in uids:
+        con.execute("INSERT INTO chats(uid,username,msg,direction) VALUES(?,?,?,?)",(uid,'Admin',msg,'a2u'))
+    con.commit()
+    return redirect('/admin/chats')
 
 @app.route('/admin/chats')
 def admin_chats():
