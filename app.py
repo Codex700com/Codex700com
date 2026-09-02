@@ -11,6 +11,16 @@ def chat_db():
     (id INTEGER PRIMARY KEY AUTOINCREMENT, uid TEXT, sender TEXT, msg TEXT, ts TEXT)''')
     return c
 
+
+# --- WITHDRAWAL SYSTEM ---
+import sqlite3
+from datetime import datetime
+def wdb():
+    c=sqlite3.connect('codex700.db')
+    c.execute('''CREATE TABLE IF NOT EXISTS withdrawals
+    (id INTEGER PRIMARY KEY AUTOINCREMENT, uid TEXT, amount TEXT, method TEXT, mobile TEXT, accname TEXT, reqdate TEXT, status TEXT)''')
+    return c
+
 app = Flask(__name__)
 app.secret_key = "codex700-secret"
 DB = "codex.db"
@@ -651,6 +661,82 @@ def admin_reply(uid):
         c.commit(); c.close()
     return redirect(f'/admin/chat/{uid}')
 # --- END CHAT ---
+
+
+@app.route('/withdraw/confirm', methods=['POST'])
+def withdraw_confirm():
+    if 'uid' not in session: return redirect('/login')
+    uid=session['uid']
+    amount=request.form.get('amount','UGX 0')
+    method=request.form.get('method','Airtel Money')
+    mobile=request.form.get('mobile','')
+    accname=request.form.get('accname','')
+    reqdate=datetime.now().strftime("%d %b %Y %I:%M %p")
+    c=wdb(); cur=c.cursor()
+    cur.execute("INSERT INTO withdrawals (uid,amount,method,mobile,accname,reqdate,status) VALUES (?,?,?,?,?,?,?)",
+                (uid,amount,method,mobile,accname,reqdate,'Pending'))
+    wid=cur.lastrowid; c.commit(); c.close()
+    return f'''<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<style>*{{box-sizing:border-box}}body{{background:#000;color:#fff;font-family:Arial;max-width:480px;margin:auto}}
+.card{{border:1px solid #8a6d00;border-radius:12px;margin:10px;padding:12px;background:#0f0f0f}}
+.row{{display:flex;justify-content:space-between;padding:6px 0;font-size:13px}}
+.badge{{padding:3px 10px;border-radius:12px;font-size:11px}}
+.pending{{background:#3a2a00;color:orange;border:1px solid orange}}
+.btn{{background:linear-gradient(#ff2222,#aa0000);color:#fff;display:block;text-align:center;padding:12px;border-radius:10px;text-decoration:none;font-weight:bold;margin:10px}}
+.hist{margin:10px}.htabs{display:flex;gap:6px;margin:8px 0}.htabs a{padding:6px 12px;border-radius:16px;font-size:12px;text-decoration:none;color:#888;background:#111}
+.htabs a.on{background:red;color:#fff}
+.hitem{border:1px solid #333;border-radius:10px;padding:10px;margin:6px 0;display:flex;justify-content:space-between;align-items:center}
+</style></head><body>
+<div style="padding:12px;display:flex;align-items:center;gap:10px"><a href="/dashboard" style="color:gold;text-decoration:none">←</a><h3 style="flex:1;text-align:center">Withdrawal</h3></div>
+<div class="card" style="text-align:center"><div style="font-size:50px;color:#00ff00">✅</div>
+<div style="color:#00ff00;font-weight:bold">WITHDRAWAL REQUEST SUBMITTED!</div>
+<small style="color:#aaa">Your withdrawal request has been submitted successfully and is being reviewed.</small></div>
+<div class="card">
+<div class="row"><span>Amount</span><b style="color:red">{amount}</b></div>
+<div class="row"><span>Payment Method</span><span>📱 {method}</span></div>
+<div class="row"><span>Mobile Number</span><span>{mobile}</span></div>
+<div class="row"><span>Account Name</span><span>{accname}</span></div>
+<div class="row"><span>Request Date</span><span>{reqdate}</span></div>
+<div class="row"><span>Status</span><span class="badge pending">Pending</span></div>
+</div>
+<div class="card"><b>⏰ WHAT HAPPENS NEXT?</b><br><small style="color:#aaa">Your request is being reviewed by our team. You will receive a notification once the withdrawal is approved and the amount has been sent to your account.</small></div>
+<a class="btn" href="/dashboard">🏠 BACK TO HOME</a>
+<div class="hist"><div style="display:flex;justify-content:space-between"><b style="color:gold;font-size:12px">WITHDRAWAL HISTORY</b><a href="/withdraw/history" style="color:red;font-size:12px">View All</a></div>
+<div class="htabs"><a class="on" href="/withdraw/history?f=All">All</a><a href="/withdraw/history?f=Pending">Pending</a><a href="/withdraw/history?f=Approved">Approved</a><a href="/withdraw/history?f=Rejected">Rejected</a></div>
+</div>
+<script>fetch('/withdraw/history_list?f=All').then(r=>r.text()).then(h=>{{document.querySelector('.hist').innerHTML+=h}})</script>
+</body></html>'''
+
+@app.route('/withdraw/history')
+def withdraw_history():
+    if 'uid' not in session: return redirect('/login')
+    f=request.args.get('f','All')
+    c=wdb(); cur=c.cursor()
+    if f=='All': cur.execute("SELECT amount,method,mobile,reqdate,status FROM withdrawals WHERE uid=? ORDER BY id DESC",(session['uid'],))
+    else: cur.execute("SELECT amount,method,mobile,reqdate,status FROM withdrawals WHERE uid=? AND status=? ORDER BY id DESC",(session['uid'],f))
+    rows=cur.fetchall(); c.close()
+    def badge(s):
+        col="orange" if s=="Pending" else "green" if s=="Approved" else "red"
+        return f"<span style='border:1px solid {col};color:{col};padding:3px 10px;border-radius:12px;font-size:11px'>{s}</span>"
+    items="".join([f"<div style='border:1px solid #333;border-radius:10px;padding:10px;margin:6px 0;display:flex;justify-content:space-between'><div><b>{r[0]}</b><br><small style='color:#aaa'>{r[1]} • {r[2]}<br>{r[3]}</small></div><div>{badge(r[4])} <span>›</span></div></div>" for r in rows]) or "<p style='color:#888'>No records</p>"
+    tabs="".join([f"<a href='/withdraw/history?f={x}' style='padding:6px 12px;border-radius:16px;font-size:12px;text-decoration:none;{ 'background:red;color:#fff' if x==f else 'background:#111;color:#888'}'>{x}</a>" for x in ['All','Pending','Approved','Rejected']])
+    return f"<body style='background:#000;color:#fff;font-family:Arial;max-width:480px;margin:auto'><div style='padding:12px'><a href='/dashboard' style='color:gold;text-decoration:none'>←</a> <b>Withdrawal History</b></div><div style='display:flex;gap:6px;padding:10px'>{tabs}</div><div style='padding:10px'>{items}</div></body>"
+
+@app.route('/admin/withdrawals')
+def admin_withdrawals():
+    c=wdb(); cur=c.cursor(); cur.execute("SELECT id,uid,amount,method,mobile,accname,reqdate,status FROM withdrawals ORDER BY id DESC")
+    rows=cur.fetchall(); c.close()
+    h="".join([f"<div style='border:1px solid #333;padding:10px;margin:6px;border-radius:8px'><b>#{r[0]} {r[2]}</b> - {r[1]}<br><small>{r[3]} {r[4]} {r[5]}<br>{r[6]} - <b>{r[7]}</b></small><br><a href='/admin/wd/approve/{r[0]}' style='color:green'>Approve</a> | <a href='/admin/wd/reject/{r[0]}' style='color:red'>Reject</a></div>" for r in rows])
+    return f"<body style='background:#000;color:#fff;font-family:Arial'><h3 style='color:gold;padding:12px'>Admin Withdrawals</h3>{h}</body>"
+
+@app.route('/admin/wd/approve/<int:wid>')
+def wd_approve(wid):
+    c=wdb(); c.execute("UPDATE withdrawals SET status='Approved' WHERE id=?",(wid,)); c.commit(); c.close(); return redirect('/admin/withdrawals')
+
+@app.route('/admin/wd/reject/<int:wid>')
+def wd_reject(wid):
+    c=wdb(); c.execute("UPDATE withdrawals SET status='Rejected' WHERE id=?",(wid,)); c.commit(); c.close(); return redirect('/admin/withdrawals')
+# --- END WITHDRAWAL ---
 
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT',5000)))
