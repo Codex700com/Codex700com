@@ -600,36 +600,42 @@ def invest():
 @app.route('/support')
 def support():
     if 'uid' not in session: return redirect('/login')
-    uid = session['uid']
-    c = chat_db(); cur = c.cursor()
-    cur.execute("SELECT sender,msg,ts FROM chats WHERE uid=? ORDER BY id DESC LIMIT 20", (uid,))
-    msgs = cur.fetchall()[::-1]
-    c.close()
-    msgs_html = "".join([f"<div style='margin:6px;padding:8px;border-radius:8px;background:{'#1a1a1a' if m[0]=='user' else '#3a0000'};text-align:{'right' if m[0]=='user' else 'left'}'><small>{m[0]}</small><br>{m[1]}<br><small style='color:#888'>{m[2]}</small></div>" for m in msgs])
     return '''<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<style>*{box-sizing:border-box}body{background:#000;color:#fff;font-family:Arial;max-width:480px;margin:auto}
-.top{display:flex;align-items:center;justify-content:space-between;padding:12px}.box{border:1px solid #8a6d00;border-radius:12px;padding:12px;margin:10px;display:flex;gap:12px;align-items:center}
-.btn{background:linear-gradient(#ff2222,#aa0000);color:#fff;border:none;padding:10px 16px;border-radius:10px;font-weight:bold}
-.conv{margin:10px}.chead{color:gold;font-size:12px;margin:10px}
-#msgs{padding:10px;min-height:200px}
-.send{display:flex;gap:6px;padding:10px;position:sticky;bottom:0;background:#000}input{flex:1;padding:10px;border-radius:10px;border:1px solid #444;background:#111;color:#fff}
+<style>*{box-sizing:border-box;margin:0}body{background:#000;color:#fff;font-family:Arial;max-width:480px;margin:auto}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px}
+.top a{color:#ffcc00;text-decoration:none;font-size:22px}
+.top h3{font-size:18px}.top span{font-size:22px;color:#ffcc00}
+.card{border:1px solid #8a6d1a;border-radius:12px;margin:12px;padding:16px;display:flex;gap:14px;align-items:center;background:#0a0a0a}
+.icon{width:80px;height:80px;border:1px solid #ffcc00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0}
+.btn{background:linear-gradient(#ff2222,#aa0000);color:#fff;border:none;padding:12px 18px;border-radius:10px;font-weight:bold;margin-top:10px;width:100%}
+.sect{color:#ffcc00;font-size:13px;font-weight:bold;padding:12px 12px 6px}
+.conv{border:1px solid #222;border-radius:12px;margin:0 12px;padding:12px;display:flex;gap:12px;align-items:center;background:#0a0a0a}
+.avatar{width:56px;height:56px;border-radius:50%;background:#333;flex-shrink:0;position:relative;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.dot{position:absolute;bottom:2px;right:2px;width:14px;height:14px;background:#00ff00;border-radius:50%;border:2px solid #000}
+.badge{background:red;color:#fff;font-size:11px;padding:2px 8px;border-radius:12px;margin-left:6px}
+.msg{color:#aaa;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.time{color:#888;font-size:11px;margin-left:auto}
 </style></head><body>
-<div class="top"><a href="/dashboard" style="color:gold;text-decoration:none">←</a><h3>Chat with Manager</h3><span>🎧</span></div>
-<div class="box"><div style="width:60px;height:60px;border:1px solid gold;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px">💬</div>
-<div>Our managers are here<br>to assist you 24/7.<br><br><button class="btn" onclick="document.getElementById('inp').focus()">+ New Conversation</button></div></div>
-<div class="chead">MY CONVERSATIONS</div><div id="msgs">'''+msgs_html+'''</div>
-<form class="send" method="POST" action="/support/send"><input id="inp" name="msg" placeholder="Type a message..." required><button class="btn">Send</button></form>
+<div class="top"><a href="/dashboard">←</a><h3>Chat with Manager</h3><span>🎧</span></div>
+<div class="card"><div class="icon">💬</div><div style="flex:1">Our managers are here<br>to assist you 24/7.<br><button class="btn" onclick="location.href='/support/chat'">+ New Conversation</button></div></div>
+<div class="sect">MY CONVERSATIONS</div>
+<a href="/support/chat" style="text-decoration:none;color:inherit"><div class="conv">
+<div class="avatar"><img src="https://i.pravatar.cc/100?img=47"><div class="dot"></div></div>
+<div><div style="font-weight:bold">Manager Sarah <span class="badge">2</span></div><div class="msg">Thank you for reaching out. How can I help you today?</div></div>
+<div class="time">10:45 AM<br><span style="font-size:18px;color:#888">›</span></div>
+</div></a>
 </body></html>'''
-
-@app.route('/support/send', methods=['POST'])
-def support_send():
+@app.route('/support/chat')
+def support_chat():
     if 'uid' not in session: return redirect('/login')
-    msg = request.form.get('msg','')[:500]
-    if msg:
-        c = chat_db(); c.execute("INSERT INTO chats (uid,sender,msg,ts) VALUES (?,?,?,?)",
-        (session['uid'],'user',msg,time.strftime("%H:%M")))
-        c.commit(); c.close()
-    return redirect('/support')
+    uid=session['uid']
+    c=chat_db();cur=c.cursor()
+    cur.execute("SELECT sender,msg,ts FROM chats WHERE uid=? ORDER BY id",(uid,))
+    rows=cur.fetchall();c.close()
+    mh="".join([f"<div style='margin:6px;padding:8px;border-radius:8px;background:{'#222' if r[0]=='user' else '#3a0000'};text-align:{'right' if r[0]=='user' else 'left'}'>{r[1]}<br><small style='color:#888'>{r[2]}</small></div>" for r in rows])
+    return f'''<body style="background:#000;color:#fff;font-family:Arial;max-width:480px;margin:auto"><div style="padding:12px"><a href="/support" style="color:gold;text-decoration:none">←</a> <b>Manager Sarah</b></div><div style="padding:10px">{mh}</div><form method="POST" action="/support/send" style="display:flex;gap:6px;padding:10px;position:fixed;bottom:0;width:100%;max-width:480px;background:#000"><input name="msg" required placeholder="Type a message..." style="flex:1;padding:12px;border-radius:10px;border:1px solid #444;background:#111;color:#fff"><button style="background:red;color:#fff;border:none;padding:12px;border-radius:10px">Send</button></form></body>'''
+
 
 @app.route('/admin/chats')
 def admin_chats():
