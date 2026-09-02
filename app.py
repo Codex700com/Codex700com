@@ -133,7 +133,7 @@ def dashboard():
         return redirect('/login')
     name = session.get('name','User').upper()
     return DASH_STYLE + f"""
-    <div class="topbar"><div class="menu">☰</div><div class="logo">⬢ CODEX</div><div class="icons">🔔👤</div></div>
+    <div class="topbar"><div class="menu" onclick="document.getElementById('drawer').style.display='block'" style="cursor:pointer">☰</div><div class="logo">⬢ CODEX</div><div class="icons"><a href="/notifications" style="text-decoration:none">🔔</a><a href="/account" style="text-decoration:none">👤</a></div></div><div id="drawer" style="display:none;position:fixed;top:0;left:0;width:250px;height:100%;background:#111;color:#fff;z-index:999;padding:20px"><div onclick="document.getElementById('drawer').style.display='none'" style="cursor:pointer;text-align:right">✖</div><h3>Menu</h3><p><a href="/dashboard" style="color:#fff">🏠 Home</a></p><p><a href="/invest" style="color:#fff">📈 Invest</a></p><p><a href="/deposit" style="color:#fff">💰 Deposit</a></p><p><a href="/withdraw" style="color:#fff">🏧 Withdraw</a></p><p><a href="/transactions" style="color:#fff">📄 Transactions</a></p><p><a href="/referrals" style="color:#fff">👥 Referrals</a></p><p><a href="/raffle" style="color:#fff">🎁 Raffle</a></p><p><a href="/support" style="color:#fff">🎧 Support</a></p><p><a href="/chat" style="color:#fff">💬 Chat Manager</a></p><p><a href="/account" style="color:#fff">👤 Account</a></p><p><a href="/settings" style="color:#fff">⚙️ Settings</a></p><p><a href="/logout" style="color:#fff">🚪 Logout</a></p></div>
     <div class="welcome">
       <div><p>WELCOME BACK,</p><h2>{name}</h2><small>Let's grow your wealth together</small><br><a class="btn-red" href="/invest">Invest Now →</a></div>
     </div>
@@ -143,10 +143,10 @@ def dashboard():
       <div><small>Total Income</small><b>UGX 0</b></div>
       <div><small>Active Plans</small><b>0</b></div>
     </div>
-    <div class="checkin"><div>🎁 <b>Daily Check-In Reward</b><br><small>Check in daily and get <span style="color:red">UGX 500</span></small></div><a href="#">Check In →</a></div>
+    <div class="checkin"><div>🎁 <b>Daily Check-In Reward</b><br><small>Check in daily and get <span style="color:red">UGX 500</span></small></div><a href="/checkin">Check In →</a></div>
     <div class="grid">
-      <a href="/invest">📈<span>Invest</span></a><a href="/deposit">💰<span>Deposit</span></a><a href="/chat">💬<span>Chat</span></a><a href="/withdraw">🏧<span>Withdraw</span></a><a href="#">👥<span>Referrals</span></a>
-      <a href="#">📄<span>Transactions</span></a><a href="/raffle">🎁<span>Raffle</span></a><a href="#">🎧<span>Support</span></a><a href="#">💬<span>Chat Manager</span></a>
+      <a href="/invest">📈<span>Invest</span></a><a href="/deposit">💰<span>Deposit</span></a><a href="/chat">💬<span>Chat</span></a><a href="/withdraw">🏧<span>Withdraw</span></a><a href="/referrals">👥<span>Referrals</span></a>
+      <a href="/transactions">📄<span>Transactions</span></a><a href="/raffle">🎁<span>Raffle</span></a><a href="/support">🎧<span>Support</span></a><a href="/chat">💬<span>Chat Manager</span></a>
     </div>
     <div class="raffle">🏆 <b style="color:red">RAFFLE DRAW</b><br><small>Win amazing prizes daily</small><br><a href="/raffle#prizes">View Prizes →</a></div>
     <h3 style="color:red;margin:15px 10px">📈 INVESTMENT PLANS <a href="/invest" style="float:right;font-size:12px;color:red">View All Plans ></a></h3>
@@ -155,8 +155,8 @@ def dashboard():
       <div class="plan"><b>Silver Plan</b><br><small>Daily Return <span style="color:red">20%</span></small><br><small>Duration 30 Days</small><br><small>Min. Invest <span style="color:red">UGX 250,000</span></small></div>
       <div class="plan"><b>Gold Plan</b><br><small>Daily Return <span style="color:red">20%</span></small><br><small>Duration 30 Days</small><br><small>Min. Invest <span style="color:red">UGX 500,000</span></small></div>
     </div>
-    <div class="support"><div>🎧 <b>Need Help?</b><br><small>Our support team is always here for you.</small></div><a href="#">Contact Support</a></div>
-    <div class="navbar"><a href="/dashboard" class="active">🏠<span>Home</span></a><a href="/invest">📊<span>Invest</span></a><a href="#">⇄<span>Transactions</span></a><a href="#">👥<span>Referrals</span></a><a href="#">👤<span>Account</span></a></div>
+    <div class="support"><div>🎧 <b>Need Help?</b><br><small>Our support team is always here for you.</small></div><a href="/support">Contact Support</a></div>
+    <div class="navbar"><a href="/dashboard" class="active">🏠<span>Home</span></a><a href="/invest">📊<span>Invest</span></a><a href="/transactions">⇄<span>Transactions</span></a><a href="/referrals">👥<span>Referrals</span></a><a href="#">👤<span>Account</span></a></div>
     """
 DASH_STYLE = """
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -431,8 +431,8 @@ body{background:#000;color:#fff;font-family:Arial;padding-bottom:70px}
 <div class="navbar">
 <a href="/dashboard">🏠<span>Home</span></a>
 <a href="/invest">📈<span>Invest</span></a>
-<a href="#">⇄<span>Transactions</span></a>
-<a href="#">👥<span>Referrals</span></a>
+<a href="/transactions">⇄<span>Transactions</span></a>
+<a href="/referrals">👥<span>Referrals</span></a>
 <a href="#">👤<span>Account</span></a>
 </div>
 """
