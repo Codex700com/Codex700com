@@ -243,7 +243,12 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #444;backgroun
 • Your deposit will be reviewed and approved within a few minutes.<br>
 • You will be notified once your deposit is approved.
 </div>
-<form method="POST" action="/withdraw/confirm"><input type="hidden" name="amount" value="UGX 100,000"><input type="hidden" name="method" value="Airtel Money"><input type="hidden" name="mobile" value="0755123456"><input type="hidden" name="accname" value="Shakira Nantongo"><button class="btn">✈️ CONFIRM WITHDRAWAL</button>
+<form method="POST" action="/withdraw/confirm">
+<label>Amount (UGX)</label><input name="amount" required placeholder="e.g. 50000" type="number" min="1000" style="width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid #444;background:#111;color:#fff">
+<label>Method</label><select name="method" style="width:100%;padding:12px;margin:6px 0"><option>Airtel Money</option><option>MTN Money</option></select>
+<label>Mobile Number</label><input name="mobile" required placeholder="0755123456" style="width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid #444;background:#111;color:#fff">
+<label>Account Name</label><input name="accname" required placeholder="Your name" style="width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid #444;background:#111;color:#fff">
+<button class="btn">✈️ CONFIRM WITHDRAWAL</button>
 </form></div>
 <script>
 function setM(v){{document.getElementById('method').value=v;
