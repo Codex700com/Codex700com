@@ -116,7 +116,7 @@ def referrals():
     if 'uid' not in session: return redirect('/login')
     con=db()
     u=con.execute("SELECT * FROM users WHERE id=?",(session['uid'],)).fetchone()
-    rc=u['invite'] if 'invite' in u.keys() and u['invite'] else f"CODEX-{u['id']}"
+    rc=u.get('invite','') if 'invite' in u.keys() and u.get('invite','') else f"CODEX-{u.get('id','')}"
     link=f"https://{request.host}/register?ref={rc}"
     rows=list(con.execute("SELECT username,created FROM users WHERE ref_by=? ORDER BY id DESC LIMIT 20",(rc,)))
     con.close()
@@ -192,8 +192,8 @@ def login(): # patched
         phone=request.form.get('phone','').strip()
         pw=request.form.get('password','')
         c=db(); u=c.execute("SELECT * FROM users WHERE phone=?",(phone,)).fetchone(); c.close()
-        if u and check_password_hash(u['password'],pw):
-            session['uid']=u['id']; session['name']=u['name']
+        if u and check_password_hash(u.get('password',''),pw):
+            session['uid']=u.get('id',''); session['name']=u.get('name','')
             return redirect('/dashboard')
         else:
             msg="Invalid login"
@@ -440,7 +440,7 @@ def acc_personal():
         con.execute("UPDATE users SET name=?, phone=? WHERE id=?",(request.form.get('name'), request.form.get('phone'), uid)); con.commit()
         con.close(); return redirect('/account?saved=1')
     u=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone(); con.close()
-    return f"<body style='background:#0f1115;color:#fff;font-family:Arial;padding:20px'><h3>Personal Information</h3><form method=post><input name=name value='{u['name']}' style='width:100%;padding:10px;margin:6px 0'><input name=phone value='{u['phone'] or ''}' style='width:100%;padding:10px;margin:6px 0'><br>Email: {u['email']} (cannot change)<br><br><button style='background:#f5b301;padding:12px;width:100%;border:0;border-radius:8px;font-weight:bold'>Save</button></form><br><a href='/account' style='color:#f5b301'>← Back</a>"
+    return f"<body style='background:#0f1115;color:#fff;font-family:Arial;padding:20px'><h3>Personal Information</h3><form method=post><input name=name value='{u.get('name','')}' style='width:100%;padding:10px;margin:6px 0'><input name=phone value='{u.get('phone','') or ''}' style='width:100%;padding:10px;margin:6px 0'><br>Email: {u.get('email','')} (cannot change)<br><br><button style='background:#f5b301;padding:12px;width:100%;border:0;border-radius:8px;font-weight:bold'>Save</button></form><br><a href='/account' style='color:#f5b301'>← Back</a>"
 
 @app.route('/account/security', methods=['GET','POST'])
 def acc_sec():
@@ -496,8 +496,8 @@ def account_page():
     act=con.execute("SELECT COUNT(*) FROM investments WHERE uid=? AND status='active'",(uid,)).fetchone()[0] or 0
     con.close()
     html=open('account.html').read()
-    html=html.replace('__NAME__',(u['name'] or 'USER').upper()).replace('__EMAIL__',u['email'] or '').replace('__PHONE__',u['phone'] or '')
-    html=html.replace('__MID__',str(u['id'])).replace('__CREATED__',str(u['created'])[:10] if 'created' in u.keys() else '')
+    html=html.replace('__NAME__',(u.get('name','') or 'USER').upper()).replace('__EMAIL__',u.get('email','') or '').replace('__PHONE__',u.get('phone','') or '')
+    html=html.replace('__MID__',str(u.get('id',''))).replace('__CREATED__',str(u.get('created',''))[:10] if 'created' in u.keys() else '')
     html=html.replace('__BAL__',f"{bal:,}").replace('__INV__',f"{inv:,}").replace('__INC__',f"{inc:,}").replace('__ACT__',str(act))
     return html
 
@@ -508,7 +508,7 @@ def dashboard():
     u=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone()
     if not u:
         con.close(); session.clear(); return redirect('/login')
-    name = u['name'].upper() if u['name'] else 'USER'
+    name = u.get('name','').upper() if u.get('name','') else 'USER'
     bal = con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()[0] or 0
     inv = con.execute("SELECT COALESCE(SUM(amount),0) FROM investments WHERE uid=?",(uid,)).fetchone()[0] or 0
     inc = con.execute("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE uid=? AND type IN ('return','reward','bonus')",(uid,)).fetchone()[0] or 0
@@ -1039,7 +1039,7 @@ def api_chat():
         msg = d.get('msg','')
         try:
             u = con.execute('SELECT username FROM users WHERE id=?',(uid,)).fetchone()
-            uname = u['username'] if u else uid
+            uname = u.get('username','') if u else uid
         except:
             uname = uid
         con.execute('INSERT INTO chats(uid,username,msg,direction) VALUES(?,?,?,?)',(uid,uname,msg,'u2a'))
@@ -1060,7 +1060,7 @@ def chat_upload():
     path=os.path.join('static/uploads',fn); f.save(path)
     ftype='video' if fn.lower().endswith(('.mp4','.mov','.webm')) else 'image'
     uid=session['uid']; con=sqlite3.connect('codex700.db'); con.row_factory=sqlite3.Row
-    try: u=con.execute("SELECT username FROM users WHERE id=?",(uid,)).fetchone(); uname=u['username'] if u else uid
+    try: u=con.execute("SELECT username FROM users WHERE id=?",(uid,)).fetchone(); uname=u.get('username','') if u else uid
     except: uname=uid
     con.execute("INSERT INTO chats(uid,username,msg,ftype,fpath,direction) VALUES(?,?,?,?,?,?)",(uid,uname,'',ftype,path,'u2a'))
     con.commit()
@@ -1077,7 +1077,7 @@ def chat_up():
  f=request.files.get('file');fn=str(int(time.time()))+'_'+secure_filename(f.filename);fp='static/uploads/'+fn;f.save(fp)
  ft='video' if fn.lower().endswith(('.mp4','.mov','.webm')) else 'image'
  uid=session['uid'];con=sqlite3.connect('codex700.db');con.row_factory=sqlite3.Row
- try: u=con.execute('SELECT username FROM users WHERE id=?',(uid,)).fetchone();uname=u['username'] if u else uid
+ try: u=con.execute('SELECT username FROM users WHERE id=?',(uid,)).fetchone();uname=u.get('username','') if u else uid
  except: uname=uid
  con.execute('INSERT INTO chats(uid,username,msg,ftype,fpath,direction) VALUES(?,?,?,?,?,?)',(uid,uname,'',ft,fp,'u2a'));con.commit();return jsonify({'ok':1})
 
@@ -1086,7 +1086,7 @@ def adm_chats():
  import sqlite3;con=sqlite3.connect('codex700.db');con.row_factory=sqlite3.Row
  us=con.execute('SELECT uid,username,MAX(ts) as l,SUM(CASE WHEN direction="u2a" AND read=0 THEN 1 ELSE 0 END) as un FROM chats GROUP BY uid ORDER BY l DESC').fetchall()
  h="<a href='/admin'>Back</a><h2>Chats</h2>"
- [h:=h+f"<div style='border:1px solid #444;padding:10px;margin:5px'><b>{u['username']}</b> ({u['uid']}) unread:{u['un']} <a href='/admin/chat/{u['uid']}'>Open</a></div>" for u in us]
+ [h:=h+f"<div style='border:1px solid #444;padding:10px;margin:5px'><b>{u.get('username','')}</b> ({u.get('uid','')}) unread:{u.get('un','')} <a href='/admin/chat/{u.get('uid','')}'>Open</a></div>" for u in us]
  h+="<hr><h3>Broadcast to all</h3><form method='POST' action='/admin/broadcast'><input name='msg' style='width:70%;padding:10px'><button>Send All</button></form>"
  return h
 
@@ -1116,7 +1116,7 @@ def admin_chats():
     users=con.execute("SELECT uid,username,MAX(ts) as last, SUM(CASE WHEN direction='u2a' AND read=0 THEN 1 ELSE 0 END) as unread FROM chats GROUP BY uid ORDER BY last DESC").fetchall()
     html="<h2 style='color:gold'>Chats - select user</h2><a href='/admin'>← Admin</a><br><br>"
     for u in users:
-        html+=f"<div style='border:1px solid #444;padding:10px;margin:5px'><b>{u['username']}</b> ({u['uid']}) - unread:{u['unread']}<br><small>{u['last']}</small><br><a href='/admin/chat/{u['uid']}' style='color:red'>Open Chat</a></div>"
+        html+=f"<div style='border:1px solid #444;padding:10px;margin:5px'><b>{u.get('username','')}</b> ({u.get('uid','')}) - unread:{u.get('unread','')}<br><small>{u.get('last','')}</small><br><a href='/admin/chat/{u.get('uid','')}' style='color:red'>Open Chat</a></div>"
     # broadcast form
     html+="<hr><h3>Broadcast to All</h3><form method='POST' action='/admin/broadcast'><input name='msg' placeholder='Message to all users' style='width:70%;padding:10px'><button>Send to All</button></form>"
     return html
@@ -1353,7 +1353,7 @@ def my_investments():
     import sqlite3, datetime
     con=invest_db(); con.row_factory=sqlite3.Row
     u=con.execute("SELECT id FROM users WHERE username=? OR id=?",(session['uid'],session['uid'])).fetchone()
-    invs=list(con.execute("SELECT * FROM investments WHERE user_id=? ORDER BY id DESC",(str(u['id']),)).fetchall()) if u else []
+    invs=list(con.execute("SELECT * FROM investments WHERE user_id=? ORDER BY id DESC",(str(u.get('id','')),)).fetchall()) if u else []
     con.close()
     h=""
     for iv in invs:
@@ -1405,7 +1405,7 @@ init_admin()
 @app.route("/admin")
 def admin():
     u=current_user()
-    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u.get('name','')!=ADMIN_USER: return "Forbidden",403
     con=db()
     users=list(con.execute("SELECT * FROM users ORDER BY id DESC"))
     deps=list(con.execute("SELECT d.*,u.username FROM deposits d JOIN users u ON d.uid=u.id ORDER BY d.id DESC"))
@@ -1418,32 +1418,32 @@ def admin():
 @app.route("/admin/block/<int:uid>")
 def ablock(uid):
     u=current_user()
-    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u.get('name','')!=ADMIN_USER: return "Forbidden",403
     con=db(); con.execute("UPDATE users SET is_blocked=1-is_blocked WHERE id=?",(uid,)); con.commit(); con.close()
     return redirect("/admin")
 @app.route("/admin/delete_user/<int:uid>")
 def adel(uid):
     u=current_user()
-    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u.get('name','')!=ADMIN_USER: return "Forbidden",403
     con=db(); con.execute("DELETE FROM users WHERE id=?",(uid,)); con.commit(); con.close()
     return redirect("/admin")
 @app.route("/admin/resetpw/<int:uid>")
 def areset(uid):
     u=current_user()
-    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u.get('name','')!=ADMIN_USER: return "Forbidden",403
     con=db(); con.execute("UPDATE users SET password='123456' WHERE id=?",(uid,)); con.commit(); con.close()
     return redirect("/admin")
 @app.route("/admin/login_as/<int:uid>")
 def alogin(uid):
     u=current_user()
-    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u.get('name','')!=ADMIN_USER: return "Forbidden",403
     session["uid"]=uid
     con=db(); con.execute("INSERT INTO visits(uid,visited_at) VALUES(?,?)",(uid, datetime.datetime.now().isoformat())); con.commit(); con.close()
     return redirect("/dashboard")
 @app.route("/admin/approve_dep/<int:did>")
 def adep(did):
     u=current_user()
-    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u.get('name','')!=ADMIN_USER: return "Forbidden",403
     con=db(); d=con.execute("SELECT * FROM deposits WHERE id=?",(did,)).fetchone()
     if d and d["status"]!="approved":
         con.execute("UPDATE deposits SET status='approved' WHERE id=?",(did,))
@@ -1458,25 +1458,25 @@ def adep(did):
 @app.route("/admin/approve_wd/<int:wid>")
 def awd(wid):
     u=current_user()
-    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u.get('name','')!=ADMIN_USER: return "Forbidden",403
     con=db(); con.execute("UPDATE withdrawals SET status='approved' WHERE id=?",(wid,)); con.commit(); con.close()
     return redirect("/admin")
 @app.route("/admin/notif_add", methods=["POST"])
 def nadd():
     u=current_user()
-    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u.get('name','')!=ADMIN_USER: return "Forbidden",403
     con=db(); con.execute("INSERT INTO notifications(msg,created_at) VALUES(?,?)",(request.form["msg"], datetime.datetime.now().isoformat())); con.commit(); con.close()
     return redirect("/admin")
 @app.route("/admin/notif_del/<int:nid>")
 def ndel(nid):
     u=current_user()
-    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u.get('name','')!=ADMIN_USER: return "Forbidden",403
     con=db(); con.execute("DELETE FROM notifications WHERE id=?",(nid,)); con.commit(); con.close()
     return redirect("/admin")
 @app.route("/admin/reply/<int:uid>", methods=["POST"])
 def areply(uid):
     u=current_user()
-    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u.get('name','')!=ADMIN_USER: return "Forbidden",403
     con=db(); con.execute("INSERT INTO messages(uid,from_admin,msg,created_at) VALUES(?,?,?,?)",(uid,1,request.form["msg"],datetime.datetime.now().isoformat())); con.commit(); con.close()
     return redirect("/admin")
 @app.route("/notifications")
@@ -1498,7 +1498,7 @@ init_extra()
 @app.route("/admin/plans", methods=["GET","POST"])
 def aplans():
     u=current_user()
-    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u.get('name','')!=ADMIN_USER: return "Forbidden",403
     con=db()
     if request.method=="POST":
         con.execute("INSERT INTO plans(name,amount,daily,days) VALUES(?,?,?,?)",
@@ -1511,14 +1511,14 @@ def aplans():
 @app.route("/admin/plan_del/<int:pid>")
 def pdel(pid):
     u=current_user()
-    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u.get('name','')!=ADMIN_USER: return "Forbidden",403
     con=db(); con.execute("DELETE FROM plans WHERE id=?",(pid,)); con.commit(); con.close()
     return redirect("/admin/plans")
 
 @app.route("/admin/visits")
 def avisits():
     u=current_user()
-    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u.get('name','')!=ADMIN_USER: return "Forbidden",403
     con=db()
     vs=list(con.execute("SELECT v.*,u.username FROM visits v JOIN users u ON v.uid=u.id ORDER BY v.id DESC LIMIT 100"))
     con.close()
