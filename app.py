@@ -77,6 +77,53 @@ def _col_exists(con, table, col):
         cols=[r[1] for r in con.execute(f"PRAGMA table_info({table})").fetchall()]
         return col in cols
     except: return False
+
+# --- REFERRAL 32/5/1 ---
+import random as _rnd, string as _str
+def _my_ref(uid):
+    c=db()
+    r=c.execute("SELECT ref_code FROM users WHERE id=?",(uid,)).fetchone()
+    if r and r[0]:
+        c.close()
+        return r[0]
+    rc=''.join(_rnd.choices(_str.ascii_uppercase+_str.digits,k=6))
+    try:
+        c.execute("UPDATE users SET ref_code=? WHERE id=?",(rc,uid))
+        c.commit()
+    except: pass
+    c.close()
+    return rc
+REF_EARN=[0.32,0.05,0.01]
+def _credit_ref(uid, amt):
+    con=db()
+    cur=con.execute("SELECT referred_by FROM users WHERE id=?",(uid,)).fetchone()
+    ref=cur[0] if cur else None
+    lvl=0
+    while ref and lvl<3:
+        bonus=round(amt*REF_EARN[lvl],2)
+        if bonus>0:
+            con.execute("UPDATE users SET balance=balance+? WHERE id=?",(bonus,ref))
+            con.execute("INSERT INTO ledger(uid,type,amount,note) VALUES(?,?,?,?)",(ref,f"ref_l{lvl+1}",bonus,f"L{lvl+1} from {uid}"))
+        nxt=con.execute("SELECT referred_by FROM users WHERE id=?",(ref,)).fetchone()
+        ref=nxt[0] if nxt else None
+        lvl+=1
+    con.commit()
+    con.close()
+@app.route("/referrals")
+def referrals():
+    if "uid" not in session: return redirect("/login")
+    uid=session["uid"]
+    rc=_my_ref(uid)
+    link=request.host_url.rstrip("/")+"/register?ref="+rc
+    c=db()
+    l1=c.execute("SELECT COUNT(*) FROM users WHERE referred_by=?",(uid,)).fetchone()[0]
+    e=c.execute("SELECT COALESCE(SUM(amount),0) FROM ledger WHERE uid=? AND type LIKE 'ref_%'",(uid,)).fetchone()[0]
+    rows=c.execute("SELECT name,phone FROM users WHERE referred_by=? ORDER BY id DESC LIMIT 20",(uid,)).fetchall()
+    c.close()
+    rh="".join([f"<div style='padding:10px;border-bottom:1px solid #222'>{a}<br><small style='color:#888'>{b}</small></div>" for a,b in rows]) or "<p style='color:#888;text-align:center'>No referrals yet</p>"
+    return f"<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial;max-width:500px;margin:auto'><a href='/dashboard' style='color:gold;text-decoration:none'>&larr; Back</a><h2 style='color:gold'>Referrals 32%/5%/1%</h2><div style='background:#111;padding:15px;border-radius:10px;border:1px solid gold'><p style='color:gold;word-break:break-all'>{link}</p><button onclick=\"navigator.clipboard.writeText('{link}');alert('Copied')\" style='background:gold;border:none;padding:10px;width:100%;border-radius:5px;font-weight:bold'>COPY LINK</button><p>Code: <b style='color:gold'>{rc}</b></p></div><div style='display:flex;gap:10px;margin:15px 0'><div style='flex:1;background:#111;padding:15px;border-radius:10px;text-align:center'><h3 style='color:gold'>{l1}</h3><small>Invited</small></div><div style='flex:1;background:#111;padding:15px;border-radius:10px;text-align:center'><h3 style='color:gold'>{e:.2f}</h3><small>UGX Earned</small></div></div><h3>Recent</h3>{rh}</div>"
+# --- END REFERRAL ---
+
 def init_admin_safe():
     con=db()
     try:
