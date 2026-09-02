@@ -1070,10 +1070,7 @@ def register():
             return f"Register failed: {e} <a href='/register'>retry</a>"
     return "<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial;max-width:400px;margin:auto'><h2>Register</h2><form method='post'><input name='username' placeholder='username' style='width:100%;padding:10px;margin:5px 0'><input name='password' type='password' placeholder='password' style='width:100%;padding:10px;margin:5px 0'><button style='width:100%;padding:10px;background:gold'>Register</button></form></div>"
 
-if __name__=='__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT',5000)))
 
-@app.route('/admin/withdraw/approve/<int:wid>')
 def admin_wd_approve(wid):
     import sqlite3
     con=sqlite3.connect('codex700.db')
@@ -1110,3 +1107,9 @@ def notifications():
     con.commit()
     h="".join([f"<div style='background:#111;padding:12px;border-radius:10px;margin:8px'><b>{r['title']}</b><br>{r['msg']}<br><small>{r['ts']}</small></div>" for r in rows]) or "<p>No notifications</p>"
     return f"<div style='max-width:480px;margin:auto;background:#000;color:#fff;padding:12px;min-height:100vh;font-family:Arial'><a href='/dashboard' style='color:gold'>Back</a><h2>Notifications</h2><p>Joined: {jd}</p>{h}</div>"
+
+if __name__ == '__main__':
+    import os
+    port = int(os.environ.get('PORT', 10000))
+    print(f"Starting on port {port}", flush=True)
+    app.run(host='0.0.0.0', port=port)
