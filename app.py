@@ -744,61 +744,88 @@ def admin_reply(uid):
 @app.route('/withdraw', methods=['GET'])
 def withdraw_page():
     from flask import session, redirect
-    if 'uid' not in session: return redirect('/login')
-    return '''<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#000;color:#fff;font-family:Arial;max-width:480px;margin:auto}.card{border:1px solid #8a6d1a;border-radius:12px;margin:10px;padding:14px;background:#0a0a0a}input,select{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid #444;background:#111;color:#fff}.btn{background:linear-gradient(#ff2222,#aa0000);color:#fff;border:none;padding:14px;border-radius:10px;font-weight:bold;width:100%;margin-top:10px}</style></head><body>
-<div style="padding:12px"><a href="/dashboard" style="color:gold;text-decoration:none">←</a> <b>Withdraw</b></div>
-<div class="card"><form method="POST" action="/withdraw/confirm">
-<label>Amount (UGX)</label><input name="amount" required placeholder="e.g. 50000" type="number" min="1000">
-<label>Payment Method</label><select name="method"><option>Airtel Money</option><option>MTN Money</option></select>
-<label>Mobile Number</label><input name="mobile" required placeholder="0755123456">
-<label>Account Name</label><input name="accname" required placeholder="Your name">
-<button class="btn">✈️ CONFIRM WITHDRAWAL</button></form></div></body></html>'''
-
-@app.route('/withdraw/confirm', methods=['POST'])
-def withdraw_confirm():
+    import sqlite3
     if 'uid' not in session: return redirect('/login')
     uid=session['uid']
-    amount=request.form.get('amount','UGX 0')
+    con=sqlite3.connect('codex700.db'); con.row_factory=sqlite3.Row
+    # get balance - try users.balance else 0
+    bal=0
+    try:
+        r=con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()
+        if r and r['balance']: bal=int(r['balance'])
+    except: pass
+    # recent history 3
+    try: hist=con.execute("SELECT * FROM withdrawals WHERE uid=? ORDER BY id DESC LIMIT 3",(uid,)).fetchall()
+    except: hist=[]
+    hhtml=""
+    for h in hist:
+        hhtml+=f"<div style='background:#111;padding:10px;border-radius:8px;margin:6px 0;display:flex;justify-content:space-between'><div><b>UGX {h['amount']:,}</b><br><small>{h['method']} • {h['mobile']}<br>{h['ts']}</small></div><div><span style='border:1px solid gold;color:gold;padding:4px 8px;border-radius:12px;font-size:12px'>{h['status']}</span></div></div>"
+    return f'''<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+body{{background:#000;color:#fff;font-family:Arial;max-width:480px;margin:auto;padding-bottom:80px}}
+.top{{display:flex;justify-content:space-between;padding:15px;align-items:center}}
+.card{{border:1px solid #8a6d1a;border-radius:12px;margin:10px;padding:14px;background:#0a0a0a}}
+input,select{{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid #333;background:#111;color:#fff;box-sizing:border-box}}
+.pay{{display:flex;gap:10px}}.pay label{{flex:1;border:1px solid #333;border-radius:10px;padding:10px;text-align:center;cursor:pointer}}
+.pay input:checked+div{{border-color:red}}
+.btn{{background:linear-gradient(#ff2222,#aa0000);color:#fff;border:none;padding:15px;border-radius:10px;font-weight:bold;width:100%;margin-top:10px;font-size:16px}}
+.sum{{display:flex;justify-content:space-between;margin:4px 0}}.gold{{color:gold;font-size:12px;font-weight:bold}}
+</style></head><body>
+<div class="top"><a href="/dashboard" style="color:gold;text-decoration:none;font-size:20px">←</a><b>WITHDRAW</b><span>🎧</span></div>
+<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div>📁<br><small>Available Balance</small><br><b style="color:red;font-size:20px">UGX {bal:,}</b></div><span>👁️</span></div>
+<div class="card"><div class="gold">WITHDRAWAL DETAILS</div><br>
+<label>Withdrawal Amount (UGX)</label><input id="amt" type="number" placeholder="Enter amount to withdraw" min="1000" max="10000000" oninput="calc()">
+<div style="display:flex;justify-content:space-between;font-size:12px;color:#888"><span>Minimum: <b style="color:gold">UGX 1,000</b> | Maximum: <b style="color:gold">UGX 10,000,000</b></span><span>UGX</span></div><br>
+<label>Payment Method</label><div class="pay">
+<label><input type="radio" name="method" value="Airtel Money" checked hidden><div>🔴 Airtel Money ✓</div></label>
+<label><input type="radio" name="method" value="MTN Mobile Money" hidden><div>🟡 MTN Mobile Money</div></label></div><br>
+<label>Mobile Number</label><input id="mob" placeholder="Enter mobile number (07xxxxxxxx)">
+<label>Account Name</label><input id="acc" placeholder="Enter account name">
+</div>
+<div class="card"><div class="gold">WITHDRAWAL SUMMARY</div><br>
+<div class="sum"><span>Withdrawal Amount</span><span id="s_amt">UGX 0</span></div>
+<div class="sum"><span>Withdrawal Fee (9.3%)</span><span id="s_fee">UGX 0</span></div>
+<div class="sum"><span>You Will Receive</span><b id="s_rec" style="color:red">UGX 0</b></div></div>
+<div class="card" style="border-color:#552222">⚠️ <b style="color:gold">IMPORTANT</b><br><small>• Make sure your mobile money number is correct.<br>• Withdrawals are processed within 1-24 hours.<br>• You will be notified once your withdrawal is approved.</small></div>
+<div style="padding:10px"><button class="btn" onclick="doWithdraw()">✈️ CONFIRM WITHDRAWAL</button></div>
+<div class="card"><div style="display:flex;justify-content:space-between"><b class="gold">WITHDRAWAL HISTORY</b><a href="/withdraw/history" style="color:red;font-size:12px">View All</a></div>{hhtml if hhtml else "<small style='color:#888'>No withdrawals yet</small>"}</div>
+<script>
+function calc(){{let a=parseInt(document.getElementById('amt').value||0);let fee=Math.round(a*0.093);let rec=a-fee;
+document.getElementById('s_amt').innerText='UGX '+a.toLocaleString();
+document.getElementById('s_fee').innerText='UGX '+fee.toLocaleString();
+document.getElementById('s_rec').innerText='UGX '+rec.toLocaleString();}}
+async function doWithdraw(){{let a=document.getElementById('amt').value;let m=document.querySelector('input[name=method]:checked').value;
+let mob=document.getElementById('mob').value;let acc=document.getElementById('acc').value;
+if(!a||a<1000){{alert('Minimum 1000');return}}if(!mob||!acc){{alert('Enter mobile and name');return}}
+let fd=new FormData();fd.append('amount',a);fd.append('method',m);fd.append('mobile',mob);fd.append('accname',acc);
+let r=await fetch('/withdraw/confirm',{{method:'POST',body:fd}});let j=await r.json();
+if(j.ok){{alert('Withdrawal Pending');location.href='/withdraw/history'}}else alert(j.err||'Failed')}}
+</script></body></html>'''
+@app.route('/withdraw/confirm', methods=['POST'])
+def withdraw_confirm():
+    from flask import session, request, jsonify
+    import sqlite3, datetime
+    if 'uid' not in session: return jsonify({"err":"login"})
+    uid=session['uid']
+    try: amount=int(str(request.form.get('amount','0')).replace(',','').replace('UGX','').strip() or 0)
+    except: amount=0
     method=request.form.get('method','Airtel Money')
     mobile=request.form.get('mobile','')
     accname=request.form.get('accname','')
-    reqdate=datetime.now().strftime("%d %b %Y %I:%M %p")
-    c=wdb(); cur=c.cursor()
-    cur.execute("INSERT INTO withdrawals (uid,amount,method,mobile,accname,reqdate,status) VALUES (?,?,?,?,?,?,?)",
-                (uid,amount,method,mobile,accname,reqdate,'Pending'))
-    wid=cur.lastrowid; c.commit(); c.close()
-    return f'''<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<style>*{{box-sizing:border-box}}body{{background:#000;color:#fff;font-family:Arial;max-width:480px;margin:auto}}
-.card{{border:1px solid #8a6d00;border-radius:12px;margin:10px;padding:12px;background:#0f0f0f}}
-.row{{display:flex;justify-content:space-between;padding:6px 0;font-size:13px}}
-.badge{{padding:3px 10px;border-radius:12px;font-size:11px}}
-.pending{{background:#3a2a00;color:orange;border:1px solid orange}}
-.btn{{background:linear-gradient(#ff2222,#aa0000);color:#fff;display:block;text-align:center;padding:12px;border-radius:10px;text-decoration:none;font-weight:bold;margin:10px}}
-.hist{margin:10px}.htabs{display:flex;gap:6px;margin:8px 0}.htabs a{padding:6px 12px;border-radius:16px;font-size:12px;text-decoration:none;color:#888;background:#111}
-.htabs a.on{background:red;color:#fff}
-.hitem{border:1px solid #333;border-radius:10px;padding:10px;margin:6px 0;display:flex;justify-content:space-between;align-items:center}
-</style></head><body>
-<div style="padding:12px;display:flex;align-items:center;gap:10px"><a href="/dashboard" style="color:gold;text-decoration:none">←</a><h3 style="flex:1;text-align:center">Withdrawal</h3></div>
-<div class="card" style="text-align:center"><div style="font-size:50px;color:#00ff00">✅</div>
-<div style="color:#00ff00;font-weight:bold">WITHDRAWAL REQUEST SUBMITTED!</div>
-<small style="color:#aaa">Your withdrawal request has been submitted successfully and is being reviewed.</small></div>
-<div class="card">
-<div class="row"><span>Amount</span><b style="color:red">{amount}</b></div>
-<div class="row"><span>Payment Method</span><span>📱 {method}</span></div>
-<div class="row"><span>Mobile Number</span><span>{mobile}</span></div>
-<div class="row"><span>Account Name</span><span>{accname}</span></div>
-<div class="row"><span>Request Date</span><span>{reqdate}</span></div>
-<div class="row"><span>Status</span><span class="badge pending">Pending</span></div>
-</div>
-<div class="card"><b>⏰ WHAT HAPPENS NEXT?</b><br><small style="color:#aaa">Your request is being reviewed by our team. You will receive a notification once the withdrawal is approved and the amount has been sent to your account.</small></div>
-<a class="btn" href="/dashboard">🏠 BACK TO HOME</a>
-<div class="hist"><div style="display:flex;justify-content:space-between"><b style="color:gold;font-size:12px">WITHDRAWAL HISTORY</b><a href="/withdraw/history" style="color:red;font-size:12px">View All</a></div>
-<div class="htabs"><a class="on" href="/withdraw/history?f=All">All</a><a href="/withdraw/history?f=Pending">Pending</a><a href="/withdraw/history?f=Approved">Approved</a><a href="/withdraw/history?f=Rejected">Rejected</a></div>
-</div>
-<script>fetch('/withdraw/history_list?f=All').then(r=>r.text()).then(h=>{{document.querySelector('.hist').innerHTML+=h}})</script>
-</body></html>'''
+    if amount<1000: return jsonify({"err":"Minimum 1000"})
+    fee=int(round(amount*0.093)); receive=amount-fee
+    con=sqlite3.connect('codex700.db')
+    # check balance
+    try:
+        r=con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()
+        bal=int(r[0] or 0) if r else 0
+        if bal < amount: return jsonify({"err":f"Insufficient balance. Available: UGX {bal:,}"})
+    except: pass
+    con.execute("INSERT INTO withdrawals(uid,amount,fee,receive,method,mobile,accname,status) VALUES(?,?,?,?,?,?,?,?)",
+                (uid,amount,fee,receive,method,mobile,accname,'Pending'))
+    con.commit(); con.close()
+    return jsonify({"ok":1})
 
-@app.route('/withdraw/history')
+@app.route@app.route('/withdraw/history')
 def withdraw_history():
     if 'uid' not in session: return redirect('/login')
     f=request.args.get('f','All')
@@ -831,3 +858,21 @@ def wd_reject(wid):
 
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT',5000)))
+
+@app.route('/admin/withdraw/approve/<int:wid>')
+def admin_wd_approve(wid):
+    import sqlite3
+    con=sqlite3.connect('codex700.db')
+    con.execute("UPDATE withdrawals SET status='Approved' WHERE id=?",(wid,))
+    # deduct balance on approve
+    try:
+        r=con.execute("SELECT uid,amount FROM withdrawals WHERE id=?",(wid,)).fetchone()
+        if r: con.execute("UPDATE users SET balance=balance-? WHERE id=?",(r[1],r[0]))
+    except: pass
+    con.commit(); con.close()
+    from flask import redirect; return redirect('/admin/withdrawals')
+@app.route('/admin/withdraw/reject/<int:wid>')
+def admin_wd_reject(wid):
+    import sqlite3
+    con=sqlite3.connect('codex700.db'); con.execute("UPDATE withdrawals SET status='Rejected' WHERE id=?",(wid,)); con.commit(); con.close()
+    from flask import redirect; return redirect('/admin/withdrawals')
