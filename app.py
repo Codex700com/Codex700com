@@ -543,7 +543,7 @@ body{background:#000;color:#fff;font-family:Arial;padding-bottom:70px}
 <div class="wcard"><div class="av">👨🏾</div>David M.<br>Won Bicycle<br><b>02 Sep 2026</b><br><b>Draw #129</b></div>
 <div class="wcard"><div class="av">👩🏾</div>Faith T.<br>Won HP Laptop<br><b>01 Sep 2026</b><br><b>Draw #130</b></div>
 </div></div>
-<div class="navbar"><a href="/dashboard">🏠<br>Home</a><a href="/invest">📈<br>Invest</a><a href="#">⇄<br>Transactions</a><a href="#">👥<br>Referrals</a><a href="#">👤<br>Account</a></div>
+<div class="navbar"><a href="/dashboard">🏠<br>Home</a><a href="/invest">📈<br>Invest</a><a href="#">⇄<br>Transactions</a><a href="/referrals">👥<br>Referrals</a><a href="#">👤<br>Account</a></div>
 <script>
 // Next draw: 30 Sep 2026 12:00 Uganda time (EAT = UTC+3)
 var draw = new Date('2026-09-30T12:00:00+03:00').getTime();
@@ -1174,121 +1174,7 @@ def transactions():
     if 'uid' not in session: return redirect('/login')
     return "<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial'><a href='/dashboard' style='color:gold'>← Back</a><h2>Transactions</h2><p>No transactions yet</p></div>"
 
-@app.route('/referrals')
-def referrals():
-    from flask import session, redirect
-    if 'uid' not in session: return redirect('/login')
-    return "<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial'><a href='/dashboard' style='color:gold'>← Back</a><h2>Referrals</h2><p>Your referral link: /register?ref="+str(session.get('uid'))+"</p></div>"
 
-@app.route('/account')
-def account():
-    from flask import session, redirect
-    if 'uid' not in session: return redirect('/login')
-    return f"<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial'><a href='/dashboard' style='color:gold'>← Back</a><h2>Account</h2><p>User: {session.get('uid')}</p></div>"
-
-@app.route('/settings')
-def settings():
-    from flask import session, redirect
-    if 'uid' not in session: return redirect('/login')
-    return "<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial'><a href='/dashboard' style='color:gold'>← Back</a><h2>Settings</h2><p>Settings here</p></div>"
-
-@app.route('/logout')
-def logout():
-    from flask import session, redirect
-    session.clear()
-    return redirect('/')
-
-
-def admin_wd_approve(wid):
-    import sqlite3
-    con=sqlite3.connect('codex700.db')
-    con.execute("UPDATE withdrawals SET status='Approved' WHERE id=?",(wid,))
-    # deduct balance on approve
-    try:
-        r=con.execute("SELECT uid,amount FROM withdrawals WHERE id=?",(wid,)).fetchone()
-        if r: con.execute("UPDATE users SET balance=balance-? WHERE id=?",(r[1],r[0]))
-    except: pass
-    con.commit(); con.close()
-    from flask import redirect; return redirect('/admin/withdrawals')
-@app.route('/admin/withdraw/reject/<int:wid>')
-def admin_wd_reject(wid):
-    import sqlite3
-    con=sqlite3.connect('codex700.db'); con.execute("UPDATE withdrawals SET status='Rejected' WHERE id=?",(wid,)); con.commit(); con.close()
-    from flask import redirect; return redirect('/admin/withdrawals')
-
-@app.route('/notifications')
-def notifications():
-    from flask import session, redirect
-    import sqlite3
-    if 'uid' not in session:
-        return redirect('/login')
-    uid=session['uid']
-    con=sqlite3.connect('codex700.db')
-    con.row_factory=sqlite3.Row
-    try:
-        u=con.execute("SELECT * FROM users WHERE username=? OR id=?",(uid,uid)).fetchone()
-        jd=u["created_at"] if u else "N/A"
-    except:
-        jd="N/A"
-    rows=con.execute("SELECT * FROM notifications WHERE uid=? ORDER BY id DESC",(uid,)).fetchall()
-    con.execute("UPDATE notifications SET read=1 WHERE uid=?",(uid,))
-    con.commit()
-    h="".join([f"<div style='background:#111;padding:12px;border-radius:10px;margin:8px'><b>{r['title']}</b><br>{r['msg']}<br><small>{r['ts']}</small></div>" for r in rows]) or "<p>No notifications</p>"
-    return f"<div style='max-width:480px;margin:auto;background:#000;color:#fff;padding:12px;min-height:100vh;font-family:Arial'><a href='/dashboard' style='color:gold'>Back</a><h2>Notifications</h2><p>Joined: {jd}</p>{h}</div>"
-
-
-@app.route('/admin')
-def admin():
-    from flask import session, redirect
-    if 'uid' not in session: return redirect('/login')
-    if not is_admin(session['uid']): return "Forbidden",403
-    return "<h2>ADMIN</h2><a href='/admin/chats'>Chats</a> | <a href='/admin/withdrawals'>Withdrawals</a> | <a href='/dashboard'>User Dash</a>"
-
-
-# === CODEX INVESTMENT SYSTEM ===
-PLANS = {
- "starter": {"name":"Starter Plan","amount":50000,"duration":7,"daily":5000},
- "bronze": {"name":"Bronze Plan","amount":150000,"duration":15,"daily":15000},
- "silver": {"name":"Silver Plan","amount":500000,"duration":30,"daily":100000},
- "gold": {"name":"Gold Plan","amount":1000000,"duration":30,"daily":200000},
-}
-def invest_db():
-    import sqlite3
-    con=sqlite3.connect('codex700.db')
-    con.execute("""CREATE TABLE IF NOT EXISTS investments(
-    id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, plan_id TEXT,
-    amount INTEGER, daily_return INTEGER, duration_days INTEGER,
-    start_date TEXT, end_date TEXT, status TEXT DEFAULT 'ACTIVE',
-    total_accrued INTEGER DEFAULT 0, last_return_at TEXT, created_at TEXT)""")
-    con.execute("""CREATE TABLE IF NOT EXISTS investment_returns(
-    id INTEGER PRIMARY KEY AUTOINCREMENT, investment_id INTEGER, user_id TEXT,
-    period_date TEXT, amount INTEGER, created_at TEXT,
-    UNIQUE(investment_id, period_date))""")
-    con.execute("""CREATE TABLE IF NOT EXISTS transactions(
-    id INTEGER PRIMARY KEY AUTOINCREMENT, uid TEXT, type TEXT, amount INTEGER,
-    ref TEXT, status TEXT, ts TEXT)""")
-    con.commit(); return con
-
-@app.route('/invest/<plan_id>')
-def invest_confirm(plan_id):
-    from flask import session, redirect
-    if 'uid' not in session: return redirect('/login')
-    pl=PLANS.get(plan_id)
-    if not pl: return "Plan not found",404
-    import sqlite3
-    con=sqlite3.connect('codex700.db'); con.row_factory=sqlite3.Row
-    u=con.execute("SELECT balance FROM users WHERE username=? OR id=?",(session['uid'],session['uid'])).fetchone()
-    bal=u['balance'] if u else 0; con.close()
-    # keep your black/gold style
-    return f"""<div style='max-width:480px;margin:auto;background:#000;color:#fff;padding:20px;font-family:Arial;border:2px solid gold;border-radius:12px'>
-    <h2 style='color:gold'>{pl['name']}</h2>
-    <p>Amount: UGX {pl['amount']:,}</p><p>Duration: {pl['duration']} days</p>
-    <p>Configured Daily Return: UGX {pl['daily']:,}</p>
-    <p>Projected Total: UGX {pl['daily']*pl['duration']:,}</p>
-    <p>Wallet Balance: UGX {bal:,}</p>
-    <p style='font-size:12px;color:#aaa'>Configured returns are projected, not guaranteed. Actual credits subject to platform rules.</p>
-    <form method='POST' action='/invest/{plan_id}/execute'><button style='background:red;color:#fff;padding:12px;width:100%;border:none;border-radius:8px'>CONFIRM INVESTMENT</button></form>
-    <a href='/dashboard' style='color:gold'>CANCEL</a></div>"""
 
 @app.route('/invest/<plan_id>/execute', methods=['POST'])
 def invest_execute(plan_id):
