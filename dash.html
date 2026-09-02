@@ -1,0 +1,42 @@
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0a;color:#fff;font-family:Arial;padding-bottom:80px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 15px;background:#0a0a0a}
+.logo{color:#ffcc33;font-weight:bold;font-size:20px}
+.banner{margin:10px;border:1px solid #ffcc33;border-radius:15px;background:#111;padding:20px;display:flex;justify-content:space-between;align-items:center}
+.btn-red{background:#cc0000;color:#fff;padding:10px 18px;border-radius:8px;font-weight:bold;text-decoration:none;display:inline-block;margin-top:10px}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px}
+.stat{background:#111;border:1px solid #333;border-radius:12px;padding:12px 5px;text-align:center}
+.stat b{color:#ff2222;display:block;margin-top:5px}
+.checkin{margin:10px;background:#1a0a0a;border-radius:12px;padding:15px;display:flex;justify-content:space-between;align-items:center}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px}
+.g{background:#111;border:1px solid #333;border-radius:12px;padding:15px 5px;text-align:center;font-size:12px;color:#fff;text-decoration:none}
+.raffle{margin:10px;background:#111;border-radius:12px;padding:15px}
+.plans{display:flex;gap:10px;overflow-x:auto;margin:10px}
+.plan{min-width:160px;background:#111;border:1px solid #333;border-radius:12px;padding:12px}
+.navbar{position:fixed;bottom:0;left:0;right:0;background:#111;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #333}
+.navbar a{color:#888;text-decoration:none;font-size:11px;text-align:center}
+.navbar a.active{color:#ff2222}
+</style>
+<div class="top"><div>☰</div><div class="logo">⬢ CODEX</div><div>🔔 👤</div></div>
+<div class="banner"><div><p>WELCOME BACK,</p><h2 style="color:#ffcc33">__NAME__</h2><small>Let's grow your wealth together</small><br><a class="btn-red" href="/invest">Invest Now →</a></div><div style="font-size:50px">🏦</div></div>
+<div class="stats">
+<div class="stat"><small>Wallet Balance</small><b>UGX __BAL__</b></div>
+<div class="stat"><small>Total Invested</small><b>UGX __INV__</b></div>
+<div class="stat"><small>Total Income</small><b>UGX __INC__</b></div>
+<div class="stat"><small>Active Plans</small><b>__ACT__</b></div>
+</div>
+<div class="checkin"><div>🎁 <b>Daily Check-In Reward</b><br><small>Check in daily and get <span style="color:red">UGX 500</span></small></div><a class="btn-red" href="/checkin">Check In →</a></div>
+<div class="grid">
+<a class="g" href="/invest">📈<br>Invest</a><a class="g" href="/deposit">💰<br>Deposit</a><a class="g" href="/withdraw">🏧<br>Withdraw</a><a class="g" href="/referrals">👥<br>Referrals</a>
+<a class="g" href="/transactions">📄<br>Transactions</a><a class="g" href="/raffle">🎁<br>Raffle</a><a class="g" href="/support">🎧<br>Support</a><a class="g" href="/chat">💬<br>Chat Manager</a>
+</div>
+<div class="raffle">🏆 <b style="color:red">RAFFLE DRAW</b><br><small>Win amazing prizes daily</small><br><a class="btn-red" href="/raffle">View Prizes →</a></div>
+<h3 style="color:red;margin:15px 10px">INVESTMENT PLANS <a href="/invest" style="float:right;font-size:12px;color:red">View All Plans ></a></h3>
+<div class="plans">
+<div class="plan"><b>Starter Plan</b><br><small>Daily 20% - 30 Days</small><br><small>Min UGX 50,000</small></div>
+<div class="plan"><b>Silver Plan</b><br><small>Daily 20% - 30 Days</small><br><small>Min UGX 250,000</small></div>
+<div class="plan"><b>Gold Plan</b><br><small>Daily 20% - 30 Days</small><br><small>Min UGX 500,000</small></div>
+</div>
+<div class="navbar"><a href="/dashboard" class="active">🏠<br>Home</a><a href="/invest">📈<br>Invest</a><a href="/transactions">⇄<br>Transactions</a><a href="/referrals">👥<br>Referrals</a><a href="/account">👤<br>Account</a></div>
