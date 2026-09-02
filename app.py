@@ -296,7 +296,7 @@ def investments2():
         # countdown to midnight
         midnight=(now+datetime.timedelta(days=1)).replace(hour=0,minute=0,second=0,microsecond=0)
         cd=str(midnight-now).split('.')[0]
-        h+=f"<div style='background:#111;border:1px solid gold;border-radius:12px;padding:15px;margin:10px'><b>{r['plan']}</b><br>Amount: UGX {r['amount']:,}<br>Start: {str(r['start_date'])[:10]} | End: {str(r['end_date'])[:10]}<br>Status: {r['status'].upper()}<br>Daily Return: UGX {r['daily_return']:,} (configured)<br>Total Accrued: UGX {r['total_accrued']:,}<br>Remaining: {rem} days<br><div style='background:#333;height:10px;border-radius:5px;margin:8px 0'><div style='width:{pct}%;background:red;height:10px;border-radius:5px'></div></div><small>START {'█'*int(pct/10)}{'░'*int(10-pct/10)} END</small><br><b>NEXT RETURN: {cd}</b></div>"
+        h+=f"<div style='background:#111;border:1px solid gold;border-radius:12px;padding:15px;margin:10px'><b>{r['plan']}</b><br>Amount: UGX {r['amount']:,}<br>Start: {str(r['start_date'])[:10]} | End: {str(r['end_date'])[:10]}<br>Status: {r['status'].upper()}<br>Daily Return: UGX {r['daily_return']:,} (configured)<br>Total Accrued: UGX {r['total_accrued']:,}<br>Remaining: {rem} days<br><div style='background:#333;height:10px;border-radius:5px;margin:8px 0'><div style='width:{pct}%;background:red;height:10px;border-radius:5px'></div></div><small>START {'█'*int(pct/10)}{'░'*int(10-pct/10)} END</small><br><b>NEXT RETURN: <span class='cd' style='color:red'>{cd}</span></b></div>"
     if not rows: h+="<p>No investments yet</p>"
     return STYLE+h
 
