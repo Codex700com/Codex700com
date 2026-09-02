@@ -92,6 +92,9 @@ def is_admin(uid):
     con=db()
     try:
         u=con.execute("SELECT name FROM users WHERE id=?",(uid,)).fetchone()
+    try:
+        if u and u["is_blocked"]: return "Account blocked",403
+    except: pass
         return u and u[0]=="Codex700com"
     finally: con.close()
 init_admin_safe()
@@ -136,6 +139,7 @@ def register():
 
 @app.route('/login', methods=['GET','POST'])
 def login():
+    # block check injected below in POST handling
     msg=""
     if request.method=='POST':
         phone=request.form.get('phone','').strip()
@@ -1471,6 +1475,45 @@ def notifs_view():
     con=db(); ns=list(con.execute("SELECT * FROM notifications ORDER BY id DESC")); con.close()
     if not ns: return "<h3>No current notifications</h3><a href='/dashboard'>back</a>"
     return "<br>".join([n["msg"] for n in ns])+"<br><a href='/dashboard'>back</a>"
+
+
+def init_extra():
+    con=db(); c=con.cursor()
+    c.execute("CREATE TABLE IF NOT EXISTS plans(id INTEGER PRIMARY KEY,name TEXT,amount INTEGER,daily INTEGER,days INTEGER)")
+    if not c.execute("SELECT * FROM plans").fetchone():
+        c.execute("INSERT INTO plans(name,amount,daily,days) VALUES('Starter',5000,500,10)")
+        c.execute("INSERT INTO plans(name,amount,daily,days) VALUES('Pro',20000,2500,10)")
+    con.commit(); con.close()
+init_extra()
+
+@app.route("/admin/plans", methods=["GET","POST"])
+def aplans():
+    u=current_user()
+    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    con=db()
+    if request.method=="POST":
+        con.execute("INSERT INTO plans(name,amount,daily,days) VALUES(?,?,?,?)",
+            (request.form["name"], int(request.form["amount"]), int(request.form["daily"]), int(request.form["days"])))
+        con.commit()
+    plans=list(con.execute("SELECT * FROM plans"))
+    con.close()
+    return render_template_string("<h2>Plans</h2>{%for p in plans%}{{p['name']}} {{p['amount']}} daily {{p['daily']}} <a href='/admin/plan_del/{{p['id']}}'>del</a><br>{%endfor%}<form method=post>Name<input name=name>Amount<input name=amount>Daily<input name=daily>Days<input name=days><button>Add</button></form><a href=/admin>back</a>", plans=plans)
+
+@app.route("/admin/plan_del/<int:pid>")
+def pdel(pid):
+    u=current_user()
+    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    con=db(); con.execute("DELETE FROM plans WHERE id=?",(pid,)); con.commit(); con.close()
+    return redirect("/admin/plans")
+
+@app.route("/admin/visits")
+def avisits():
+    u=current_user()
+    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    con=db()
+    vs=list(con.execute("SELECT v.*,u.username FROM visits v JOIN users u ON v.uid=u.id ORDER BY v.id DESC LIMIT 100"))
+    con.close()
+    return render_template_string("<h2>Visits - who viewed accounts</h2>{%for v in vs%}{{v['username']}} at {{v['visited_at']}}<br>{%endfor%}<a href=/admin>back</a>", vs=vs)
 
 if __name__ == '__main__':
     import os
