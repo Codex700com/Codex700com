@@ -1155,6 +1155,14 @@ def notifications():
     h="".join([f"<div style='background:#111;padding:12px;border-radius:10px;margin:8px'><b>{r['title']}</b><br>{r['msg']}<br><small>{r['ts']}</small></div>" for r in rows]) or "<p>No notifications</p>"
     return f"<div style='max-width:480px;margin:auto;background:#000;color:#fff;padding:12px;min-height:100vh;font-family:Arial'><a href='/dashboard' style='color:gold'>Back</a><h2>Notifications</h2><p>Joined: {jd}</p>{h}</div>"
 
+
+@app.route('/admin')
+def admin():
+    from flask import session, redirect
+    if 'uid' not in session: return redirect('/login')
+    if not is_admin(session['uid']): return "Forbidden",403
+    return "<h2>ADMIN</h2><a href='/admin/chats'>Chats</a> | <a href='/admin/withdrawals'>Withdrawals</a> | <a href='/dashboard'>User Dash</a>"
+
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 10000))
