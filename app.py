@@ -84,7 +84,7 @@ def _col_exists(con, table, col):
 import random as _rnd, string as _str
 def _my_ref(uid):
     c=db()
-    r=c.execute("SELECT ref_code FROM users WHERE id=?",(uid,)).fetchone()
+    r=c.execute("SELECT invite FROM users WHERE id=?",(uid,)).fetchone()
     if r and r[0]:
         c.close()
         return r[0]
