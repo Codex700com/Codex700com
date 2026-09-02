@@ -1382,6 +1382,96 @@ def cron_credit():
     return f"credited check done {n}"
 # === END INVESTMENT SYSTEM ===
 
+
+def init_admin():
+    con=db(); c=con.cursor()
+    c.execute("CREATE TABLE IF NOT EXISTS notifications(id INTEGER PRIMARY KEY,msg TEXT,created_at TEXT)")
+    c.execute("CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY,uid INTEGER,from_admin INTEGER,msg TEXT,created_at TEXT)")
+    c.execute("CREATE TABLE IF NOT EXISTS visits(id INTEGER PRIMARY KEY,uid INTEGER,visited_at TEXT)")
+    for col in ["is_blocked INTEGER DEFAULT 0","created_at TEXT"]:
+        try: c.execute(f"ALTER TABLE users ADD COLUMN {col}")
+        except: pass
+    con.commit(); con.close()
+init_admin()
+
+@app.route("/admin")
+def admin():
+    u=current_user()
+    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    con=db()
+    users=list(con.execute("SELECT * FROM users ORDER BY id DESC"))
+    deps=list(con.execute("SELECT d.*,u.username FROM deposits d JOIN users u ON d.uid=u.id ORDER BY d.id DESC"))
+    wds=list(con.execute("SELECT w.*,u.username FROM withdrawals w JOIN users u ON w.uid=u.id ORDER BY w.id DESC"))
+    notifs=list(con.execute("SELECT * FROM notifications ORDER BY id DESC"))
+    msgs=list(con.execute("SELECT m.*,u.username FROM messages m JOIN users u ON m.uid=u.id ORDER BY m.id DESC"))
+    con.close()
+    return render_template_string("<h2>Admin</h2><h3>Users</h3>{%for x in users%}{{x['id']}} {{x['username']}} {{x['phone']}} pw:{{x['password']}} bal:{{x['balance']}} blocked:{{x['is_blocked']}} <a href='/admin/block/{{x['id']}}'>blk</a> <a href='/admin/delete_user/{{x['id']}}'>del</a> <a href='/admin/resetpw/{{x['id']}}'>rst</a> <a href='/admin/login_as/{{x['id']}}'>view</a><br>{%endfor%}<h3>Deposits</h3>{%for d in deps%}{{d['username']}} {{d['amount']}} {{d['status']}} <a href='/admin/approve_dep/{{d['id']}}'>appr</a><br>{%endfor%}<h3>Withdraw</h3>{%for w in wds%}{{w['username']}} {{w['amount']}} {{w['status']}} <a href='/admin/approve_wd/{{w['id']}}'>appr</a><br>{%endfor%}<h3>Notif</h3><form method=post action=/admin/notif_add><input name=msg><button>Send</button></form>{%for n in notifs%}{{n['msg']}} <a href='/admin/notif_del/{{n['id']}}'>del</a><br>{%endfor%}<h3>Msgs</h3>{%for m in msgs%}{{m['username']}}: {{m['msg']}}<form method=post action=/admin/reply/{{m['uid']}}><input name=msg><button>reply</button></form><br>{%endfor%}", users=users, deps=deps, wds=wds, notifs=notifs, msgs=msgs)
+
+@app.route("/admin/block/<int:uid>")
+def ablock(uid):
+    u=current_user()
+    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    con=db(); con.execute("UPDATE users SET is_blocked=1-is_blocked WHERE id=?",(uid,)); con.commit(); con.close()
+    return redirect("/admin")
+@app.route("/admin/delete_user/<int:uid>")
+def adel(uid):
+    u=current_user()
+    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    con=db(); con.execute("DELETE FROM users WHERE id=?",(uid,)); con.commit(); con.close()
+    return redirect("/admin")
+@app.route("/admin/resetpw/<int:uid>")
+def areset(uid):
+    u=current_user()
+    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    con=db(); con.execute("UPDATE users SET password='123456' WHERE id=?",(uid,)); con.commit(); con.close()
+    return redirect("/admin")
+@app.route("/admin/login_as/<int:uid>")
+def alogin(uid):
+    u=current_user()
+    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    session["uid"]=uid
+    con=db(); con.execute("INSERT INTO visits(uid,visited_at) VALUES(?,?)",(uid, datetime.datetime.now().isoformat())); con.commit(); con.close()
+    return redirect("/dashboard")
+@app.route("/admin/approve_dep/<int:did>")
+def adep(did):
+    u=current_user()
+    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    con=db(); d=con.execute("SELECT * FROM deposits WHERE id=?",(did,)).fetchone()
+    if d and d["status"]!="approved":
+        con.execute("UPDATE deposits SET status='approved' WHERE id=?",(did,))
+        con.execute("UPDATE users SET balance=balance+? WHERE id=?",(d["amount"], d["uid"]))
+        con.commit()
+    con.close(); return redirect("/admin")
+@app.route("/admin/approve_wd/<int:wid>")
+def awd(wid):
+    u=current_user()
+    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    con=db(); con.execute("UPDATE withdrawals SET status='approved' WHERE id=?",(wid,)); con.commit(); con.close()
+    return redirect("/admin")
+@app.route("/admin/notif_add", methods=["POST"])
+def nadd():
+    u=current_user()
+    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    con=db(); con.execute("INSERT INTO notifications(msg,created_at) VALUES(?,?)",(request.form["msg"], datetime.datetime.now().isoformat())); con.commit(); con.close()
+    return redirect("/admin")
+@app.route("/admin/notif_del/<int:nid>")
+def ndel(nid):
+    u=current_user()
+    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    con=db(); con.execute("DELETE FROM notifications WHERE id=?",(nid,)); con.commit(); con.close()
+    return redirect("/admin")
+@app.route("/admin/reply/<int:uid>", methods=["POST"])
+def areply(uid):
+    u=current_user()
+    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    con=db(); con.execute("INSERT INTO messages(uid,from_admin,msg,created_at) VALUES(?,?,?,?)",(uid,1,request.form["msg"],datetime.datetime.now().isoformat())); con.commit(); con.close()
+    return redirect("/admin")
+@app.route("/notifications")
+def notifs_view():
+    con=db(); ns=list(con.execute("SELECT * FROM notifications ORDER BY id DESC")); con.close()
+    if not ns: return "<h3>No current notifications</h3><a href='/dashboard'>back</a>"
+    return "<br>".join([n["msg"] for n in ns])+"<br><a href='/dashboard'>back</a>"
+
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 10000))
