@@ -949,3 +949,23 @@ def admin_wd_reject(wid):
     import sqlite3
     con=sqlite3.connect('codex700.db'); con.execute("UPDATE withdrawals SET status='Rejected' WHERE id=?",(wid,)); con.commit(); con.close()
     from flask import redirect; return redirect('/admin/withdrawals')
+
+@app.route('/notifications')
+def notifications():
+    from flask import session, redirect
+    import sqlite3
+    if 'uid' not in session:
+        return redirect('/login')
+    uid=session['uid']
+    con=sqlite3.connect('codex700.db')
+    con.row_factory=sqlite3.Row
+    try:
+        u=con.execute("SELECT * FROM users WHERE username=? OR id=?",(uid,uid)).fetchone()
+        jd=u["created_at"] if u else "N/A"
+    except:
+        jd="N/A"
+    rows=con.execute("SELECT * FROM notifications WHERE uid=? ORDER BY id DESC",(uid,)).fetchall()
+    con.execute("UPDATE notifications SET read=1 WHERE uid=?",(uid,))
+    con.commit()
+    h="".join([f"<div style='background:#111;padding:12px;border-radius:10px;margin:8px'><b>{r['title']}</b><br>{r['msg']}<br><small>{r['ts']}</small></div>" for r in rows]) or "<p>No notifications</p>"
+    return f"<div style='max-width:480px;margin:auto;background:#000;color:#fff;padding:12px;min-height:100vh;font-family:Arial'><a href='/dashboard' style='color:gold'>Back</a><h2>Notifications</h2><p>Joined: {jd}</p>{h}</div>"
