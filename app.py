@@ -113,18 +113,17 @@ def _credit_ref(uid, amt):
     con.close()
 @app.route("/referrals")
 def referrals():
-    if "uid" not in session: return redirect("/login")
-    uid=session["uid"]
-    rc=_my_ref(uid)
-    link=request.host_url.rstrip("/")+"/register?ref="+rc
-    c=db()
-    l1=c.execute("SELECT COUNT(*) FROM users WHERE referred_by=?",(uid,)).fetchone()[0]
-    e=c.execute("SELECT COALESCE(SUM(amount),0) FROM ledger WHERE uid=? AND type LIKE 'ref_%'",(uid,)).fetchone()[0]
-    rows=c.execute("SELECT name,phone FROM users WHERE referred_by=? ORDER BY id DESC LIMIT 20",(uid,)).fetchall()
-    c.close()
-    rh="".join([f"<div style='padding:10px;border-bottom:1px solid #222'>{a}<br><small style='color:#888'>{b}</small></div>" for a,b in rows]) or "<p style='color:#888;text-align:center'>No referrals yet</p>"
-    return f"<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial;max-width:500px;margin:auto'><a href='/dashboard' style='color:gold;text-decoration:none'>&larr; Back</a><h2 style='color:gold'>Referrals 32%/5%/1%</h2><div style='background:#111;padding:15px;border-radius:10px;border:1px solid gold'><p style='color:gold;word-break:break-all'>{link}</p><button onclick=\"navigator.clipboard.writeText('{link}');alert('Copied')\" style='background:gold;border:none;padding:10px;width:100%;border-radius:5px;font-weight:bold'>COPY LINK</button><p>Code: <b style='color:gold'>{rc}</b></p></div><div style='display:flex;gap:10px;margin:15px 0'><div style='flex:1;background:#111;padding:15px;border-radius:10px;text-align:center'><h3 style='color:gold'>{l1}</h3><small>Invited</small></div><div style='flex:1;background:#111;padding:15px;border-radius:10px;text-align:center'><h3 style='color:gold'>{e:.2f}</h3><small>UGX Earned</small></div></div><h3>Recent</h3>{rh}</div>"
+    if 'uid' not in session: return redirect('/login')
+    con=db()
+    u=con.execute("SELECT * FROM users WHERE id=?",(session['uid'],)).fetchone()
+    rc=u['invite'] if 'invite' in u.keys() and u['invite'] else f"CODEX-{u['id']}"
+    link=f"https://{request.host}/register?ref={rc}"
+    rows=list(con.execute("SELECT username,created FROM users WHERE ref_by=? ORDER BY id DESC LIMIT 20",(rc,)))
+    con.close()
+    rh="".join([f"<div style='padding:10px;border-bottom:1px solid #222'>{a}<br><small style='color:#888'>{b}</small></div>" for a,b in rows]) or "<p style='color:#888;text-align:center'>No invites yet</p>"
+    return f"<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial;max-width:500px;margin:auto'><a href='/dashboard' style='color:gold;text-decoration:none'>&larr; Back</a><h2 style='color:gold;text-align:center'>Invite Friends</h2><div style='background:#111;padding:20px;border-radius:12px;border:1px solid gold;text-align:center'><p style='color:#888'>Share your link</p><p style='color:gold;word-break:break-all'>{link}</p><button onclick=\"navigator.clipboard.writeText('{link}');alert('Copied')\" style='background:gold;border:none;padding:12px;width:100%;border-radius:8px;font-weight:bold'>COPY LINK</button><p style='margin-top:10px'>Code: <b style='color:gold'>{rc}</b></p><a href='https://wa.me/?text={link}' style='display:inline-block;margin-top:10px;background:#25D366;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none'>Share on WhatsApp</a></div><h3 style='margin-top:20px'>Recent invites</h3>{rh}</div>"
 # --- END REFERRAL ---
+
 
 def init_admin_safe():
     con=db()
