@@ -140,15 +140,63 @@ def dashboard():
     u=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone()
     if not u:
         con.close(); session.clear(); return redirect('/login')
-    name=u['name'].upper() if 'name' in u.keys() and u['name'] else 'USER'
-    try:
-        bal=con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()[0] or 0
+    name=(u['name'].upper() if 'name' in u.keys() and u['name'] else 'USER')
+    try: bal=con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()[0] or 0
     except: bal=0
     inv=con.execute("SELECT COALESCE(SUM(amount),0) FROM investments WHERE uid=?",(uid,)).fetchone()[0] or 0
     inc=con.execute("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE uid=? AND type IN ('return','reward','bonus')",(uid,)).fetchone()[0] or 0
     act=con.execute("SELECT COUNT(*) FROM investments WHERE uid=? AND status='active'",(uid,)).fetchone()[0] or 0
     con.close()
-    return STYLE + f"""
+    return f"""
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{background:#0a0a0a;color:#fff;font-family:Arial;padding-bottom:80px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 15px;background:#0a0a0a;position:sticky;top:0;z-index:10}
+.logo{color:#ffcc33;font-weight:bold;font-size:20px}.logo span{color:#ff2222}
+.icons{display:flex;gap:15px;font-size:20px}.icons a{color:#fff;text-decoration:none;position:relative}
+.badge{position:absolute;top:-8px;right:-8px;background:red;color:#fff;font-size:10px;border-radius:50%;padding:2px 5px}
+.banner{margin:10px;border:1px solid #ffcc33;border-radius:15px;overflow:hidden;display:flex;background:linear-gradient(90deg,#1a0a0a,#000);padding:20px;align-items:center;justify-content:space-between}
+.banner h3{font-size:14px}.banner h2{color:#ff2222;margin:5px 0}.btn-red{background:#cc0000;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:bold;margin-top:10px;display:inline-block;text-decoration:none}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px}
+.stat{background:#111;border:1px solid #333;border-radius:12px;padding:12px 5px;text-align:center}
+.stat small{font-size:11px;color:#ccc}.stat b{color:#ff2222;display:block;margin-top:5px}
+.checkin{margin:10px;background:#1a0a0a;border:1px solid #442222;border-radius:12px;padding:15px;display:flex;align-items:center;justify-content:space-between}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px}
+.g{background:#111;border:1px solid #333;border-radius:12px;padding:15px 5px;text-align:center;font-size:12px;color:#fff;text-decoration:none}
+.g div{font-size:24px;margin-bottom:5px}
+.raffle{margin:10px;background:linear-gradient(90deg,#1a0a0a,#000);border:1px solid #443322;border-radius:12px;padding:15px;display:flex;align-items:center;justify-content:space-between}
+.plans{display:flex;gap:10px;overflow-x:auto;margin:10px;padding-bottom:10px}
+.plan{min-width:160px;background:#111;border:1px solid #333;border-radius:12px;padding:10px}
+.plan b{font-size:14px}.plan small{display:block;font-size:11px;color:#aaa;margin:3px 0}.plan small span{color:#ff2222;float:right}
+.support{margin:10px;background:#1a0a0a;border-radius:12px;padding:15px;display:flex;align-items:center;justify-content:space-between}
+.navbar{position:fixed;bottom:0;left:0;right:0;background:#111;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #333}
+.navbar a{color:#888;text-decoration:none;font-size:11px;text-align:center}.navbar a.active{color:#ff2222}
+h3.sec{color:#ff2222;margin:15px 10px 5px;font-size:14px}
+</style>
+<div class="top"><div style="font-size:22px">☰</div><div class="logo">⬢ <span>CODEX</span></div><div class="icons"><a href="/notifications">🔔<span class="badge">3</span></a><a href="/account">👤</a></div></div>
+<div class="banner"><div><h3>WELCOME BACK,</h3><h2>{name}</h2><small>Let's grow your wealth together</small><br><a class="btn-red" href="/invest">Invest Now →</a></div><div style="font-size:60px">🏦</div></div>
+<div class="stats">
+<div class="stat"><div>👛</div><small>Wallet Balance</small><b>UGX {bal:,}</b><small>👁️</small></div>
+<div class="stat"><div>📈</div><small>Total Invested</small><b>UGX {inv:,}</b></div>
+<div class="stat"><div>💰</div><small>Total Income</small><b>UGX {inc:,}</b></div>
+<div class="stat"><div>💼</div><small>Active Plans</small><b>{act}</b></div>
+</div>
+<div class="checkin"><div>🎁 <b>Daily Check-In Reward</b><br><small>Check in daily and get <span style="color:red">UGX 500</span></small></div><a class="btn-red" href="/checkin" style="text-decoration:none">Check In →</a></div>
+<div class="grid">
+<a class="g" href="/invest"><div>📈</div>Invest</a><a class="g" href="/deposit"><div>💰</div>Deposit</a><a class="g" href="/withdraw"><div>🏧</div>Withdraw</a><a class="g" href="/referrals"><div>👥</div>Referrals</a>
+<a class="g" href="/transactions"><div>📄</div>Transactions</a><a class="g" href="/raffle"><div>🎁</div>Raffle</a><a class="g" href="/support"><div>🎧</div>Support</a><a class="g" href="/chat"><div>💬</div>Chat Manager</a>
+</div>
+<div class="raffle"><div>🏆<br><b style="color:red">RAFFLE DRAW</b><br><small>Win amazing prizes daily</small><br><a class="btn-red" href="/raffle" style="text-decoration:none;font-size:12px">View Prizes →</a></div><div style="font-size:50px">🎁🎁</div></div>
+<h3 class="sec">📊 INVESTMENT PLANS <a href="/invest" style="float:right;color:#ff2222;font-size:12px;text-decoration:none">View All Plans ></a></h3>
+<div class="plans">
+<div class="plan"><b>Starter Plan</b><small>Daily Return <span>20%</span></small><small>Duration <span>30 Days</span></small><small>Min. Invest <span>UGX 50,000</span></small></div>
+<div class="plan"><b>Silver Plan</b><small>Daily Return <span>20%</span></small><small>Duration <span>30 Days</span></small><small>Min. Invest <span>UGX 250,000</span></small></div>
+<div class="plan"><b>Gold Plan</b><small>Daily Return <span>20%</span></small><small>Duration <span>30 Days</span></small><small>Min. Invest <span>UGX 500,000</span></small></div>
+<div class="plan"><b>Platinum Plan</b><small>Daily Return <span>20%</span></small><small>Duration <span>30 Days</span></small><small>Min. Invest <span>UGX 1,000,000</span></small></div>
+</div>
+<div class="support"><div>🎧 <b>Need Help?</b><br><small>Our support team is always here for you.</small></div><a href="/support" style="border:1px solid #ff2222;color:#ff2222;padding:10px 15px;border-radius:8px;text-decoration:none">Contact Support</a></div>
+<div class="navbar"><a href="/dashboard" class="active">🏠<br>Home</a><a href="/invest">📈<br>Invest</a><a href="/transactions">⇄<br>Transactions</a><a href="/referrals">👥<br>Referrals</a><a href="/account">👤<br>Account</a></div>
+    """
     <div class="topbar"><div class="menu" onclick="document.getElementById('drawer').style.display='block'" style="cursor:pointer">☰</div><div class="logo">⬢ CODEX</div><div class="icons"><a href="/notifications" style="text-decoration:none">🔔</a><a href="/account" style="text-decoration:none">👤</a></div></div><div id="drawer" style="display:none;position:fixed;top:0;left:0;width:250px;height:100%;background:#111;color:#fff;z-index:999;padding:20px;overflow-y:auto"><div onclick="document.getElementById('drawer').style.display='none'" style="cursor:pointer;text-align:right">✖</div><h3>Menu</h3><p><a href="/dashboard" style="color:#fff">Home</a></p><p><a href="/invest" style="color:#fff">Invest</a></p><p><a href="/deposit" style="color:#fff">Deposit</a></p><p><a href="/withdraw" style="color:#fff">Withdraw</a></p><p><a href="/transactions" style="color:#fff">Transactions</a></p><p><a href="/referrals" style="color:#fff">Referrals</a></p><p><a href="/raffle" style="color:#fff">Raffle</a></p><p><a href="/support" style="color:#fff">Support</a></p><p><a href="/chat" style="color:#fff">Chat Manager</a></p><p><a href="/account" style="color:#fff">Account</a></p><p><a href="/settings" style="color:#fff">Settings</a></p><p><a href="/logout" style="color:#fff">Logout</a></p></div>
     <div class="welcome"><div><p>WELCOME BACK,</p><h2>{name}</h2><small>Let's grow your wealth together</small><br><a class="btn-red" href="/invest">Invest Now →</a></div></div>
     <div class="stats">
