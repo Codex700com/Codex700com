@@ -115,7 +115,9 @@ def _credit_ref(uid, amt):
 def referrals():
     if 'uid' not in session: return redirect('/login')
     con=db()
-    u=con.execute("SELECT * FROM users WHERE id=?",(session['uid'],)).fetchone()
+    _r=con.execute("SELECT * FROM users WHERE id=?",(session["uid"],)).fetchone()
+
+    u=dict(_r) if _r else {}
     rc=u.get('invite','') if 'invite' in u.keys() and u.get('invite','') else f"CODEX-{u.get('id','')}"
     link=f"https://{request.host}/register?ref={rc}"
     rows=list(con.execute("SELECT username,created FROM users WHERE ref_by=? ORDER BY id DESC LIMIT 20",(rc,)))
@@ -504,6 +506,7 @@ def account_page():
     return html
 
 @app.route('/home')
+@app.route('/dashboard')
 def dashboard():
     if 'uid' not in session: return redirect('/login')
     con=db(); uid=session['uid']
