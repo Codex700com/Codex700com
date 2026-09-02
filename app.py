@@ -132,6 +132,149 @@ def login():
     """
 
 
+
+# === INVESTMENT ENGINE ===
+PLANS={
+ "Starter Plan":{"amount":50000,"daily":10000,"days":30},
+ "Silver Plan":{"amount":250000,"daily":50000,"days":30},
+ "Gold Plan":{"amount":500000,"daily":100000,"days":30},
+ "Platinum Plan":{"amount":1000000,"daily":200000,"days":30},
+}
+def init_invest():
+    con=db()
+    con.executescript("""
+    CREATE TABLE IF NOT EXISTS investments_new(id INTEGER PRIMARY KEY, uid INTEGER, plan TEXT, amount INTEGER, daily_return INTEGER, duration_days INTEGER, start_date TEXT, end_date TEXT, status TEXT DEFAULT 'active', total_accrued INTEGER DEFAULT 0, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
+    CREATE TABLE IF NOT EXISTS return_ledger(id INTEGER PRIMARY KEY, investment_id INTEGER, uid INTEGER, period TEXT, amount INTEGER, created_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(investment_id, period));
+    """)
+    # migrate old investments if needed
+    try:
+        cols=[r[1] for r in con.execute("PRAGMA table_info(investments)").fetchall()]
+        if cols and "daily_return" not in cols:
+            for r in con.execute("SELECT * FROM investments").fetchall():
+                plan=r["plan"] if "plan" in r.keys() else "Starter Plan"
+                cfg=PLANS.get(plan, PLANS["Starter Plan"])
+                con.execute("INSERT INTO investments_new(uid,plan,amount,daily_return,duration_days,start_date,end_date,status) VALUES(?,?,?,?,?,?,?,?)",
+                    (r["uid"], plan, r["amount"], cfg["daily"], cfg["days"], r["created"] if "created" in r.keys() else None, None, "active"))
+            con.execute("DROP TABLE investments"); con.execute("ALTER TABLE investments_new RENAME TO investments")
+        else:
+            con.execute("DROP TABLE IF EXISTS investments_new")
+    except Exception as e: print("migrate:",e)
+    con.commit(); con.close()
+init_invest()
+
+@app.route('/invest/confirm')
+def invest_confirm2():
+    from flask import session, request, redirect
+    uid=session.get('uid')
+    if not uid: return redirect('/login')
+    plan=request.args.get('plan','Starter Plan')
+    cfg=PLANS.get(plan)
+    if not cfg: return redirect('/invest')
+    con=db(); bal=con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()[0]; con.close()
+    total=cfg["daily"]*cfg["days"]
+    return STYLE+f"""
+    <h2 style='color:red'>{plan}</h2>
+    <div style='background:#111;padding:15px;border-radius:12px;border:1px solid gold'>
+    Investment Amount: UGX {cfg['amount']:,}<br>
+    Duration: {cfg['days']} Days<br>
+    Configured Daily Return: UGX {cfg['daily']:,}<br>
+    Projected Total Return: UGX {total:,}<br>
+    Wallet Balance: UGX {bal:,}<br>
+    <small>Actual credits are subject to platform rules.</small>
+    </div><br>
+    <form method='post' action='/invest/do' style='display:inline'>
+    <input type='hidden' name='plan' value='{plan}'>
+    <button style='background:#c00;color:#fff;padding:12px 20px;border:none;border-radius:8px'>CONFIRM INVESTMENT</button>
+    </form> <a href='/invest' style='background:#333;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none'>CANCEL</a>
+    """
+
+@app.route('/invest/do', methods=['POST'])
+def invest_do2():
+    from flask import session, request, redirect
+    import datetime
+    uid=session.get('uid')
+    if not uid: return redirect('/login')
+    plan=request.form.get('plan','Starter Plan')
+    cfg=PLANS.get(plan)
+    if not cfg: return redirect('/invest')
+    amt=cfg['amount']
+    con=db(); con.isolation_level=None
+    try:
+        con.execute("BEGIN IMMEDIATE")
+        bal=con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()[0] or 0
+        if bal < amt:
+            con.execute("ROLLBACK")
+            need=amt-bal
+            return STYLE+f"<h3 style='color:red'>INSUFFICIENT FUNDS</h3><p>You need UGX {amt:,} to activate this investment.</p><p>Your current wallet balance is UGX {bal:,}.</p><p>Additional funds required: UGX {need:,}</p><a href='/deposit' style='background:#c00;color:#fff;padding:12px;border-radius:8px;text-decoration:none'>DEPOSIT FUNDS</a> <a href='/invest'>CANCEL</a>"
+        # idempotency: prevent double submit within 10 sec same plan
+        con.execute("UPDATE users SET balance=balance-? WHERE id=?",(amt,uid))
+        start=datetime.datetime.now(); end=start+datetime.timedelta(days=cfg['days'])
+        cur=con.execute("INSERT INTO investments(uid,plan,amount,daily_return,duration_days,start_date,end_date,status) VALUES(?,?,?,?,?,?,?,'active')",
+            (uid,plan,amt,cfg['daily'],cfg['days'],start.isoformat(),end.isoformat()))
+        inv_id=cur.lastrowid
+        con.execute("INSERT INTO transactions(uid,type,amount,status) VALUES(?,'investment',?,'done')",(uid,amt))
+        con.execute("COMMIT")
+        return STYLE+f"<h3>INVESTMENT ACTIVATED</h3><p>Plan: {plan}</p><p>Amount: UGX {amt:,}</p><p>Start: {start.date()}</p><p>End: {end.date()}</p><p>Status: ACTIVE</p><a href='/investments' style='background:#c00;color:#fff;padding:10px;border-radius:8px;text-decoration:none'>VIEW MY INVESTMENT</a>"
+    except Exception as e:
+        try: con.execute("ROLLBACK")
+        except: pass
+        return STYLE+f"<p>Error: {e}</p><a href='/invest'>Back</a>"
+    finally: con.close()
+
+def credit_returns():
+    import datetime
+    con=db()
+    invs=con.execute("SELECT * FROM investments WHERE status='active'").fetchall()
+    now=datetime.datetime.now()
+    for inv in invs:
+        try:
+            start=datetime.datetime.fromisoformat(inv['start_date'])
+        except: continue
+        elapsed=(now-start).days+1
+        elapsed=min(elapsed, inv['duration_days'])
+        # check completed
+        if now.isoformat() > inv['end_date']:
+            con.execute("UPDATE investments SET status='completed' WHERE id=?",(inv['id'],))
+            continue
+        for d in range(1, elapsed+1):
+            period=(start+datetime.timedelta(days=d-1)).date().isoformat()
+            exists=con.execute("SELECT 1 FROM return_ledger WHERE investment_id=? AND period=?",(inv['id'],period)).fetchone()
+            if exists: continue
+            try:
+                con.execute("INSERT INTO return_ledger(investment_id,uid,period,amount) VALUES(?,?,?,?)",(inv['id'],inv['uid'],period,inv['daily_return']))
+                con.execute("UPDATE users SET balance=balance+? WHERE id=?",(inv['daily_return'],inv['uid']))
+                con.execute("UPDATE investments SET total_accrued=total_accrued+? WHERE id=?",(inv['daily_return'],inv['id']))
+                con.execute("INSERT INTO transactions(uid,type,amount,status) VALUES(?,'daily_return',?,'done')",(inv['uid'],inv['daily_return']))
+                con.commit()
+            except: pass
+    con.close()
+
+@app.route('/cron/returns')
+def cron_returns():
+    credit_returns(); return "ok"
+
+@app.route('/investments')
+def investments2():
+    from flask import session, redirect
+    import datetime
+    uid=session.get('uid')
+    if not uid: return redirect('/login')
+    credit_returns()
+    con=db(); rows=con.execute("SELECT * FROM investments WHERE uid=? ORDER BY id DESC",(uid,)).fetchall(); con.close()
+    h="<h2 style='color:red'>My Investments</h2><a href='/dashboard'>← Home</a><br><br>"
+    now=datetime.datetime.now()
+    for r in rows:
+        try: end=datetime.datetime.fromisoformat(r['end_date']); rem=max(0,(end-now).days)
+        except: rem=0
+        pct=int((r['total_accrued']/(r['daily_return']*r['duration_days'])*100)) if r['daily_return'] else 0
+        pct=min(pct,100)
+        # countdown to midnight
+        midnight=(now+datetime.timedelta(days=1)).replace(hour=0,minute=0,second=0,microsecond=0)
+        cd=str(midnight-now).split('.')[0]
+        h+=f"<div style='background:#111;border:1px solid gold;border-radius:12px;padding:15px;margin:10px'><b>{r['plan']}</b><br>Amount: UGX {r['amount']:,}<br>Start: {str(r['start_date'])[:10]} | End: {str(r['end_date'])[:10]}<br>Status: {r['status'].upper()}<br>Daily Return: UGX {r['daily_return']:,} (configured)<br>Total Accrued: UGX {r['total_accrued']:,}<br>Remaining: {rem} days<br><div style='background:#333;height:10px;border-radius:5px;margin:8px 0'><div style='width:{pct}%;background:red;height:10px;border-radius:5px'></div></div><small>START {'█'*int(pct/10)}{'░'*int(10-pct/10)} END</small><br><b>NEXT RETURN: {cd}</b></div>"
+    if not rows: h+="<p>No investments yet</p>"
+    return STYLE+h
+
 @app.route('/dashboard')
 @app.route('/home')
 def dashboard():
