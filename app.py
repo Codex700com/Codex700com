@@ -92,11 +92,9 @@ def is_admin(uid):
     con=db()
     try:
         u=con.execute("SELECT name FROM users WHERE id=?",(uid,)).fetchone()
-    try:
-        if u and u["is_blocked"]: return "Account blocked",403
-    except: pass
         return u and u[0]=="Codex700com"
-    finally: con.close()
+    finally:
+        con.close()
 init_admin_safe()
 
 @app.route('/')
