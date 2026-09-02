@@ -626,20 +626,23 @@ setInterval(load,3000);load()
 def api_chat():
     from flask import session, request, jsonify
     import sqlite3
-    if 'uid' not in session: return jsonify([])
-    uid=session['uid']
-    con=sqlite3.connect('codex700.db'); con.row_factory=sqlite3.Row
-    if request.method=='POST':
-        d=request.get_json()
-        # get username
+    if 'uid' not in session:
+        return jsonify([])
+    uid = session['uid']
+    con = sqlite3.connect('codex700.db')
+    con.row_factory = sqlite3.Row
+    if request.method == 'POST':
+        d = request.get_json() or {}
+        msg = d.get('msg','')
         try:
-            u=con.execute("SELECT username FROM users WHERE id=?",(uid,)).fetchone()
-            uname=u['username'] if u else uid
-        except: uname=uid
-        con.execute("INSERT INTO chats(uid,username,msg,direction) VALUES(?,?,?,?)",(uid,uname,d.get('msg',''),'u2a'))
+            u = con.execute('SELECT username FROM users WHERE id=?',(uid,)).fetchone()
+            uname = u['username'] if u else uid
+        except:
+            uname = uid
+        con.execute('INSERT INTO chats(uid,username,msg,direction) VALUES(?,?,?,?)',(uid,uname,msg,'u2a'))
         con.commit()
-        return jsonify({"ok":1})
-    rows=con.execute("SELECT * FROM chats WHERE uid=? ORDER BY id ASC",(uid,)).fetchall()
+        return jsonify({'ok':1})
+    rows = con.execute('SELECT * FROM chats WHERE uid=? ORDER BY id',(uid,)).fetchall()
     return jsonify([dict(r) for r in rows])
 
 @app.route('/api/chat/upload', methods=['POST'])
@@ -670,25 +673,25 @@ def chat_page():
 
 @app.route('/api/chat', methods=['GET','POST'])
 def api_chat():
- from flask import session,request,jsonify
- import sqlite3
+    from flask import session, request, jsonify
+    import sqlite3
     if 'uid' not in session:
         return jsonify([])
-    uid=session['uid']
-    con=sqlite3.connect('codex700.db')
-    con.row_factory=sqlite3.Row
-    if request.method=='POST':
-        d=request.get_json()
-        msg=d.get('msg','') if d else ''
+    uid = session['uid']
+    con = sqlite3.connect('codex700.db')
+    con.row_factory = sqlite3.Row
+    if request.method == 'POST':
+        d = request.get_json() or {}
+        msg = d.get('msg','')
         try:
-            u=con.execute('SELECT username FROM users WHERE id=?',(uid,)).fetchone()
-            uname=u['username'] if u else uid
+            u = con.execute('SELECT username FROM users WHERE id=?',(uid,)).fetchone()
+            uname = u['username'] if u else uid
         except:
-            uname=uid
+            uname = uid
         con.execute('INSERT INTO chats(uid,username,msg,direction) VALUES(?,?,?,?)',(uid,uname,msg,'u2a'))
         con.commit()
         return jsonify({'ok':1})
-    rows=con.execute('SELECT * FROM chats WHERE uid=? ORDER BY id',(uid,)).fetchall()
+    rows = con.execute('SELECT * FROM chats WHERE uid=? ORDER BY id',(uid,)).fetchall()
     return jsonify([dict(r) for r in rows])
 
 @app.route('/api/chat/upload', methods=['POST'])
