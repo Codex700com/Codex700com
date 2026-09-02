@@ -430,6 +430,24 @@ def investments2():
     return STYLE+h
 
 @app.route('/dashboard')
+
+@app.route('/account')
+def account_page():
+    if 'uid' not in session: return redirect('/login')
+    con=db(); uid=session['uid']
+    u=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone()
+    if not u: con.close(); return redirect('/login')
+    bal=con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()[0] or 0
+    inv=con.execute("SELECT COALESCE(SUM(amount),0) FROM investments WHERE uid=?",(uid,)).fetchone()[0] or 0
+    inc=con.execute("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE uid=? AND type IN ('return','reward','bonus')",(uid,)).fetchone()[0] or 0
+    act=con.execute("SELECT COUNT(*) FROM investments WHERE uid=? AND status='active'",(uid,)).fetchone()[0] or 0
+    con.close()
+    html=open('account.html').read()
+    html=html.replace('__NAME__',(u['name'] or 'USER').upper()).replace('__EMAIL__',u['email'] or '').replace('__PHONE__',u['phone'] or '')
+    html=html.replace('__MID__',str(u['id'])).replace('__CREATED__',str(u['created'])[:10] if 'created' in u.keys() else '')
+    html=html.replace('__BAL__',f"{bal:,}").replace('__INV__',f"{inv:,}").replace('__INC__',f"{inc:,}").replace('__ACT__',str(act))
+    return html
+
 @app.route('/home')
 def dashboard():
     if 'uid' not in session: return redirect('/login')

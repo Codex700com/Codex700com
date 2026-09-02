@@ -1,0 +1,28 @@
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{background:#0f1115;color:#fff;font-family:Arial;margin:0;padding:16px}
+.card{background:#171a21;border-radius:12px;padding:16px;margin-bottom:12px}
+.btn{background:#f5b301;color:#000;border:0;border-radius:8px;padding:12px;width:100%;margin-top:8px;font-weight:bold}
+a{color:#f5b301;text-decoration:none}.row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #222}
+input{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #333;background:#0f1115;color:#fff}</style></head>
+<body>
+<div class="card" onclick="location.href='/account/personal'" style="cursor:pointer">
+<h3>CODEX Account</h3><p>__NAME__</p><small>__EMAIL__ | __PHONE__</small><br><small>ID: __MID__ | Since __CREATED__ →</small>
+</div>
+<div class="card"><h4>Wallet Overview</h4>
+<div class="row"><span>Balance</span><b>UGX __BAL__</b></div>
+<div class="row"><span>Total Invested</span><b>UGX __INV__</b></div>
+<div class="row"><span>Total Income</span><b>UGX __INC__</b></div>
+<div class="row"><span>Active Plans</span><b>__ACT__</b></div>
+</div>
+<div class="card">
+<div class="row" onclick="location.href='/account/personal'"><span>👤 Personal Information</span><span>→</span></div>
+<div class="row" onclick="location.href='/account/security'"><span>🔒 Security Settings</span><span>→</span></div>
+<div class="row" onclick="location.href='/account/bank'"><span>🏦 Payment Details</span><span>→</span></div>
+<div class="row" onclick="location.href='/account/notifications'"><span>🔔 Notifications</span><span>→</span></div>
+<div class="row" onclick="location.href='/account/language'"><span>🌐 Language</span><span>→</span></div>
+<div class="row" onclick="location.href='/account/statement'"><span>📄 Download Statement</span><span>→</span></div>
+<div class="row" onclick="location.href='/support'"><span>💬 Help & Support</span><span>→</span></div>
+<div class="row" onclick="if(confirm('Logout?'))location.href='/logout'"><span>🚪 Logout</span><span>→</span></div>
+</div>
+<div class="card" style="text-align:center"><a href="/home">← Back to Home</a></div>
+</body></html>
