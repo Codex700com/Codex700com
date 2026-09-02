@@ -1163,6 +1163,147 @@ def admin():
     if not is_admin(session['uid']): return "Forbidden",403
     return "<h2>ADMIN</h2><a href='/admin/chats'>Chats</a> | <a href='/admin/withdrawals'>Withdrawals</a> | <a href='/dashboard'>User Dash</a>"
 
+
+# === CODEX INVESTMENT SYSTEM ===
+PLANS = {
+ "starter": {"name":"Starter Plan","amount":50000,"duration":7,"daily":5000},
+ "bronze": {"name":"Bronze Plan","amount":150000,"duration":15,"daily":15000},
+ "silver": {"name":"Silver Plan","amount":500000,"duration":30,"daily":100000},
+ "gold": {"name":"Gold Plan","amount":1000000,"duration":30,"daily":200000},
+}
+def invest_db():
+    import sqlite3
+    con=sqlite3.connect('codex700.db')
+    con.execute("""CREATE TABLE IF NOT EXISTS investments(
+    id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, plan_id TEXT,
+    amount INTEGER, daily_return INTEGER, duration_days INTEGER,
+    start_date TEXT, end_date TEXT, status TEXT DEFAULT 'ACTIVE',
+    total_accrued INTEGER DEFAULT 0, last_return_at TEXT, created_at TEXT)""")
+    con.execute("""CREATE TABLE IF NOT EXISTS investment_returns(
+    id INTEGER PRIMARY KEY AUTOINCREMENT, investment_id INTEGER, user_id TEXT,
+    period_date TEXT, amount INTEGER, created_at TEXT,
+    UNIQUE(investment_id, period_date))""")
+    con.execute("""CREATE TABLE IF NOT EXISTS transactions(
+    id INTEGER PRIMARY KEY AUTOINCREMENT, uid TEXT, type TEXT, amount INTEGER,
+    ref TEXT, status TEXT, ts TEXT)""")
+    con.commit(); return con
+
+@app.route('/invest/<plan_id>')
+def invest_confirm(plan_id):
+    from flask import session, redirect
+    if 'uid' not in session: return redirect('/login')
+    pl=PLANS.get(plan_id)
+    if not pl: return "Plan not found",404
+    import sqlite3
+    con=sqlite3.connect('codex700.db'); con.row_factory=sqlite3.Row
+    u=con.execute("SELECT balance FROM users WHERE username=? OR id=?",(session['uid'],session['uid'])).fetchone()
+    bal=u['balance'] if u else 0; con.close()
+    # keep your black/gold style
+    return f"""<div style='max-width:480px;margin:auto;background:#000;color:#fff;padding:20px;font-family:Arial;border:2px solid gold;border-radius:12px'>
+    <h2 style='color:gold'>{pl['name']}</h2>
+    <p>Amount: UGX {pl['amount']:,}</p><p>Duration: {pl['duration']} days</p>
+    <p>Configured Daily Return: UGX {pl['daily']:,}</p>
+    <p>Projected Total: UGX {pl['daily']*pl['duration']:,}</p>
+    <p>Wallet Balance: UGX {bal:,}</p>
+    <p style='font-size:12px;color:#aaa'>Configured returns are projected, not guaranteed. Actual credits subject to platform rules.</p>
+    <form method='POST' action='/invest/{plan_id}/execute'><button style='background:red;color:#fff;padding:12px;width:100%;border:none;border-radius:8px'>CONFIRM INVESTMENT</button></form>
+    <a href='/dashboard' style='color:gold'>CANCEL</a></div>"""
+
+@app.route('/invest/<plan_id>/execute', methods=['POST'])
+def invest_execute(plan_id):
+    from flask import session, redirect
+    import sqlite3, datetime, uuid
+    if 'uid' not in session: return redirect('/login')
+    pl=PLANS.get(plan_id)
+    if not pl: return "Plan not found",404
+    uid=session['uid']
+    con=invest_db(); con.isolation_level=None
+    try:
+        con.execute("BEGIN IMMEDIATE")
+        u=con.execute("SELECT id,balance FROM users WHERE username=? OR id=?",(uid,uid)).fetchone()
+        if not u: con.execute("ROLLBACK"); return "User not found",404
+        db_uid=u[0]; bal=u[1]
+        amt=pl['amount']
+        if bal < amt:
+            con.execute("ROLLBACK")
+            need=amt-bal
+            return f"""<div style='max-width:480px;margin:auto;background:#000;color:#fff;padding:20px;font-family:Arial'>
+            <h2 style='color:red'>INSUFFICIENT FUNDS</h2>
+            <p>You need UGX {amt:,} to activate this investment.</p>
+            <p>Your current wallet balance is UGX {bal:,}.</p>
+            <p>Additional funds required: UGX {need:,}</p>
+            <a href='/deposit' style='background:gold;padding:12px;display:block;text-align:center'>DEPOSIT FUNDS</a><br>
+            <a href='/dashboard' style='color:#aaa'>CANCEL</a></div>"""
+        # deduct
+        new_bal=bal-amt
+        con.execute("UPDATE users SET balance=? WHERE id=?",(new_bal,db_uid))
+        now=datetime.datetime.utcnow().isoformat()
+        end=(datetime.datetime.utcnow()+datetime.timedelta(days=pl['duration'])).isoformat()
+        ref=str(uuid.uuid4())[:8]
+        cur=con.execute("INSERT INTO investments(user_id,plan_id,amount,daily_return,duration_days,start_date,end_date,status,created_at) VALUES(?,?,?,?,?,?,?,?,?)",
+            (str(db_uid),plan_id,amt,pl['daily'],pl['duration'],now,end,'ACTIVE',now))
+        inv_id=cur.lastrowid
+        con.execute("INSERT INTO transactions(uid,type,amount,ref,status,ts) VALUES(?,?,?,?,?,?)",
+            (str(db_uid),'INVESTMENT',-amt,ref,'ACTIVE',now))
+        con.execute("COMMIT")
+    except sqlite3.IntegrityError:
+        try: con.execute("ROLLBACK")
+        except: pass
+        return "Already processing, check My Investments",409
+    except Exception as e:
+        try: con.execute("ROLLBACK")
+        except: pass
+        return f"Error {e}",500
+    finally:
+        con.close()
+    return f"""<div style='max-width:480px;margin:auto;background:#000;color:#fff;padding:20px;text-align:center;font-family:Arial'>
+    <h2 style='color:gold'>INVESTMENT ACTIVATED</h2><p>{pl['name']}</p><p>Amount: UGX {amt:,}</p>
+    <p>Status: ACTIVE</p><a href='/investments' style='background:red;color:#fff;padding:12px;display:block'>VIEW MY INVESTMENT</a></div>"""
+
+@app.route('/investments')
+def my_investments():
+    from flask import session, redirect
+    if 'uid' not in session: return redirect('/login')
+    import sqlite3, datetime
+    con=invest_db(); con.row_factory=sqlite3.Row
+    u=con.execute("SELECT id FROM users WHERE username=? OR id=?",(session['uid'],session['uid'])).fetchone()
+    invs=list(con.execute("SELECT * FROM investments WHERE user_id=? ORDER BY id DESC",(str(u['id']),)).fetchall()) if u else []
+    con.close()
+    h=""
+    for iv in invs:
+        h+=f"<div style='border:2px solid gold;border-radius:12px;padding:12px;margin:10px;background:#111'><b style='color:gold'>{iv['plan_id']}</b> - UGX {iv['amount']:,}<br>Status:{iv['status']}<br>Daily: UGX {iv['daily_return']:,}<br>Accrued: UGX {iv['total_accrued']:,}<br>{iv['start_date'][:10]} to {iv['end_date'][:10]}</div>"
+    return f"<div style='max-width:480px;margin:auto;background:#000;color:#fff;min-height:100vh;padding:12px;font-family:Arial'><a href='/dashboard' style='color:gold'>Back</a><h2>My Investments</h2>{h or '<p>No investments</p>'}</div>"
+
+def credit_daily_returns():
+    import sqlite3, datetime
+    con=invest_db(); con.row_factory=sqlite3.Row
+    now=datetime.datetime.utcnow()
+    invs=list(con.execute("SELECT * FROM investments WHERE status='ACTIVE'"))
+    for iv in invs:
+        end=datetime.datetime.fromisoformat(iv['end_date'])
+        if now >= end:
+            con.execute("UPDATE investments SET status='COMPLETED' WHERE id=?",(iv['id'],))
+            continue
+        period=now.date().isoformat()
+        try:
+            con.execute("INSERT INTO investment_returns(investment_id,user_id,period_date,amount,created_at) VALUES(?,?,?,?,?)",
+                (iv['id'],iv['user_id'],period,iv['daily_return'],now.isoformat()))
+            con.execute("UPDATE investments SET total_accrued=total_accrued+?, last_return_at=? WHERE id=?",
+                (iv['daily_return'],now.isoformat(),iv['id']))
+            con.execute("UPDATE users SET balance=balance+? WHERE id=?",(iv['daily_return'],iv['user_id']))
+            con.execute("INSERT INTO transactions(uid,type,amount,ref,status,ts) VALUES(?,?,?,?,?,?)",
+                (iv['user_id'],'DAILY RETURN',iv['daily_return'],f"inv{iv['id']}-{period}",'CREDITED',now.isoformat()))
+            con.commit()
+        except sqlite3.IntegrityError:
+            continue
+    con.close(); return len(invs)
+
+@app.route('/cron/credit')
+def cron_credit():
+    n=credit_daily_returns()
+    return f"credited check done {n}"
+# === END INVESTMENT SYSTEM ===
+
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 10000))
