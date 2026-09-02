@@ -609,6 +609,19 @@ def admin_reply(uid):
 # --- END CHAT ---
 
 
+@app.route('/withdraw', methods=['GET'])
+def withdraw_page():
+    from flask import session, redirect
+    if 'uid' not in session: return redirect('/login')
+    return '''<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#000;color:#fff;font-family:Arial;max-width:480px;margin:auto}.card{border:1px solid #8a6d1a;border-radius:12px;margin:10px;padding:14px;background:#0a0a0a}input,select{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid #444;background:#111;color:#fff}.btn{background:linear-gradient(#ff2222,#aa0000);color:#fff;border:none;padding:14px;border-radius:10px;font-weight:bold;width:100%;margin-top:10px}</style></head><body>
+<div style="padding:12px"><a href="/dashboard" style="color:gold;text-decoration:none">←</a> <b>Withdraw</b></div>
+<div class="card"><form method="POST" action="/withdraw/confirm">
+<label>Amount (UGX)</label><input name="amount" required placeholder="e.g. 50000" type="number" min="1000">
+<label>Payment Method</label><select name="method"><option>Airtel Money</option><option>MTN Money</option></select>
+<label>Mobile Number</label><input name="mobile" required placeholder="0755123456">
+<label>Account Name</label><input name="accname" required placeholder="Your name">
+<button class="btn">✈️ CONFIRM WITHDRAWAL</button></form></div></body></html>'''
+
 @app.route('/withdraw/confirm', methods=['POST'])
 def withdraw_confirm():
     if 'uid' not in session: return redirect('/login')
