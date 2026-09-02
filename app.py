@@ -145,7 +145,7 @@ def dashboard():
     </div>
     <div class="checkin"><div>🎁 <b>Daily Check-In Reward</b><br><small>Check in daily and get <span style="color:red">UGX 500</span></small></div><a href="#">Check In →</a></div>
     <div class="grid">
-      <a href="/invest">📈<span>Invest</span></a><a href="/deposit">💰<span>Deposit</span></a><a href="/withdraw">🏧<span>Withdraw</span></a><a href="#">👥<span>Referrals</span></a>
+      <a href="/invest">📈<span>Invest</span></a><a href="/deposit">💰<span>Deposit</span></a><a href="/chat">💬<span>Chat</span></a><a href="/withdraw">🏧<span>Withdraw</span></a><a href="#">👥<span>Referrals</span></a>
       <a href="#">📄<span>Transactions</span></a><a href="/raffle">🎁<span>Raffle</span></a><a href="#">🎧<span>Support</span></a><a href="#">💬<span>Chat Manager</span></a>
     </div>
     <div class="raffle">🏆 <b style="color:red">RAFFLE DRAW</b><br><small>Win amazing prizes daily</small><br><a href="/raffle#prizes">View Prizes →</a></div>
@@ -661,6 +661,67 @@ def chat_upload():
     return jsonify({"ok":1})
 
 # ADMIN: list users with chats
+
+@app.route('/chat')
+def chat_page():
+    from flask import session, redirect
+    if 'uid' not in session: return redirect('/login')
+    return open('chat.html').read() if os.path.exists('chat.html') else "chat.html missing"
+
+@app.route('/api/chat', methods=['GET','POST'])
+def api_chat():
+ from flask import session,request,jsonify
+ import sqlite3
+ if 'uid' not in session: return jsonify([])
+ uid=session['uid']
+ con=sqlite3.connect('codex700.db');con.row_factory=sqlite3.Row
+ if request.method=='POST':
+ d=request.get_json();msg=d.get('msg','')
+ try: u=con.execute('SELECT username FROM users WHERE id=?',(uid,)).fetchone();uname=u['username'] if u else uid
+ except: uname=uid
+ con.execute('INSERT INTO chats(uid,username,msg,direction) VALUES(?,?,?,?)',(uid,uname,msg,'u2a'));con.commit();return jsonify({'ok':1})
+ rows=con.execute('SELECT * FROM chats WHERE uid=? ORDER BY id',(uid,)).fetchall();return jsonify([dict(r) for r in rows])
+
+@app.route('/api/chat/upload', methods=['POST'])
+def chat_up():
+ from flask import session,request,jsonify
+ from werkzeug.utils import secure_filename
+ import time
+ if 'uid' not in session: return jsonify({'e':1})
+ f=request.files.get('file');fn=str(int(time.time()))+'_'+secure_filename(f.filename);fp='static/uploads/'+fn;f.save(fp)
+ ft='video' if fn.lower().endswith(('.mp4','.mov','.webm')) else 'image'
+ uid=session['uid'];con=sqlite3.connect('codex700.db');con.row_factory=sqlite3.Row
+ try: u=con.execute('SELECT username FROM users WHERE id=?',(uid,)).fetchone();uname=u['username'] if u else uid
+ except: uname=uid
+ con.execute('INSERT INTO chats(uid,username,msg,ftype,fpath,direction) VALUES(?,?,?,?,?,?)',(uid,uname,'',ft,fp,'u2a'));con.commit();return jsonify({'ok':1})
+
+@app.route('/admin/chats')
+def adm_chats():
+ import sqlite3;con=sqlite3.connect('codex700.db');con.row_factory=sqlite3.Row
+ us=con.execute('SELECT uid,username,MAX(ts) as l,SUM(CASE WHEN direction="u2a" AND read=0 THEN 1 ELSE 0 END) as un FROM chats GROUP BY uid ORDER BY l DESC').fetchall()
+ h="<a href='/admin'>Back</a><h2>Chats</h2>"
+ [h:=h+f"<div style='border:1px solid #444;padding:10px;margin:5px'><b>{u['username']}</b> ({u['uid']}) unread:{u['un']} <a href='/admin/chat/{u['uid']}'>Open</a></div>" for u in us]
+ h+="<hr><h3>Broadcast to all</h3><form method='POST' action='/admin/broadcast'><input name='msg' style='width:70%;padding:10px'><button>Send All</button></form>"
+ return h
+
+@app.route('/admin/chat/<uid>')
+def adm_one(uid):
+ import sqlite3;con=sqlite3.connect('codex700.db');con.row_factory=sqlite3.Row
+ con.execute('UPDATE chats SET read=1 WHERE uid=?',(uid,));con.commit()
+ rs=con.execute('SELECT * FROM chats WHERE uid=? ORDER BY id',(uid,)).fetchall()
+ m=''.join([f"<p><b>{'Admin' if r['direction']=='a2u' else r['username']}:</b> {r['msg']} {'<img src=/'+r['fpath']+' width=200>' if r['ftype']=='image' and r['fpath'] else ''} {'<video src=/'+r['fpath']+' controls width=200></video>' if r['ftype']=='video' and r['fpath'] else ''} <small>{r['ts']}</small></p><hr>" for r in rs])
+ return f"<a href='/admin/chats'>Back</a><h3>{uid}</h3>{m}<form method='POST' action='/admin/chat/{uid}/reply'><input name='msg' style='width:70%;padding:10px'><button>Reply</button></form>"
+
+@app.route('/admin/chat/<uid>/reply', methods=['POST'])
+def adm_rep(uid):
+ import sqlite3;from flask import request,redirect;con=sqlite3.connect('codex700.db');con.execute('INSERT INTO chats(uid,username,msg,direction) VALUES(?,?,?,?)',(uid,'Admin',request.form.get('msg',''),'a2u'));con.commit();return redirect(f'/admin/chat/{uid}')
+
+@app.route('/admin/broadcast', methods=['POST'])
+def adm_bc():
+ import sqlite3;from flask import request,redirect;con=sqlite3.connect('codex700.db');msg=request.form.get('msg','')
+ uids=[r[0] for r in con.execute('SELECT id FROM users').fetchall()]
+ [con.execute('INSERT INTO chats(uid,username,msg,direction) VALUES(?,?,?,?)',(u,'Admin',msg,'a2u')) for u in uids];con.commit();return redirect('/admin/chats')
+
 @app.route('/admin/chats')
 def admin_chats():
     import sqlite3

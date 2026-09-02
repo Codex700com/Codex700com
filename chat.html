@@ -1,0 +1,14 @@
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#000;color:#fff;font-family:Arial;max-width:480px;margin:auto}#box{height:60vh;overflow:auto;border:1px solid #333;padding:10px;border-radius:10px;margin:10px}.me{text-align:right;color:gold}.them{text-align:left;background:#111;padding:6px;border-radius:8px;margin:4px}</style></head><body>
+<div style="padding:12px"><a href="/dashboard" style="color:gold">←</a> <b>Chat with Manager</b></div>
+<div id="box"></div>
+<div style="display:flex;padding:10px;gap:5px"><input id="m" style="flex:1;padding:10px;background:#111;color:#fff;border:1px solid #444;border-radius:8px" placeholder="Type..."><button onclick="send()" style="background:red;color:#fff;border:none;padding:10px;border-radius:8px">Send</button></div>
+<div style="padding:10px"><input type="file" id="f" accept="image/*,video/*"><button onclick="sendF()">📎 Send Photo/Video</button></div>
+<script>
+async function load(){let r=await fetch('/api/chat');let j=await r.json();document.getElementById('box').innerHTML=j.map(x=>{
+ let media=x.ftype=='image'?`<br><img src="/${x.fpath}" style="max-width:200px">`:x.ftype=='video'?`<br><video src="/${x.fpath}" controls style="max-width:200px"></video>`:'';
+ return `<div class="${x.direction=='a2u'?'them':'me'}"><b>${x.direction=='a2u'?'Manager':x.username}:</b> ${x.msg||''}${media}<br><small>${x.ts}</small></div>`
+}).join('')}
+async function send(){let v=document.getElementById('m').value;if(!v)return;await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({msg:v})});document.getElementById('m').value='';load()}
+async function sendF(){let fi=document.getElementById('f').files[0];if(!fi)return alert('choose file');let fd=new FormData();fd.append('file',fi);await fetch('/api/chat/upload',{method:'POST',body:fd});load()}
+setInterval(load,3000);load()
+</script></body></html>
