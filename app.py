@@ -238,6 +238,11 @@ def invest_do2():
         return STYLE+f"<p>Error: {e}</p><a href='/invest'>Back</a>"
     finally: con.close()
 
+CHECKIN_REWARD = 500
+@app.route('/checkin')
+def checkin_page():
+    return 'setup needed'
+
 def credit_returns():
     import datetime
     con=db()
