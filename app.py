@@ -1453,9 +1453,3 @@ def avisits():
     vs=list(con.execute("SELECT v.*,u.username FROM visits v JOIN users u ON v.uid=u.id ORDER BY v.id DESC LIMIT 100"))
     con.close()
     return render_template_string("<h2>Visits - who viewed accounts</h2>{%for v in vs%}{{v['username']}} at {{v['visited_at']}}<br>{%endfor%}<a href=/admin>back</a>", vs=vs)
-
-if __name__ == '__main__':
-    import os
-    port = int(os.environ.get('PORT', 10000))
-    print(f"Starting on port {port}", flush=True)
-    app.run(host='0.0.0.0', port=port)
