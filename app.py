@@ -439,7 +439,8 @@ def acc_personal():
     if request.method=='POST':
         con.execute("UPDATE users SET name=?, phone=? WHERE id=?",(request.form.get('name'), request.form.get('phone'), uid)); con.commit()
         con.close(); return redirect('/account?saved=1')
-    u=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone(); con.close()
+    _r=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone()
+    u=dict(_r) if _r else None; con.close()
     return f"<body style='background:#0f1115;color:#fff;font-family:Arial;padding:20px'><h3>Personal Information</h3><form method=post><input name=name value='{u.get('name','')}' style='width:100%;padding:10px;margin:6px 0'><input name=phone value='{u.get('phone','') or ''}' style='width:100%;padding:10px;margin:6px 0'><br>Email: {u.get('email','')} (cannot change)<br><br><button style='background:#f5b301;padding:12px;width:100%;border:0;border-radius:8px;font-weight:bold'>Save</button></form><br><a href='/account' style='color:#f5b301'>← Back</a>"
 
 @app.route('/account/security', methods=['GET','POST'])
@@ -488,7 +489,8 @@ def logout():
 def account_page():
     if 'uid' not in session: return redirect('/login')
     con=db(); uid=session['uid']
-    u=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone()
+    _r=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone()
+    u=dict(_r) if _r else None
     if not u: con.close(); return redirect('/login')
     bal=con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()[0] or 0
     inv=con.execute("SELECT COALESCE(SUM(amount),0) FROM investments WHERE uid=?",(uid,)).fetchone()[0] or 0
@@ -505,7 +507,8 @@ def account_page():
 def dashboard():
     if 'uid' not in session: return redirect('/login')
     con=db(); uid=session['uid']
-    u=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone()
+    _r=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone()
+    u=dict(_r) if _r else None
     if not u:
         con.close(); session.clear(); return redirect('/login')
     name = u.get('name','').upper() if u.get('name','') else 'USER'
@@ -518,7 +521,7 @@ def dashboard():
     html = html.replace('__NAME__', name).replace('__BAL__', f"{bal:,}").replace('__INV__', f"{inv:,}").replace('__INC__', f"{inc:,}").replace('__ACT__', str(act))
     return html
 
-@app.route
+@app.route('/dashboard')
 @app.route('/deposit', methods=['GET','POST'])
 def deposit():
     if 'uid' not in session: return redirect('/login')
