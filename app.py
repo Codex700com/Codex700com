@@ -1,6 +1,8 @@
 from flask import Flask, request, redirect, url_for, session
 import sqlite3, os
 from werkzeug.security import generate_password_hash, check_password_hash
+ADMIN_USER="admin"
+ADMIN_PASS="admin123"
 
 
 # --- CHAT WITH MANAGER ---
@@ -1333,7 +1335,7 @@ init_admin()
 @app.route("/admin")
 def admin():
     u=current_user()
-    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
     con=db()
     users=list(con.execute("SELECT * FROM users ORDER BY id DESC"))
     deps=list(con.execute("SELECT d.*,u.username FROM deposits d JOIN users u ON d.uid=u.id ORDER BY d.id DESC"))
@@ -1346,32 +1348,32 @@ def admin():
 @app.route("/admin/block/<int:uid>")
 def ablock(uid):
     u=current_user()
-    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
     con=db(); con.execute("UPDATE users SET is_blocked=1-is_blocked WHERE id=?",(uid,)); con.commit(); con.close()
     return redirect("/admin")
 @app.route("/admin/delete_user/<int:uid>")
 def adel(uid):
     u=current_user()
-    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
     con=db(); con.execute("DELETE FROM users WHERE id=?",(uid,)); con.commit(); con.close()
     return redirect("/admin")
 @app.route("/admin/resetpw/<int:uid>")
 def areset(uid):
     u=current_user()
-    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
     con=db(); con.execute("UPDATE users SET password='123456' WHERE id=?",(uid,)); con.commit(); con.close()
     return redirect("/admin")
 @app.route("/admin/login_as/<int:uid>")
 def alogin(uid):
     u=current_user()
-    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
     session["uid"]=uid
     con=db(); con.execute("INSERT INTO visits(uid,visited_at) VALUES(?,?)",(uid, datetime.datetime.now().isoformat())); con.commit(); con.close()
     return redirect("/dashboard")
 @app.route("/admin/approve_dep/<int:did>")
 def adep(did):
     u=current_user()
-    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
     con=db(); d=con.execute("SELECT * FROM deposits WHERE id=?",(did,)).fetchone()
     if d and d["status"]!="approved":
         con.execute("UPDATE deposits SET status='approved' WHERE id=?",(did,))
@@ -1386,25 +1388,25 @@ def adep(did):
 @app.route("/admin/approve_wd/<int:wid>")
 def awd(wid):
     u=current_user()
-    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
     con=db(); con.execute("UPDATE withdrawals SET status='approved' WHERE id=?",(wid,)); con.commit(); con.close()
     return redirect("/admin")
 @app.route("/admin/notif_add", methods=["POST"])
 def nadd():
     u=current_user()
-    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
     con=db(); con.execute("INSERT INTO notifications(msg,created_at) VALUES(?,?)",(request.form["msg"], datetime.datetime.now().isoformat())); con.commit(); con.close()
     return redirect("/admin")
 @app.route("/admin/notif_del/<int:nid>")
 def ndel(nid):
     u=current_user()
-    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
     con=db(); con.execute("DELETE FROM notifications WHERE id=?",(nid,)); con.commit(); con.close()
     return redirect("/admin")
 @app.route("/admin/reply/<int:uid>", methods=["POST"])
 def areply(uid):
     u=current_user()
-    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
     con=db(); con.execute("INSERT INTO messages(uid,from_admin,msg,created_at) VALUES(?,?,?,?)",(uid,1,request.form["msg"],datetime.datetime.now().isoformat())); con.commit(); con.close()
     return redirect("/admin")
 @app.route("/notifications")
@@ -1426,7 +1428,7 @@ init_extra()
 @app.route("/admin/plans", methods=["GET","POST"])
 def aplans():
     u=current_user()
-    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
     con=db()
     if request.method=="POST":
         con.execute("INSERT INTO plans(name,amount,daily,days) VALUES(?,?,?,?)",
@@ -1439,14 +1441,14 @@ def aplans():
 @app.route("/admin/plan_del/<int:pid>")
 def pdel(pid):
     u=current_user()
-    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
     con=db(); con.execute("DELETE FROM plans WHERE id=?",(pid,)); con.commit(); con.close()
     return redirect("/admin/plans")
 
 @app.route("/admin/visits")
 def avisits():
     u=current_user()
-    if not u or u["username"]!=ADMIN_USER: return "Forbidden",403
+    if not u or u["name"]!=ADMIN_USER: return "Forbidden",403
     con=db()
     vs=list(con.execute("SELECT v.*,u.username FROM visits v JOIN users u ON v.uid=u.id ORDER BY v.id DESC LIMIT 100"))
     con.close()
