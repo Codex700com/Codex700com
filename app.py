@@ -172,23 +172,11 @@ PLANS={
 def init_invest():
     con=db()
     con.executescript("""
-    CREATE TABLE IF NOT EXISTS investments_new(id INTEGER PRIMARY KEY, uid INTEGER, plan TEXT, amount INTEGER, daily_return INTEGER, duration_days INTEGER, start_date TEXT, end_date TEXT, status TEXT DEFAULT 'active', total_accrued INTEGER DEFAULT 0, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
+    CREATE TABLE IF NOT EXISTS investments(id INTEGER PRIMARY KEY, uid INTEGER, plan TEXT, amount INTEGER, daily_return INTEGER, duration_days INTEGER, start_date TEXT, end_date TEXT, status TEXT DEFAULT 'active', total_accrued INTEGER DEFAULT 0, last_return_at TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
     CREATE TABLE IF NOT EXISTS return_ledger(id INTEGER PRIMARY KEY, investment_id INTEGER, uid INTEGER, period TEXT, amount INTEGER, created_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(investment_id, period));
+    CREATE TABLE IF NOT EXISTS transactions(id INTEGER PRIMARY KEY, uid INTEGER, type TEXT, amount INTEGER, status TEXT, ref TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
     """)
-    # migrate old investments if needed
-    try:
-        cols=[r[1] for r in con.execute("PRAGMA table_info(investments)").fetchall()]
-        if cols and "daily_return" not in cols:
-            for r in con.execute("SELECT * FROM investments").fetchall():
-                plan=r["plan"] if "plan" in r.keys() else "Starter Plan"
-                cfg=PLANS.get(plan, PLANS["Starter Plan"])
-                con.execute("INSERT INTO investments_new(uid,plan,amount,daily_return,duration_days,start_date,end_date,status) VALUES(?,?,?,?,?,?,?,?)",
-                    (r["uid"], plan, r["amount"], cfg["daily"], cfg["days"], r["created"] if "created" in r.keys() else None, None, "active"))
-            con.execute("DROP TABLE investments"); con.execute("ALTER TABLE investments_new RENAME TO investments")
-        else:
-            con.execute("DROP TABLE IF EXISTS investments_new")
-    except Exception as e: print("migrate:",e)
-    con.commit(); con.close()
+    con.close()
 init_invest()
 
 @app.route('/invest/confirm')
@@ -256,15 +244,14 @@ def credit_returns():
     invs=con.execute("SELECT * FROM investments WHERE status='active'").fetchall()
     now=datetime.datetime.now()
     for inv in invs:
-        try:
-            start=datetime.datetime.fromisoformat(inv['start_date'])
+        try: start=datetime.datetime.fromisoformat(inv['start_date'])
         except: continue
-        elapsed=(now-start).days+1
-        elapsed=min(elapsed, inv['duration_days'])
-        # check completed
-        if now.isoformat() > inv['end_date']:
+        try: end=datetime.datetime.fromisoformat(inv['end_date'])
+        except: continue
+        if now >= end:
             con.execute("UPDATE investments SET status='completed' WHERE id=?",(inv['id'],))
-            continue
+            con.commit(); continue
+        elapsed=min((now-start).days+1, inv['duration_days'])
         for d in range(1, elapsed+1):
             period=(start+datetime.timedelta(days=d-1)).date().isoformat()
             exists=con.execute("SELECT 1 FROM return_ledger WHERE investment_id=? AND period=?",(inv['id'],period)).fetchone()
@@ -272,8 +259,8 @@ def credit_returns():
             try:
                 con.execute("INSERT INTO return_ledger(investment_id,uid,period,amount) VALUES(?,?,?,?)",(inv['id'],inv['uid'],period,inv['daily_return']))
                 con.execute("UPDATE users SET balance=balance+? WHERE id=?",(inv['daily_return'],inv['uid']))
-                con.execute("UPDATE investments SET total_accrued=total_accrued+? WHERE id=?",(inv['daily_return'],inv['id']))
-                con.execute("INSERT INTO transactions(uid,type,amount,status) VALUES(?,'daily_return',?,'done')",(inv['uid'],inv['daily_return']))
+                con.execute("UPDATE investments SET total_accrued=total_accrued+?, last_return_at=? WHERE id=?",(inv['daily_return'],now.isoformat(),inv['id']))
+                con.execute("INSERT INTO transactions(uid,type,amount,status,ref) VALUES(?,'daily_return',?,'done',?)",(inv['uid'],inv['daily_return'],f"inv{inv['id']}_{period}"))
                 con.commit()
             except: pass
     con.close()
