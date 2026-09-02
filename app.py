@@ -238,10 +238,68 @@ def invest_do2():
         return STYLE+f"<p>Error: {e}</p><a href='/invest'>Back</a>"
     finally: con.close()
 
+
+
+
 CHECKIN_REWARD = 500
+
 @app.route('/checkin')
 def checkin_page():
-    return 'setup needed'
+    if 'uid' not in session: return redirect('/login')
+    import datetime
+    uid=session['uid']
+    con=db()
+    # ensure table exists
+    con.execute("CREATE TABLE IF NOT EXISTS checkins(id INTEGER PRIMARY KEY, uid INTEGER, checkin_date TEXT, amount INTEGER, created_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(uid, checkin_date))")
+    today=datetime.date.today().isoformat()
+    done=con.execute("SELECT 1 FROM checkins WHERE uid=? AND checkin_date=?",(uid,today)).fetchone()
+    last=con.execute("SELECT created_at FROM checkins WHERE uid=? ORDER BY id DESC LIMIT 1",(uid,)).fetchone()
+    con.close()
+    if done:
+        import datetime as dt
+        last_time=dt.datetime.fromisoformat(last['created_at']) if last else dt.datetime.now()
+        next_time=last_time+dt.timedelta(hours=24)
+        remaining=int((next_time-dt.datetime.now()).total_seconds())
+        if remaining<0: remaining=0
+        h=remaining//3600; m=(remaining%3600)//60; s=remaining%60
+        return STYLE+f"""<div class='card'><h2>✅ CHECK-IN SUCCESSFUL</h2>
+        <p>You earned <b>UGX 500</b> - added to balance</p>
+        <p>Next check-in in:</p><h1 id='timer'>{h:02d}:{m:02d}:{s:02d}</h1>
+        <a href='/dashboard' class='btn'>BACK</a>
+        <div class='link'><a href='/transactions'>View Transactions</a></div></div>
+        <script>let s={remaining};setInterval(()=>{{s--;if(s<0)location.reload();let h=String(Math.floor(s/3600)).padStart(2,'0'),m=String(Math.floor(s%3600/60)).padStart(2,'0'),ss=String(s%60).padStart(2,'0');document.getElementById('timer').textContent=h+':'+m+':'+ss}},1000)</script>"""
+    else:
+        return STYLE+f"""<div class='card'><h2>📅 DAILY CHECK-IN</h2>
+        <p>Reward: <b>UGX 500</b> to balance</p>
+        <form method='post' action='/checkin/claim'><button class='btn'>TAP TO CHECK-IN</button></form></div>"""
+
+@app.route('/checkin/claim', methods=['POST'])
+def checkin_claim():
+    if 'uid' not in session: return redirect('/login')
+    import datetime
+    uid=session['uid']
+    today=datetime.date.today().isoformat()
+    con=db()
+    con.execute("CREATE TABLE IF NOT EXISTS checkins(id INTEGER PRIMARY KEY, uid INTEGER, checkin_date TEXT, amount INTEGER, created_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(uid, checkin_date))")
+    try:
+        con.execute("BEGIN IMMEDIATE")
+        exists=con.execute("SELECT 1 FROM checkins WHERE uid=? AND checkin_date=?",(uid,today)).fetchone()
+        if exists:
+            con.execute("ROLLBACK"); con.close(); return redirect('/checkin')
+        last=con.execute("SELECT created_at FROM checkins WHERE uid=? ORDER BY id DESC LIMIT 1",(uid,)).fetchone()
+        if last:
+            lt=datetime.datetime.fromisoformat(last['created_at'])
+            if (datetime.datetime.now()-lt).total_seconds() < 24*3600:
+                con.execute("ROLLBACK"); con.close(); return redirect('/checkin')
+        con.execute("INSERT INTO checkins(uid,checkin_date,amount) VALUES(?,?,?)",(uid,today,500))
+        con.execute("UPDATE users SET balance=balance+? WHERE id=?",(500,uid))
+        con.execute("INSERT INTO transactions(uid,type,amount,status,ref) VALUES(?,'checkin_reward',?,'done',?)",(uid,500,today))
+        con.execute("COMMIT")
+    except Exception:
+        try: con.execute("ROLLBACK")
+        except: pass
+    con.close()
+    return redirect('/checkin')
 
 def credit_returns():
     import datetime
