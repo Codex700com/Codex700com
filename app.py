@@ -45,6 +45,11 @@ def init():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT, phone TEXT UNIQUE, password TEXT, invite TEXT
     )""")
+    try:
+        c.execute('ALTER TABLE users ADD COLUMN balance INTEGER DEFAULT 0')
+    except: pass
+    c.execute("CREATE TABLE IF NOT EXISTS investments(id INTEGER PRIMARY KEY, uid INTEGER, plan TEXT, amount INTEGER, status TEXT DEFAULT 'active')")
+    c.execute("CREATE TABLE IF NOT EXISTS transactions(id INTEGER PRIMARY KEY, uid INTEGER, type TEXT, amount INTEGER)")
     c.commit(); c.close()
 init()
 
@@ -126,69 +131,48 @@ def login():
     </form><div class='link'>No account? <a href='/register'>Register</a></div></div>
     """
 
-
 @app.route('/dashboard')
+@app.route('/home')
 def dashboard():
     if 'uid' not in session:
         return redirect('/login')
-    name = session.get('name','User').upper()
+    con=db(); uid=session['uid']
+    u=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone()
+    if not u:
+        con.close(); session.clear(); return redirect('/login')
+    name=u['name'].upper() if 'name' in u.keys() and u['name'] else 'USER'
+    try:
+        bal=con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()[0] or 0
+    except: bal=0
+    inv=con.execute("SELECT COALESCE(SUM(amount),0) FROM investments WHERE uid=?",(uid,)).fetchone()[0] or 0
+    inc=con.execute("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE uid=? AND type IN ('return','reward','bonus')",(uid,)).fetchone()[0] or 0
+    act=con.execute("SELECT COUNT(*) FROM investments WHERE uid=? AND status='active'",(uid,)).fetchone()[0] or 0
+    con.close()
     return DASH_STYLE + f"""
-    <div class="topbar"><div class="menu" onclick="document.getElementById('drawer').style.display='block'" style="cursor:pointer">☰</div><div class="logo">⬢ CODEX</div><div class="icons"><a href="/notifications" style="text-decoration:none">🔔</a><a href="/account" style="text-decoration:none">👤</a></div></div><div id="drawer" style="display:none;position:fixed;top:0;left:0;width:250px;height:100%;background:#111;color:#fff;z-index:999;padding:20px"><div onclick="document.getElementById('drawer').style.display='none'" style="cursor:pointer;text-align:right">✖</div><h3>Menu</h3><p><a href="/dashboard" style="color:#fff">🏠 Home</a></p><p><a href="/invest" style="color:#fff">📈 Invest</a></p><p><a href="/deposit" style="color:#fff">💰 Deposit</a></p><p><a href="/withdraw" style="color:#fff">🏧 Withdraw</a></p><p><a href="/transactions" style="color:#fff">📄 Transactions</a></p><p><a href="/referrals" style="color:#fff">👥 Referrals</a></p><p><a href="/raffle" style="color:#fff">🎁 Raffle</a></p><p><a href="/support" style="color:#fff">🎧 Support</a></p><p><a href="/chat" style="color:#fff">💬 Chat Manager</a></p><p><a href="/account" style="color:#fff">👤 Account</a></p><p><a href="/settings" style="color:#fff">⚙️ Settings</a></p><p><a href="/logout" style="color:#fff">🚪 Logout</a></p></div>
-    <div class="welcome">
-      <div><p>WELCOME BACK,</p><h2>{name}</h2><small>Let's grow your wealth together</small><br><a class="btn-red" href="/invest">Invest Now →</a></div>
-    </div>
+    <div class="topbar"><div class="menu" onclick="document.getElementById('drawer').style.display='block'" style="cursor:pointer">☰</div><div class="logo">⬢ CODEX</div><div class="icons"><a href="/notifications" style="text-decoration:none">🔔</a><a href="/account" style="text-decoration:none">👤</a></div></div><div id="drawer" style="display:none;position:fixed;top:0;left:0;width:250px;height:100%;background:#111;color:#fff;z-index:999;padding:20px;overflow-y:auto"><div onclick="document.getElementById('drawer').style.display='none'" style="cursor:pointer;text-align:right">✖</div><h3>Menu</h3><p><a href="/dashboard" style="color:#fff">Home</a></p><p><a href="/invest" style="color:#fff">Invest</a></p><p><a href="/deposit" style="color:#fff">Deposit</a></p><p><a href="/withdraw" style="color:#fff">Withdraw</a></p><p><a href="/transactions" style="color:#fff">Transactions</a></p><p><a href="/referrals" style="color:#fff">Referrals</a></p><p><a href="/raffle" style="color:#fff">Raffle</a></p><p><a href="/support" style="color:#fff">Support</a></p><p><a href="/chat" style="color:#fff">Chat Manager</a></p><p><a href="/account" style="color:#fff">Account</a></p><p><a href="/settings" style="color:#fff">Settings</a></p><p><a href="/logout" style="color:#fff">Logout</a></p></div>
+    <div class="welcome"><div><p>WELCOME BACK,</p><h2>{name}</h2><small>Let's grow your wealth together</small><br><a class="btn-red" href="/invest">Invest Now →</a></div></div>
     <div class="stats">
-      <div><small>Wallet Balance</small><b>UGX 0</b></div>
-      <div><small>Total Invested</small><b>UGX 0</b></div>
-      <div><small>Total Income</small><b>UGX 0</b></div>
-      <div><small>Active Plans</small><b>0</b></div>
+      <div onclick="location.href='/account'" style="cursor:pointer"><small>Wallet Balance</small><br><b><span id="bal">UGX {bal:,}</span> <span onclick="event.stopPropagation();toggleBal()" style="cursor:pointer">👁️</span></b></div>
+      <div onclick="location.href='/investments'" style="cursor:pointer"><small>Total Invested</small><br><b>UGX {inv:,}</b></div>
+      <div onclick="location.href='/transactions'" style="cursor:pointer"><small>Total Income</small><br><b>UGX {inc:,}</b></div>
+      <div onclick="location.href='/investments'" style="cursor:pointer"><small>Active Plans</small><br><b>{act}</b></div>
     </div>
+    <script>var hv=false;function toggleBal(){{hv=!hv;document.getElementById('bal').innerText=hv?'***':'UGX {bal:,}';}}</script>
     <div class="checkin"><div>🎁 <b>Daily Check-In Reward</b><br><small>Check in daily and get <span style="color:red">UGX 500</span></small></div><a href="/checkin">Check In →</a></div>
     <div class="grid">
-      <a href="/invest">📈<span>Invest</span></a><a href="/deposit">💰<span>Deposit</span></a><a href="/chat">💬<span>Chat</span></a><a href="/withdraw">🏧<span>Withdraw</span></a><a href="/referrals">👥<span>Referrals</span></a>
-      <a href="/transactions">📄<span>Transactions</span></a><a href="/raffle">🎁<span>Raffle</span></a><a href="/support">🎧<span>Support</span></a><a href="/chat">💬<span>Chat Manager</span></a>
+      <a href="/invest"><span>Invest</span></a><a href="/deposit"><span>Deposit</span></a><a href="/withdraw"><span>Withdraw</span></a><a href="/referrals"><span>Referrals</span></a>
+      <a href="/transactions"><span>Transactions</span></a><a href="/raffle"><span>Raffle</span></a><a href="/support"><span>Support</span></a><a href="/chat"><span>Chat Manager</span></a>
     </div>
-    <div class="raffle">🏆 <b style="color:red">RAFFLE DRAW</b><br><small>Win amazing prizes daily</small><br><a href="/raffle#prizes">View Prizes →</a></div>
-    <h3 style="color:red;margin:15px 10px">📈 INVESTMENT PLANS <a href="/invest" style="float:right;font-size:12px;color:red">View All Plans ></a></h3>
+    <div class="raffle" onclick="location.href='/raffle'" style="cursor:pointer">🏆 <b style="color:red">RAFFLE DRAW</b><br><small>Win amazing prizes daily</small><br><a href="/raffle">View Prizes →</a></div>
+    <h3 style="color:red;margin:15px 10px">INVESTMENT PLANS <a href="/invest" style="float:right;font-size:12px;color:red">View All Plans ></a></h3>
     <div class="plans">
-      <div class="plan"><b>Starter Plan</b><br><small>Daily Return <span style="color:red">20%</span></small><br><small>Duration 30 Days</small><br><small>Min. Invest <span style="color:red">UGX 50,000</span></small></div>
-      <div class="plan"><b>Silver Plan</b><br><small>Daily Return <span style="color:red">20%</span></small><br><small>Duration 30 Days</small><br><small>Min. Invest <span style="color:red">UGX 250,000</span></small></div>
-      <div class="plan"><b>Gold Plan</b><br><small>Daily Return <span style="color:red">20%</span></small><br><small>Duration 30 Days</small><br><small>Min. Invest <span style="color:red">UGX 500,000</span></small></div>
+      <div class="plan" onclick="location.href='/invest?plan=Starter'"><b>Starter Plan</b><br><small>Daily Return <span style="color:red">20%</span></small><br><small>Duration 30 Days</small><br><small>Min. Invest <span style="color:red">UGX 50,000</span></small><br><a href="/invest?plan=Starter" style="color:red">Invest Now</a></div>
+      <div class="plan" onclick="location.href='/invest?plan=Silver'"><b>Silver Plan</b><br><small>Daily Return <span style="color:red">20%</span></small><br><small>Duration 30 Days</small><br><small>Min. Invest <span style="color:red">UGX 250,000</span></small><br><a href="/invest?plan=Silver" style="color:red">Invest Now</a></div>
+      <div class="plan" onclick="location.href='/invest?plan=Gold'"><b>Gold Plan</b><br><small>Daily Return <span style="color:red">20%</span></small><br><small>Duration 30 Days</small><br><small>Min. Invest <span style="color:red">UGX 500,000</span></small><br><a href="/invest?plan=Gold" style="color:red">Invest Now</a></div>
     </div>
     <div class="support"><div>🎧 <b>Need Help?</b><br><small>Our support team is always here for you.</small></div><a href="/support">Contact Support</a></div>
-    <div class="navbar"><a href="/dashboard" class="active">🏠<span>Home</span></a><a href="/invest">📊<span>Invest</span></a><a href="/transactions">⇄<span>Transactions</span></a><a href="/referrals">👥<span>Referrals</span></a><a href="#">👤<span>Account</span></a></div>
+    <div class="navbar"><a href="/dashboard" class="active">Home</a><a href="/invest">Invest</a><a href="/transactions">Transactions</a><a href="/referrals">Referrals</a><a href="/account">Account</a></div>
     """
-DASH_STYLE = """
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#000;color:#fff;font-family:Arial;padding-bottom:70px}
-.topbar{display:flex;justify-content:space-between;padding:12px;background:#111;color:#ffcc33;font-weight:bold}
-.welcome{background:linear-gradient(90deg,#1a0d00,#3a2200);margin:10px;border-radius:12px;padding:20px}
-.welcome h2{color:red}
-.btn-red{background:#cc0000;color:#fff;padding:8px 15px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:10px}
-.stats{display:flex;gap:8px;margin:10px}
-.stats div{flex:1;background:#111;border:1px solid #333;border-radius:10px;padding:10px;text-align:center}
-.stats b{color:red;font-size:13px}
-.stats small{font-size:11px;color:#aaa}
-.checkin{display:flex;justify-content:space-between;align-items:center;background:#1a0d00;margin:10px;padding:12px;border-radius:10px}
-.checkin a{background:#cc0000;color:#fff;padding:8px 12px;border-radius:8px;text-decoration:none}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px}
-.grid a{background:#111;border:1px solid #333;border-radius:10px;padding:12px 5px;text-align:center;text-decoration:none;color:#ffcc33;font-size:20px}
-.grid span{display:block;font-size:11px;color:#fff;margin-top:5px}
-.raffle{background:#1a0d00;margin:10px;padding:15px;border-radius:12px;text-align:center}
-.raffle a{background:#cc0000;color:#fff;padding:8px 15px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:8px}
-.plans{display:flex;gap:8px;overflow-x:auto;padding:10px}
-.plan{min-width:150px;background:#111;border:1px solid #333;border-radius:10px;padding:12px;font-size:12px}
-.support{display:flex;justify-content:space-between;background:#111;margin:10px;padding:12px;border-radius:10px;align-items:center}
-.support a{border:1px solid red;color:red;padding:8px 12px;border-radius:8px;text-decoration:none}
-.navbar{position:fixed;bottom:0;left:0;right:0;background:#111;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #333}
-.navbar a{color:#aaa;text-decoration:none;font-size:12px;text-align:center}
-.navbar a.active{color:red}
-.navbar span{display:block}
-</style>
-"""
-
 @app.route('/deposit', methods=['GET','POST'])
 def deposit():
     if 'uid' not in session: return redirect('/login')
