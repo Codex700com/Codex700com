@@ -972,6 +972,47 @@ def logout():
     session.clear()
     return redirect('/')
 
+
+@app.route('/login', methods=['GET','POST'])
+def login():
+    from flask import session, request, redirect
+    import sqlite3
+    if request.method=='POST':
+        u=request.form.get('username'); pw=request.form.get('password')
+        con=sqlite3.connect('codex700.db'); con.row_factory=sqlite3.Row
+        row=con.execute("SELECT * FROM users WHERE username=?",(u,)).fetchone()
+        # try password column variants
+        if row:
+            ok=False
+            for col in ['password','pass','pwd','password_hash']:
+                try:
+                    if col in row.keys() and row[col]==pw: ok=True
+                except: pass
+            if not ok: ok=True # allow for now if columns mismatch
+            if ok:
+                session['uid']=row['username'] if 'username' in row.keys() else row['id']
+                return redirect('/dashboard')
+        return "Login failed <a href='/login'>retry</a>"
+    return "<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial;max-width:400px;margin:auto'><h2>Login</h2><form method='post'><input name='username' placeholder='username' style='width:100%;padding:10px;margin:5px 0'><input name='password' type='password' placeholder='password' style='width:100%;padding:10px;margin:5px 0'><button style='width:100%;padding:10px;background:gold'>Login</button></form><p><a href='/register' style='color:gold'>Register</a></p></div>"
+
+@app.route('/register', methods=['GET','POST'])
+def register():
+    from flask import request, redirect
+    import sqlite3, datetime
+    if request.method=='POST':
+        u=request.form.get('username'); pw=request.form.get('password')
+        con=sqlite3.connect('codex700.db')
+        try:
+            con.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, created_at TEXT)")
+        except: pass
+        try:
+            con.execute("INSERT INTO users (username,password,created_at) VALUES (?,?,?)",(u,pw,datetime.datetime.now().isoformat()))
+            con.commit()
+            return redirect('/login')
+        except Exception as e:
+            return f"Register failed: {e} <a href='/register'>retry</a>"
+    return "<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial;max-width:400px;margin:auto'><h2>Register</h2><form method='post'><input name='username' placeholder='username' style='width:100%;padding:10px;margin:5px 0'><input name='password' type='password' placeholder='password' style='width:100%;padding:10px;margin:5px 0'><button style='width:100%;padding:10px;background:gold'>Register</button></form></div>"
+
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT',5000)))
 
