@@ -929,6 +929,49 @@ def wd_reject(wid):
     c=wdb(); c.execute("UPDATE withdrawals SET status='Rejected' WHERE id=?",(wid,)); c.commit(); c.close(); return redirect('/admin/withdrawals')
 # --- END WITHDRAWAL ---
 
+
+@app.route('/deposit')
+def deposit():
+    from flask import session, redirect
+    if 'uid' not in session: return redirect('/login')
+    return "<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial'><a href='/dashboard' style='color:gold'>← Back</a><h2>Deposit</h2><p>Deposit page coming - MTN/Airtel integration here</p></div>"
+
+@app.route('/withdraw')
+def withdraw():
+    from flask import session, redirect
+    if 'uid' not in session: return redirect('/login')
+    return "<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial'><a href='/dashboard' style='color:gold'>← Back</a><h2>Withdraw</h2><p>Withdraw page - <a href='/withdraw/history' style='color:gold'>History</a></p></div>"
+
+@app.route('/transactions')
+def transactions():
+    from flask import session, redirect
+    if 'uid' not in session: return redirect('/login')
+    return "<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial'><a href='/dashboard' style='color:gold'>← Back</a><h2>Transactions</h2><p>No transactions yet</p></div>"
+
+@app.route('/referrals')
+def referrals():
+    from flask import session, redirect
+    if 'uid' not in session: return redirect('/login')
+    return "<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial'><a href='/dashboard' style='color:gold'>← Back</a><h2>Referrals</h2><p>Your referral link: /register?ref="+str(session.get('uid'))+"</p></div>"
+
+@app.route('/account')
+def account():
+    from flask import session, redirect
+    if 'uid' not in session: return redirect('/login')
+    return f"<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial'><a href='/dashboard' style='color:gold'>← Back</a><h2>Account</h2><p>User: {session.get('uid')}</p></div>"
+
+@app.route('/settings')
+def settings():
+    from flask import session, redirect
+    if 'uid' not in session: return redirect('/login')
+    return "<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial'><a href='/dashboard' style='color:gold'>← Back</a><h2>Settings</h2><p>Settings here</p></div>"
+
+@app.route('/logout')
+def logout():
+    from flask import session, redirect
+    session.clear()
+    return redirect('/')
+
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT',5000)))
 
