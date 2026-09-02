@@ -431,6 +431,59 @@ def investments2():
 
 @app.route('/dashboard')
 
+
+@app.route('/account/personal', methods=['GET','POST'])
+def acc_personal():
+    if 'uid' not in session: return redirect('/login')
+    con=db(); uid=session['uid']
+    if request.method=='POST':
+        con.execute("UPDATE users SET name=?, phone=? WHERE id=?",(request.form.get('name'), request.form.get('phone'), uid)); con.commit()
+        con.close(); return redirect('/account?saved=1')
+    u=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone(); con.close()
+    return f"<body style='background:#0f1115;color:#fff;font-family:Arial;padding:20px'><h3>Personal Information</h3><form method=post><input name=name value='{u['name']}' style='width:100%;padding:10px;margin:6px 0'><input name=phone value='{u['phone'] or ''}' style='width:100%;padding:10px;margin:6px 0'><br>Email: {u['email']} (cannot change)<br><br><button style='background:#f5b301;padding:12px;width:100%;border:0;border-radius:8px;font-weight:bold'>Save</button></form><br><a href='/account' style='color:#f5b301'>← Back</a>"
+
+@app.route('/account/security', methods=['GET','POST'])
+def acc_sec():
+    if 'uid' not in session: return redirect('/login')
+    msg=""
+    if request.method=='POST':
+        con=db(); u=con.execute("SELECT password FROM users WHERE id=?",(session['uid'],)).fetchone()
+        from werkzeug.security import check_password_hash, generate_password_hash
+        if not check_password_hash(u[0], request.form.get('cur','')): msg="Current password wrong"
+        elif request.form.get('new')!=request.form.get('conf'): msg="New passwords don't match"
+        else: con.execute("UPDATE users SET password=? WHERE id=?",(generate_password_hash(request.form.get('new')),session['uid'])); con.commit(); msg="Password changed ✓"
+        con.close()
+    return f"<body style='background:#0f1115;color:#fff;font-family:Arial;padding:20px'><h3>Security Settings</h3><p style='color:orange'>{msg}</p><form method=post><input type=password name=cur placeholder='Current password' style='width:100%;padding:10px;margin:6px 0'><input type=password name=new placeholder='New password' style='width:100%;padding:10px;margin:6px 0'><input type=password name=conf placeholder='Confirm new' style='width:100%;padding:10px;margin:6px 0'><button style='background:#f5b301;padding:12px;width:100%;border:0;border-radius:8px;font-weight:bold'>Change Password</button></form><br><a href='/account' style='color:#f5b301'>← Back</a>"
+
+@app.route('/account/bank', methods=['GET','POST'])
+def acc_bank():
+    if 'uid' not in session: return redirect('/login')
+    con=db(); con.execute("CREATE TABLE IF NOT EXISTS bank_details (uid INTEGER PRIMARY KEY, bank_name TEXT, acc_name TEXT, acc_number TEXT, mm TEXT)")
+    if request.method=='POST':
+        con.execute("INSERT OR REPLACE INTO bank_details VALUES (?,?,?,?,?)",(session['uid'],request.form.get('bank_name'),request.form.get('acc_name'),request.form.get('acc_number'),request.form.get('mm'))); con.commit()
+    b=con.execute("SELECT * FROM bank_details WHERE uid=?",(session['uid'],)).fetchone(); con.close(); b=dict(b) if b else {}
+    return f"<body style='background:#0f1115;color:#fff;font-family:Arial;padding:20px'><h3>Payment Details</h3><form method=post><input name=bank_name placeholder='Bank name' value='{b.get('bank_name','')}' style='width:100%;padding:10px;margin:6px 0'><input name=acc_name placeholder='Account name' value='{b.get('acc_name','')}' style='width:100%;padding:10px;margin:6px 0'><input name=acc_number placeholder='Account number' value='{b.get('acc_number','')}' style='width:100%;padding:10px;margin:6px 0'><input name=mm placeholder='Mobile Money e.g 0770...' value='{b.get('mm','')}' style='width:100%;padding:10px;margin:6px 0'><button style='background:#f5b301;padding:12px;width:100%;border:0;border-radius:8px;font-weight:bold'>Save</button></form><br><a href='/account' style='color:#f5b301'>← Back</a>"
+
+@app.route('/account/notifications', methods=['GET','POST'])
+def acc_notif():
+    return "<body style='background:#0f1115;color:#fff;font-family:Arial;padding:20px'><h3>Notifications</h3><p>All system alerts enabled.</p><a href="/account" style="color:#f5b301">← Back</a>"
+
+@app.route('/account/language', methods=['GET','POST'])
+def acc_lang():
+    if request.method=='POST': session['lang']=request.form.get('lang'); return redirect('/account')
+    return "<body style='background:#0f1115;color:#fff;font-family:Arial;padding:20px'><h3>Language</h3><form method=post><select name=lang style='padding:10px;width:100%'><option>English</option><option>Luganda</option></select><br><br><button style='background:#f5b301;padding:12px;width:100%;border:0;border-radius:8px'>Save</button></form><br><a href=/account style='color:#f5b301'>← Back</a>"
+
+@app.route('/account/statement')
+def acc_stmt():
+    if 'uid' not in session: return redirect('/login')
+    con=db(); rows=con.execute("SELECT created,type,amount FROM transactions WHERE uid=? ORDER BY created DESC",(session['uid'],)).fetchall(); con.close()
+    csv="date,type,amount\n" + "\n".join([f"{r[0]},{r[1]},{r[2]}" for r in rows])
+    return (csv, 200, {'Content-Type':'text/csv','Content-Disposition':'attachment; filename=statement.csv'})
+
+@app.route('/logout')
+def logout():
+    session.clear(); return redirect('/login')
+
 @app.route('/account')
 def account_page():
     if 'uid' not in session: return redirect('/login')
