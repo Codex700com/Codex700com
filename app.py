@@ -1,4 +1,9 @@
-from flask import Flask, request, redirect, url_for, session
+from flask import Flask
+try:
+ from apscheduler.schedulers.background import BackgroundScheduler
+ _sched=True
+
+except: _sched=False, request, redirect, url_for, session
 import sqlite3, os
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -140,7 +145,15 @@ PLANS={
  "Gold Plan":{"amount":500000,"daily":100000,"days":30},
  "Platinum Plan":{"amount":1000000,"daily":200000,"days":30},
 }
-def init_invest():
+def init_invest()
+# auto daily returns
+try:
+ if _sched:
+  sched=BackgroundScheduler()
+  sched.add_job(lambda: credit_returns(), "interval", hours=1)
+  sched.start()
+  print("scheduler started")
+except Exception as e: print("sched err",e):
     con=db()
     con.executescript("""
     CREATE TABLE IF NOT EXISTS investments_new(id INTEGER PRIMARY KEY, uid INTEGER, plan TEXT, amount INTEGER, daily_return INTEGER, duration_days INTEGER, start_date TEXT, end_date TEXT, status TEXT DEFAULT 'active', total_accrued INTEGER DEFAULT 0, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
@@ -161,6 +174,14 @@ def init_invest():
     except Exception as e: print("migrate:",e)
     con.commit(); con.close()
 init_invest()
+# auto daily returns
+try:
+ if _sched:
+  sched=BackgroundScheduler()
+  sched.add_job(lambda: credit_returns(), "interval", hours=1)
+  sched.start()
+  print("scheduler started")
+except Exception as e: print("sched err",e)
 
 @app.route('/invest/confirm')
 def invest_confirm2():
