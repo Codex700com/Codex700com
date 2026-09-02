@@ -136,7 +136,7 @@ def register():
     """
 
 @app.route('/login', methods=['GET','POST'])
-def login():
+def login(): # patched
     # block check injected below in POST handling
     msg=""
     if request.method=='POST':
