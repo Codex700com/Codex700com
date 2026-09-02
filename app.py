@@ -479,8 +479,13 @@ def raffle_winners():
 
 @app.route('/invest')
 def invest():
-    if 'uid' not in session: return redirect('/login')
-    return "<h2 style='color:white;background:black;padding:20px'>Investment Plans coming next</h2><a href='/dashboard'>Back</a>"
-
+    if 'uid' not in session:
+        return redirect('/login')
+    plans=[("Starter","UGX 50,000","UGX 20,000","UGX 600,000"),("Bronze","UGX 100,000","UGX 50,000","UGX 1,500,000"),("Silver","UGX 250,000","UGX 100,000","UGX 3,000,000"),("Gold","UGX 500,000","UGX 100,000","UGX 3,000,000"),("Platinum","UGX 1,000,000","UGX 200,000","UGX 6,000,000"),("Diamond","UGX 2,000,000","UGX 400,000","UGX 12,000,000"),("VIP","UGX 5,000,000","UGX 1,000,000","UGX 30,000,000"),("Exclusive","UGX 10,000,000","UGX 2,000,000","UGX 60,000,000")]
+    h='<meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#000;color:#fff;font-family:Arial;margin:0}.g{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}.c{background:#111;border:1px solid gold;border-radius:12px;padding:10px;text-align:center}</style><h2 style="color:red;text-align:center">INVESTMENT PLANS</h2><div class="g">'
+    for n,pr,da,to in plans:
+        h+=f"<div class=c><b style='color:red'>{n}</b><br><small>{pr}<br>Daily {da}<br>Total {to}</small><br><br><a href='#' style='background:#c00;color:#fff;padding:8px;display:block;border-radius:8px;text-decoration:none'>Invest Now</a></div>"
+    h+='</div><div style="text-align:center;padding:20px"><a href="/dashboard" style="color:gold">Back</a></div>'
+    return h
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT',5000)))
