@@ -2,6 +2,15 @@ from flask import Flask, request, redirect, url_for, session
 import sqlite3, os
 from werkzeug.security import generate_password_hash, check_password_hash
 
+
+# --- CHAT WITH MANAGER ---
+import sqlite3, time
+def chat_db():
+    c = sqlite3.connect('codex700.db')
+    c.execute('''CREATE TABLE IF NOT EXISTS chats
+    (id INTEGER PRIMARY KEY AUTOINCREMENT, uid TEXT, sender TEXT, msg TEXT, ts TEXT)''')
+    return c
+
 app = Flask(__name__)
 app.secret_key = "codex700-secret"
 DB = "codex.db"
@@ -577,5 +586,71 @@ def invest():
 </div></div></div>
 <div class="nav"><a href="/dashboard">🏠<br>Home</a><a href="/invest" class="active">📊<br>Invest</a><a href="#">💱<br>Transactions</a><a href="#">👥<br>Referrals</a><a href="#">🎧<br>Support</a><a href="#">👤<br>Account</a></div>
 </body></html>'''
+
+@app.route('/support')
+def support():
+    if 'uid' not in session: return redirect('/login')
+    uid = session['uid']
+    c = chat_db(); cur = c.cursor()
+    cur.execute("SELECT sender,msg,ts FROM chats WHERE uid=? ORDER BY id DESC LIMIT 20", (uid,))
+    msgs = cur.fetchall()[::-1]
+    c.close()
+    msgs_html = "".join([f"<div style='margin:6px;padding:8px;border-radius:8px;background:{'#1a1a1a' if m[0]=='user' else '#3a0000'};text-align:{'right' if m[0]=='user' else 'left'}'><small>{m[0]}</small><br>{m[1]}<br><small style='color:#888'>{m[2]}</small></div>" for m in msgs])
+    return '''<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<style>*{box-sizing:border-box}body{background:#000;color:#fff;font-family:Arial;max-width:480px;margin:auto}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px}.box{border:1px solid #8a6d00;border-radius:12px;padding:12px;margin:10px;display:flex;gap:12px;align-items:center}
+.btn{background:linear-gradient(#ff2222,#aa0000);color:#fff;border:none;padding:10px 16px;border-radius:10px;font-weight:bold}
+.conv{margin:10px}.chead{color:gold;font-size:12px;margin:10px}
+#msgs{padding:10px;min-height:200px}
+.send{display:flex;gap:6px;padding:10px;position:sticky;bottom:0;background:#000}input{flex:1;padding:10px;border-radius:10px;border:1px solid #444;background:#111;color:#fff}
+</style></head><body>
+<div class="top"><a href="/dashboard" style="color:gold;text-decoration:none">←</a><h3>Chat with Manager</h3><span>🎧</span></div>
+<div class="box"><div style="width:60px;height:60px;border:1px solid gold;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px">💬</div>
+<div>Our managers are here<br>to assist you 24/7.<br><br><button class="btn" onclick="document.getElementById('inp').focus()">+ New Conversation</button></div></div>
+<div class="chead">MY CONVERSATIONS</div><div id="msgs">'''+msgs_html+'''</div>
+<form class="send" method="POST" action="/support/send"><input id="inp" name="msg" placeholder="Type a message..." required><button class="btn">Send</button></form>
+</body></html>'''
+
+@app.route('/support/send', methods=['POST'])
+def support_send():
+    if 'uid' not in session: return redirect('/login')
+    msg = request.form.get('msg','')[:500]
+    if msg:
+        c = chat_db(); c.execute("INSERT INTO chats (uid,sender,msg,ts) VALUES (?,?,?,?)",
+        (session['uid'],'user',msg,time.strftime("%H:%M")))
+        c.commit(); c.close()
+    return redirect('/support')
+
+@app.route('/admin/chats')
+def admin_chats():
+    # simple protect - change password check as you have
+    c = chat_db(); cur=c.cursor()
+    cur.execute("SELECT DISTINCT uid FROM chats ORDER BY id DESC")
+    users = [r[0] for r in cur.fetchall()]; c.close()
+    h="".join([f"<div style='padding:12px;border-bottom:1px solid #222'><a href='/admin/chat/{u}' style='color:gold;text-decoration:none'>{u}</a></div>" for u in users])
+    return f"<body style='background:#000;color:#fff;font-family:Arial'><h3 style='color:gold;padding:12px'>Admin - User Chats</h3>{h}</body>"
+
+@app.route('/admin/chat/<uid>')
+def admin_chat(uid):
+    c = chat_db(); cur=c.cursor()
+    cur.execute("SELECT sender,msg,ts FROM chats WHERE uid=? ORDER BY id", (uid,))
+    msgs = cur.fetchall(); c.close()
+    mh="".join([f"<div style='margin:6px;padding:8px;background:#111;border-radius:8px'><b>{m[0]}:</b> {m[1]} <small style='color:#888'>{m[2]}</small></div>" for m in msgs])
+    return f'''<body style="background:#000;color:#fff;font-family:Arial;max-width:600px;margin:auto">
+    <a href="/admin/chats" style="color:gold">← Back</a><h3>Chat with {uid}</h3>{mh}
+    <form method="POST" action="/admin/reply/{uid}" style="display:flex;gap:6px;margin-top:10px">
+    <input name="msg" placeholder="Reply privately..." required style="flex:1;padding:10px;background:#111;color:#fff;border:1px solid #444;border-radius:8px">
+    <button style="background:red;color:#fff;padding:10px;border:none;border-radius:8px">Reply</button></form></body>'''
+
+@app.route('/admin/reply/<uid>', methods=['POST'])
+def admin_reply(uid):
+    msg = request.form.get('msg','')[:500]
+    if msg:
+        c = chat_db(); c.execute("INSERT INTO chats (uid,sender,msg,ts) VALUES (?,?,?,?)",
+        (uid,'admin',msg,time.strftime("%H:%M")))
+        c.commit(); c.close()
+    return redirect(f'/admin/chat/{uid}')
+# --- END CHAT ---
+
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT',5000)))
