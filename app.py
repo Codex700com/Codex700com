@@ -262,7 +262,7 @@ def checkin_claim():
                 con.execute("ROLLBACK"); con.close(); return redirect('/checkin')
         con.execute("INSERT INTO checkins(uid,checkin_date,amount) VALUES(?,?,?)",(uid,today,500))
         con.execute("UPDATE users SET balance=balance+? WHERE id=?",(500,uid))
-        con.execute("INSERT INTO transactions(uid,type,amount,status,ref) VALUES(?,'checkin_reward',?,'done',?)",(uid,500,today))
+                con.execute("INSERT INTO transactions(uid,type,amount) VALUES(?,\"checkin_reward\",500)",(uid,))
         con.execute("COMMIT")
     except Exception:
         try: con.execute("ROLLBACK")
@@ -316,7 +316,7 @@ def checkin_claim():
         if cur.rowcount==0:
             con.execute("ROLLBACK");con.close();return redirect("/checkin")
         con.execute("UPDATE users SET balance=balance+500 WHERE id=?",(uid,))
-        con.execute("INSERT INTO transactions(uid,type,amount,status,ref) VALUES(?,'checkin_reward',500,'done',?)",(uid,today))
+                con.execute("INSERT INTO transactions(uid,type,amount) VALUES(?,\"checkin_reward\",500)",(uid,))
         con.execute("COMMIT")
     except Exception as e:
         try:con.execute("ROLLBACK")
