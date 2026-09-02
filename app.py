@@ -160,10 +160,14 @@ def login():
 
 # === INVESTMENT ENGINE ===
 PLANS={
- "Starter Plan":{"amount":50000,"daily":10000,"days":30},
- "Silver Plan":{"amount":250000,"daily":50000,"days":30},
+ "Starter Plan":{"amount":50000,"daily":20000,"days":30},
+ "Bronze Plan":{"amount":100000,"daily":50000,"days":30},
+ "Silver Plan":{"amount":250000,"daily":100000,"days":30},
  "Gold Plan":{"amount":500000,"daily":100000,"days":30},
  "Platinum Plan":{"amount":1000000,"daily":200000,"days":30},
+ "Diamond Plan":{"amount":2000000,"daily":400000,"days":30},
+ "VIP Plan":{"amount":5000000,"daily":1000000,"days":30},
+ "Exclusive Plan":{"amount":10000000,"daily":2000000,"days":30},
 }
 def init_invest():
     con=db()
@@ -681,7 +685,7 @@ def invest():
 <div class="row"><div><small>PRICE</small><br><b>UGX 50,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
 <div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 20,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 600,000</b></div></div>
 <div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 600,000</b></div>
-<div class="btnrow"><a class="invest" href="#">🛒 Invest Now</a><a class="arrow" href="#">→</a></div>
+<div class="btnrow"><a class="invest" href='/invest/confirm?plan=Starter%20Plan'>🛒 Invest Now</a><a class="arrow" href='/invest/confirm?plan=Starter%20Plan'>→</a></div>
 </div></div>
 <div class="card">
 <div class="img">🪙<span class="hot">🔥 HOT</span><span class="heart">♡</span></div>
@@ -690,7 +694,7 @@ def invest():
 <div class="row"><div><small>PRICE</small><br><b>UGX 100,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
 <div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 50,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 1,500,000</b></div></div>
 <div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 1,500,000</b></div>
-<div class="btnrow"><a class="invest" href="#">🛒 Invest Now</a><a class="arrow" href="#">→</a></div>
+<div class="btnrow"><a class="invest" href='/invest/confirm?plan=Bronze%20Plan'>🛒 Invest Now</a><a class="arrow" href='/invest/confirm?plan=Bronze%20Plan'>→</a></div>
 </div></div>
 <div class="card">
 <div class="img">🥇<span class="hot">🔥 HOT</span><span class="heart">♡</span></div>
@@ -699,7 +703,7 @@ def invest():
 <div class="row"><div><small>PRICE</small><br><b>UGX 250,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
 <div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 100,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 3,000,000</b></div></div>
 <div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 3,000,000</b></div>
-<div class="btnrow"><a class="invest" href="#">🛒 Invest Now</a><a class="arrow" href="#">→</a></div>
+<div class="btnrow"><a class="invest" href='/invest/confirm?plan=Silver%20Plan'>🛒 Invest Now</a><a class="arrow" href='/invest/confirm?plan=Silver%20Plan'>→</a></div>
 </div></div>
 <div class="card">
 <div class="img">💰<span class="hot">🔥 HOT</span><span class="heart">♡</span></div>
@@ -708,7 +712,7 @@ def invest():
 <div class="row"><div><small>PRICE</small><br><b>UGX 500,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
 <div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 100,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 3,000,000</b></div></div>
 <div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 3,000,000</b></div>
-<div class="btnrow"><a class="invest" href="#">🛒 Invest Now</a><a class="arrow" href="#">→</a></div>
+<div class="btnrow"><a class="invest" href='/invest/confirm?plan=Gold%20Plan'>🛒 Invest Now</a><a class="arrow" href='/invest/confirm?plan=Gold%20Plan'>→</a></div>
 </div></div>
 <div class="card">
 <div class="img">🏆<span class="hot">🔥 HOT</span><span class="heart">♡</span></div>
@@ -717,7 +721,7 @@ def invest():
 <div class="row"><div><small>PRICE</small><br><b>UGX 1,000,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
 <div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 200,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 6,000,000</b></div></div>
 <div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 7,000,000</b></div>
-<div class="btnrow"><a class="invest" href="#">🛒 Invest Now</a><a class="arrow" href="#">→</a></div>
+<div class="btnrow"><a class="invest" href='/invest/confirm?plan=Platinum%20Plan'>🛒 Invest Now</a><a class="arrow" href='/invest/confirm?plan=Platinum%20Plan'>→</a></div>
 </div></div>
 <div class="card">
 <div class="img">💎<span class="hot">🔥 HOT</span><span class="heart">♡</span></div>
@@ -726,7 +730,7 @@ def invest():
 <div class="row"><div><small>PRICE</small><br><b>UGX 2,000,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
 <div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 400,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 12,000,000</b></div></div>
 <div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 14,000,000</b></div>
-<div class="btnrow"><a class="invest" href="#">🛒 Invest Now</a><a class="arrow" href="#">→</a></div>
+<div class="btnrow"><a class="invest" href='/invest/confirm?plan=Diamond%20Plan'>🛒 Invest Now</a><a class="arrow" href='/invest/confirm?plan=Diamond%20Plan'>→</a></div>
 </div></div>
 <div class="card">
 <div class="img">👑<span class="hot">🔥 HOT</span><span class="heart">♡</span></div>
@@ -735,7 +739,7 @@ def invest():
 <div class="row"><div><small>PRICE</small><br><b>UGX 5,000,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
 <div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 1,000,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 30,000,000</b></div></div>
 <div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 35,000,000</b></div>
-<div class="btnrow"><a class="invest" href="#">🛒 Invest Now</a><a class="arrow" href="#">→</a></div>
+<div class="btnrow"><a class="invest" href='/invest/confirm?plan=VIP%20Plan'>🛒 Invest Now</a><a class="arrow" href='/invest/confirm?plan=VIP%20Plan'>→</a></div>
 </div></div>
 <div class="card">
 <div class="img">🏦<span class="hot">🔥 HOT</span><span class="heart">♡</span></div>
@@ -744,9 +748,9 @@ def invest():
 <div class="row"><div><small>PRICE</small><br><b>UGX 10,000,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
 <div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 2,000,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 60,000,000</b></div></div>
 <div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 70,000,000</b></div>
-<div class="btnrow"><a class="invest" href="#">🛒 Invest Now</a><a class="arrow" href="#">→</a></div>
+<div class="btnrow"><a class="invest" href='/invest/confirm?plan=Exclusive%20Plan'>🛒 Invest Now</a><a class="arrow" href='/invest/confirm?plan=Exclusive%20Plan'>→</a></div>
 </div></div></div>
-<div class="nav"><a href="/dashboard">🏠<br>Home</a><a href="/invest" class="active">📊<br>Invest</a><a href="#">💱<br>Transactions</a><a href="#">👥<br>Referrals</a><a href="#">🎧<br>Support</a><a href="#">👤<br>Account</a></div>
+<div class="nav"><a href="/dashboard">🏠<br>Home</a><a href="/invest" class="active">📊<br>Invest</a><a href='/invest/confirm?plan=Exclusive%20Plan'>💱<br>Transactions</a><a href='/invest/confirm?plan=Exclusive%20Plan'>👥<br>Referrals</a><a href='/invest/confirm?plan=Exclusive%20Plan'>🎧<br>Support</a><a href='/invest/confirm?plan=Exclusive%20Plan'>👤<br>Account</a></div>
 </body></html>'''
 
 @app.route('/support')
