@@ -241,7 +241,7 @@ def invest_do2():
 
 
 
-CHECKIN_REWARD = 500
+
 
 def checkin_claim():
     if 'uid' not in session: return redirect('/login')
@@ -271,61 +271,59 @@ def checkin_claim():
     return redirect('/checkin')
 
 
-@app.route('/checkin')
+
+
+
+CHECKIN_REWARD=500
+@app.route("/checkin")
 def checkin_page():
-    if 'uid' not in session: return redirect('/login')
+    if "uid" not in session: return redirect("/login")
     import datetime as dt
-    uid=session['uid']
+    uid=session["uid"]
     con=db()
-    con.execute("CREATE TABLE IF NOT EXISTS checkins(id INTEGER PRIMARY KEY, uid INTEGER, checkin_date TEXT, amount INTEGER, created_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(uid, checkin_date))")
+    con.execute("CREATE TABLE IF NOT EXISTS checkins(id INTEGER PRIMARY KEY,uid INTEGER,checkin_date TEXT,amount INTEGER,created_at TEXT DEFAULT CURRENT_TIMESTAMP,UNIQUE(uid,checkin_date))")
     last=con.execute("SELECT created_at FROM checkins WHERE uid=? ORDER BY id DESC LIMIT 1",(uid,)).fetchone()
     con.close()
-    remaining=0
+    rem=0
     if last:
-        lt=dt.datetime.fromisoformat(last['created_at'])
-        remaining=int(((lt+dt.timedelta(hours=24))-dt.datetime.now()).total_seconds())
-        if remaining<0: remaining=0
-    claimed = request.args.get('claimed')=='1'
-    if remaining>0:
-        h=remaining//3600; m=(remaining%3600)//60; s=remaining%60
-        toast = "<div style='background:#0f0;color:#000;padding:12px;border-radius:10px;margin-bottom:10px;font-weight:bold'>✅ CHECK-IN SUCCESSFUL! +UGX 500 to balance</div>" if claimed else ""
-        auto = "<script>setTimeout(()=>location.href='/dashboard',2500)</script>" if claimed else f"<script>let s={remaining};setInterval(()=>{{s--;if(s<=0)location.reload();let h=String(Math.floor(s/3600)).padStart(2,'0'),m=String(Math.floor(s%3600/60)).padStart(2,'0'),ss=String(s%60).padStart(2,'0');document.getElementById('timer').textContent=h+':'+m+':'+ss}},1000)</script>"
-        return STYLE+f"""<div class='card'><h2>📅 DAILY CHECK-IN</h2>{toast}
-        <p>Next check-in in:</p><h1 id='timer'>{h:02d}:{m:02d}:{s:02d}</h1>
-        <button class='btn' disabled style='opacity:0.5'>ALREADY CHECKED-IN</button></div>"""+auto
-    else:
-        return STYLE+"""<div class='card'><h2>📅 DAILY CHECK-IN</h2>
-        <p>Reward: <b>UGX 500</b> to balance</p>
-        <form method='post' action='/checkin/claim'><button class='btn'>TAP TO CHECK-IN</button></form>
-        <div id='cd'></div></div>"""
+        lt=dt.datetime.fromisoformat(last["created_at"])
+        rem=int(((lt+dt.timedelta(hours=24))-dt.datetime.now()).total_seconds())
+        if rem<0: rem=0
+    claimed=request.args.get("claimed")=="1"
+    if rem>0:
+        h=rem//3600; m=(rem%3600)//60; s=rem%60
+        toast="<div style='background:#00ff88;color:#000;padding:12px;border-radius:10px;margin-bottom:10px;font-weight:bold'>CHECK-IN SUCCESSFUL! +UGX 500 added to balance</div>" if claimed else ""
+        js="<script>setTimeout(()=>{location.href='/dashboard'},2500)</script>" if claimed else f"<script>let s={rem};setInterval(()=>{{s--;if(s<=0)location.reload();let h=String(Math.floor(s/3600)).padStart(2,'0'),m=String(Math.floor(s%3600/60)).padStart(2,'0'),ss=String(s%60).padStart(2,'0');document.getElementById('timer').textContent=h+':'+m+':'+ss}},1000)</script>"
+        return STYLE+f"<div class='card'><h2>DAILY CHECK-IN</h2>{toast}<p>Next check-in in:</p><h1 id='timer'>{h:02d}:{m:02d}:{s:02d}</h1><button class='btn' disabled style='opacity:.5'>WAIT FOR TIMER</button></div>"+js
+    return STYLE+"<div class='card'><h2>DAILY CHECK-IN</h2><p>Reward: <b>UGX 500</b> to balance</p><form method='post' action='/checkin/claim'><button class='btn'>TAP TO CHECK-IN</button></form></div>"
 
-@app.route('/checkin/claim', methods=['POST'])
+@app.route("/checkin/claim",methods=["POST"])
 def checkin_claim():
-    if 'uid' not in session: return redirect('/login')
+    if "uid" not in session: return redirect("/login")
     import datetime as dt
-    uid=session['uid']
+    uid=session["uid"]
     con=db()
-    con.execute("CREATE TABLE IF NOT EXISTS checkins(id INTEGER PRIMARY KEY, uid INTEGER, checkin_date TEXT, amount INTEGER, created_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(uid, checkin_date))")
+    con.execute("CREATE TABLE IF NOT EXISTS checkins(id INTEGER PRIMARY KEY,uid INTEGER,checkin_date TEXT,amount INTEGER,created_at TEXT DEFAULT CURRENT_TIMESTAMP,UNIQUE(uid,checkin_date))")
     try:
         con.execute("BEGIN IMMEDIATE")
         last=con.execute("SELECT created_at FROM checkins WHERE uid=? ORDER BY id DESC LIMIT 1",(uid,)).fetchone()
         if last:
-            lt=dt.datetime.fromisoformat(last['created_at'])
-            if (dt.datetime.now()-lt).total_seconds() < 24*3600:
-                con.execute("ROLLBACK"); con.close(); return redirect('/checkin')
+            lt=dt.datetime.fromisoformat(last["created_at"])
+            if (dt.datetime.now()-lt).total_seconds()<86399:
+                con.execute("ROLLBACK");con.close();return redirect("/checkin")
         today=dt.date.today().isoformat()
-        con.execute("INSERT OR IGNORE INTO checkins(uid,checkin_date,amount) VALUES(?,?,?)",(uid,today,500))
-        if con.total_changes==0:
-            con.execute("ROLLBACK"); con.close(); return redirect('/checkin')
+        cur=con.execute("INSERT OR IGNORE INTO checkins(uid,checkin_date,amount) VALUES(?,?,?)",(uid,today,500))
+        if cur.rowcount==0:
+            con.execute("ROLLBACK");con.close();return redirect("/checkin")
         con.execute("UPDATE users SET balance=balance+500 WHERE id=?",(uid,))
         con.execute("INSERT INTO transactions(uid,type,amount,status,ref) VALUES(?,'checkin_reward',500,'done',?)",(uid,today))
         con.execute("COMMIT")
-    except Exception:
-        try: con.execute("ROLLBACK")
-        except: pass
-        con.close(); return redirect('/checkin')
+    except Exception as e:
+        try:con.execute("ROLLBACK")
+        except:pass
+        con.close();return "Error "+str(e)
     con.close()
-    return redirect('/checkin?claimed=1')
+    return redirect("/checkin?claimed=1")
 
 def credit_returns():
     import datetime
