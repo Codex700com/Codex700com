@@ -722,35 +722,6 @@ def chat_upload():
 
 # ADMIN: list users with chats
 
-@app.route('/chat')
-def chat_page():
-    from flask import session, redirect
-    if 'uid' not in session: return redirect('/login')
-    return open('chat.html').read() if os.path.exists('chat.html') else "chat.html missing"
-
-@app.route('/api/chat', methods=['GET','POST'])
-def api_chat():
-    from flask import session, request, jsonify
-    import sqlite3
-    if 'uid' not in session:
-        return jsonify([])
-    uid = session['uid']
-    con = sqlite3.connect('codex700.db')
-    con.row_factory = sqlite3.Row
-    if request.method == 'POST':
-        d = request.get_json() or {}
-        msg = d.get('msg','')
-        try:
-            u = con.execute('SELECT username FROM users WHERE id=?',(uid,)).fetchone()
-            uname = u['username'] if u else uid
-        except:
-            uname = uid
-        con.execute('INSERT INTO chats(uid,username,msg,direction) VALUES(?,?,?,?)',(uid,uname,msg,'u2a'))
-        con.commit()
-        return jsonify({'ok':1})
-    rows = con.execute('SELECT * FROM chats WHERE uid=? ORDER BY id',(uid,)).fetchall()
-    return jsonify([dict(r) for r in rows])
-
 @app.route('/api/chat/upload', methods=['POST'])
 def chat_up():
  from flask import session,request,jsonify
@@ -839,15 +810,6 @@ def admin_broadcast():
     con.commit()
     return redirect('/admin/chats')
 
-@app.route('/admin/chats')
-def admin_chats():
-    # simple protect - change password check as you have
-    c = chat_db(); cur=c.cursor()
-    cur.execute("SELECT DISTINCT uid FROM chats ORDER BY id DESC")
-    users = [r[0] for r in cur.fetchall()]; c.close()
-    h="".join([f"<div style='padding:12px;border-bottom:1px solid #222'><a href='/admin/chat/{u}' style='color:gold;text-decoration:none'>{u}</a></div>" for u in users])
-    return f"<body style='background:#000;color:#fff;font-family:Arial'><h3 style='color:gold;padding:12px'>Admin - User Chats</h3>{h}</body>"
-
 @app.route('/admin/chat/<uid>')
 def admin_chat(uid):
     c = chat_db(); cur=c.cursor()
@@ -860,14 +822,6 @@ def admin_chat(uid):
     <input name="msg" placeholder="Reply privately..." required style="flex:1;padding:10px;background:#111;color:#fff;border:1px solid #444;border-radius:8px">
     <button style="background:red;color:#fff;padding:10px;border:none;border-radius:8px">Reply</button></form></body>'''
 
-@app.route('/admin/reply/<uid>', methods=['POST'])
-def admin_reply(uid):
-    msg = request.form.get('msg','')[:500]
-    if msg:
-        c = chat_db(); c.execute("INSERT INTO chats (uid,sender,msg,ts) VALUES (?,?,?,?)",
-        (uid,'admin',msg,time.strftime("%H:%M")))
-        c.commit(); c.close()
-    return redirect(f'/admin/chat/{uid}')
 # --- END CHAT ---
 
 
@@ -955,7 +909,7 @@ def withdraw_confirm():
     con.commit(); con.close()
     return jsonify({"ok":1})
 
-@app.route@app.route('/withdraw/history')
+@app.route('/withdraw/history')
 def withdraw_history():
     if 'uid' not in session: return redirect('/login')
     f=request.args.get('f','All')
@@ -987,18 +941,6 @@ def wd_reject(wid):
 # --- END WITHDRAWAL ---
 
 
-@app.route('/deposit')
-def deposit():
-    from flask import session, redirect
-    if 'uid' not in session: return redirect('/login')
-    return "<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial'><a href='/dashboard' style='color:gold'>← Back</a><h2>Deposit</h2><p>Deposit page coming - MTN/Airtel integration here</p></div>"
-
-@app.route('/withdraw')
-def withdraw():
-    from flask import session, redirect
-    if 'uid' not in session: return redirect('/login')
-    return "<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial'><a href='/dashboard' style='color:gold'>← Back</a><h2>Withdraw</h2><p>Withdraw page - <a href='/withdraw/history' style='color:gold'>History</a></p></div>"
-
 @app.route('/transactions')
 def transactions():
     from flask import session, redirect
@@ -1028,47 +970,6 @@ def logout():
     from flask import session, redirect
     session.clear()
     return redirect('/')
-
-
-@app.route('/login', methods=['GET','POST'])
-def login():
-    from flask import session, request, redirect
-    import sqlite3
-    if request.method=='POST':
-        u=request.form.get('username'); pw=request.form.get('password')
-        con=sqlite3.connect('codex700.db'); con.row_factory=sqlite3.Row
-        row=con.execute("SELECT * FROM users WHERE username=?",(u,)).fetchone()
-        # try password column variants
-        if row:
-            ok=False
-            for col in ['password','pass','pwd','password_hash']:
-                try:
-                    if col in row.keys() and row[col]==pw: ok=True
-                except: pass
-            if not ok: ok=True # allow for now if columns mismatch
-            if ok:
-                session['uid']=row['username'] if 'username' in row.keys() else row['id']
-                return redirect('/dashboard')
-        return "Login failed <a href='/login'>retry</a>"
-    return "<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial;max-width:400px;margin:auto'><h2>Login</h2><form method='post'><input name='username' placeholder='username' style='width:100%;padding:10px;margin:5px 0'><input name='password' type='password' placeholder='password' style='width:100%;padding:10px;margin:5px 0'><button style='width:100%;padding:10px;background:gold'>Login</button></form><p><a href='/register' style='color:gold'>Register</a></p></div>"
-
-@app.route('/register', methods=['GET','POST'])
-def register():
-    from flask import request, redirect
-    import sqlite3, datetime
-    if request.method=='POST':
-        u=request.form.get('username'); pw=request.form.get('password')
-        con=sqlite3.connect('codex700.db')
-        try:
-            con.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, created_at TEXT)")
-        except: pass
-        try:
-            con.execute("INSERT INTO users (username,password,created_at) VALUES (?,?,?)",(u,pw,datetime.datetime.now().isoformat()))
-            con.commit()
-            return redirect('/login')
-        except Exception as e:
-            return f"Register failed: {e} <a href='/register'>retry</a>"
-    return "<div style='background:#000;color:#fff;min-height:100vh;padding:20px;font-family:Arial;max-width:400px;margin:auto'><h2>Register</h2><form method='post'><input name='username' placeholder='username' style='width:100%;padding:10px;margin:5px 0'><input name='password' type='password' placeholder='password' style='width:100%;padding:10px;margin:5px 0'><button style='width:100%;padding:10px;background:gold'>Register</button></form></div>"
 
 
 def admin_wd_approve(wid):
