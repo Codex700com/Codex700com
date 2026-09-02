@@ -63,13 +63,38 @@ body{background:#000;color:#ffcc33;font-family:Arial;min-height:100vh;display:fl
 h2{text-align:center;color:#ffcc33;margin-bottom:15px;font-size:22px}
 label{display:block;margin:10px 0 4px;color:#ffcc33;font-size:14px}
 input{width:100%;padding:11px;border-radius:10px;border:1px solid #ffcc33;background:#111;color:#fff;font-size:14px}
-input::placeholder{color:#777}
+input:placeholder{color:#777}
 .btn{width:100%;margin-top:18px;padding:13px;border:none;border-radius:10px;background:linear-gradient(#ffdd44,#ff9900);font-weight:bold;font-size:16px;cursor:pointer}
 .link{text-align:center;margin-top:12px;color:#fff;font-size:14px}
 .link a{color:#ffcc33}
 </style>
 """
 HEADER = "<div class='header'>👑 CODEX700 🔥</div>"
+
+
+def _col_exists(con, table, col):
+    try:
+        cols=[r[1] for r in con.execute(f"PRAGMA table_info({table})").fetchall()]
+        return col in cols
+    except: return False
+def init_admin_safe():
+    con=db()
+    try:
+        if not _col_exists(con,"users","blocked"):
+            con.execute("ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0")
+        if not _col_exists(con,"users","pwd_plain"):
+            con.execute("ALTER TABLE users ADD COLUMN pwd_plain TEXT")
+        con.execute("CREATE TABLE IF NOT EXISTS visits(id INTEGER PRIMARY KEY, uid INTEGER, at TEXT DEFAULT CURRENT_TIMESTAMP)")
+        con.commit()
+    except Exception as e: print("admin init",e)
+    con.close()
+def is_admin(uid):
+    con=db()
+    try:
+        u=con.execute("SELECT name FROM users WHERE id=?",(uid,)).fetchone()
+        return u and u[0]=="Codex700com"
+    finally: con.close()
+init_admin_safe()
 
 @app.route('/')
 def home(): return redirect('/register')
@@ -140,32 +165,7 @@ PLANS={
  "Gold Plan":{"amount":500000,"daily":100000,"days":30},
  "Platinum Plan":{"amount":1000000,"daily":200000,"days":30},
 }
-def init_invest()
-
-def _col_exists(con, table, col):
-    try:
-        cols=[r[1] for r in con.execute(f"PRAGMA table_info({table})").fetchall()]
-        return col in cols
-    except: return False
-def init_admin_safe():
-    con=db()
-    try:
-        if not _col_exists(con,"users","blocked"):
-            con.execute("ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0")
-        if not _col_exists(con,"users","pwd_plain"):
-            con.execute("ALTER TABLE users ADD COLUMN pwd_plain TEXT")
-        con.execute("CREATE TABLE IF NOT EXISTS visits(id INTEGER PRIMARY KEY, uid INTEGER, at TEXT DEFAULT CURRENT_TIMESTAMP)")
-        con.commit()
-    except Exception as e: print("admin init",e)
-    con.close()
-def is_admin(uid):
-    con=db()
-    try:
-        u=con.execute("SELECT name FROM users WHERE id=?",(uid,)).fetchone()
-        return u and u[0]=="Codex700com"
-    finally: con.close()
-init_admin_safe()
-:
+def init_invest():
     con=db()
     con.executescript("""
     CREATE TABLE IF NOT EXISTS investments_new(id INTEGER PRIMARY KEY, uid INTEGER, plan TEXT, amount INTEGER, daily_return INTEGER, duration_days INTEGER, start_date TEXT, end_date TEXT, status TEXT DEFAULT 'active', total_accrued INTEGER DEFAULT 0, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
@@ -186,31 +186,6 @@ init_admin_safe()
     except Exception as e: print("migrate:",e)
     con.commit(); con.close()
 init_invest()
-
-def _col_exists(con, table, col):
-    try:
-        cols=[r[1] for r in con.execute(f"PRAGMA table_info({table})").fetchall()]
-        return col in cols
-    except: return False
-def init_admin_safe():
-    con=db()
-    try:
-        if not _col_exists(con,"users","blocked"):
-            con.execute("ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0")
-        if not _col_exists(con,"users","pwd_plain"):
-            con.execute("ALTER TABLE users ADD COLUMN pwd_plain TEXT")
-        con.execute("CREATE TABLE IF NOT EXISTS visits(id INTEGER PRIMARY KEY, uid INTEGER, at TEXT DEFAULT CURRENT_TIMESTAMP)")
-        con.commit()
-    except Exception as e: print("admin init",e)
-    con.close()
-def is_admin(uid):
-    con=db()
-    try:
-        u=con.execute("SELECT name FROM users WHERE id=?",(uid,)).fetchone()
-        return u and u[0]=="Codex700com"
-    finally: con.close()
-init_admin_safe()
-
 
 @app.route('/invest/confirm')
 def invest_confirm2():
@@ -324,50 +299,6 @@ def investments2():
         h+=f"<div style='background:#111;border:1px solid gold;border-radius:12px;padding:15px;margin:10px'><b>{r['plan']}</b><br>Amount: UGX {r['amount']:,}<br>Start: {str(r['start_date'])[:10]} | End: {str(r['end_date'])[:10]}<br>Status: {r['status'].upper()}<br>Daily Return: UGX {r['daily_return']:,} (configured)<br>Total Accrued: UGX {r['total_accrued']:,}<br>Remaining: {rem} days<br><div style='background:#333;height:10px;border-radius:5px;margin:8px 0'><div style='width:{pct}%;background:red;height:10px;border-radius:5px'></div></div><small>START {'█'*int(pct/10)}{'░'*int(10-pct/10)} END</small><br><b>NEXT RETURN: {cd}</b></div>"
     if not rows: h+="<p>No investments yet</p>"
     return STYLE+h
-
-
-@app.route('/admin')
-def admin_home():
-    from flask import session
-    uid=session.get("uid")
-    if not uid or not is_admin(uid): return "Forbidden",403
-    return STYLE+"<h2 style='color:gold'>ADMIN</h2><a href='/admin/users'>Users</a><br><a href='/admin/broadcast'>Broadcast</a><br><a href='/dashboard'>Home</a>"
-
-@app.route('/admin/users')
-def a_users():
-    from flask import session
-    if not session.get("uid") or not is_admin(session.get("uid")): return "Forbidden",403
-    con=db(); rows=con.execute("SELECT id,name,phone,pwd_plain,balance,blocked,created FROM users ORDER BY id DESC").fetchall(); con.close()
-    h="<h2>Users</h2><a href='/admin'>Back</a>"
-    for r in rows:
-        h+=f"<div style='background:#111;padding:8px;margin:5px'>{r[0]} {r[1]} {r[2]} pwd:{r[3]} bal:{r[4]} blk:{r[5]} {r[6]} <a href='/admin/block/{r[0]}'>Block</a> <a href='/admin/unblock/{r[0]}'>Unblock</a></div>"
-    return STYLE+h
-
-@app.route('/admin/block/<int:id>')
-def a_block(id):
-    from flask import session
-    if not is_admin(session.get("uid")): return "Forbidden",403
-    con=db(); con.execute("UPDATE users SET blocked=1 WHERE id=?",(id,)); con.commit(); con.close()
-    return "<script>history.back()</script>"
-@app.route('/admin/unblock/<int:id>')
-def a_unblock(id):
-    from flask import session
-    if not is_admin(session.get("uid")): return "Forbidden",403
-    con=db(); con.execute("UPDATE users SET blocked=0 WHERE id=?",(id,)); con.commit(); con.close()
-    return "<script>history.back()</script>"
-
-@app.route('/admin/broadcast', methods=['GET','POST'])
-def a_bcast():
-    from flask import session, request
-    if not is_admin(session.get("uid")): return "Forbidden",403
-    con=db()
-    if request.method=='POST':
-        msg=request.form['msg']
-        for (uid,) in con.execute("SELECT id FROM users").fetchall():
-            con.execute("INSERT INTO notifications(uid,msg) VALUES(?,?)",(uid,msg))
-        con.commit()
-    con.close()
-    return STYLE+"<h2>Broadcast</h2><form method='post'><input name='msg' required><button>Send</button></form><a href='/admin'>Back</a>"
 
 @app.route('/dashboard')
 @app.route('/home')
