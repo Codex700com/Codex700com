@@ -466,7 +466,7 @@ def acc_bank():
 
 @app.route('/account/notifications', methods=['GET','POST'])
 def acc_notif():
-    return "<body style='background:#0f1115;color:#fff;font-family:Arial;padding:20px'><h3>Notifications</h3><p>All system alerts enabled.</p><a href="/account" style="color:#f5b301">← Back</a>"
+    return '<body style="background:#0f1115;color:#fff;padding:20px"><h3>Notifications</h3><p>All enabled.</p><a href=/account' style=color:#f5b301>Back</a>'
 
 @app.route('/account/language', methods=['GET','POST'])
 def acc_lang():
