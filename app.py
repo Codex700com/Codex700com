@@ -507,7 +507,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #444;backgroun
 </form></div>
 <div class="note"><b>Please Note</b><br>
 • Minimum deposit: UGX 1,000<br>
-• Maximum deposit: UGX 10,000,000<br>
+• Maximum deposit: {{ invested }}<br>
 • Your deposit will be reviewed and approved within a few minutes.<br>
 • You will be notified once your deposit is approved.
 </div>
@@ -746,7 +746,7 @@ input{{width:100%;padding:12px;border-radius:10px;border:1px solid #444;backgrou
 <label>Withdrawal Amount (UGX)</label>
 <input id="amt" name="amount" type="number" placeholder="Enter amount to withdraw" oninput="upd()" required>
 <div style="text-align:right;font-size:12px;color:#aaa;margin-top:-5px">UGX</div>
-<div class="minmax">Minimum: <span>UGX 1,000</span> | Maximum: <span>UGX 10,000,000</span></div>
+<div class="minmax">Minimum: <span>UGX 1,000</span> | Maximum: <span>{{ invested }}</span></div>
 <label>Payment Method</label>
 <div class="pay">
 <div id="a" class="sel" onclick="setM('airtel')">🔴 Airtel Money ✓</div>
@@ -870,7 +870,7 @@ def invest():
 <div class="img">🏦<span class="hot">🔥 HOT</span><span class="heart">♡</span></div>
 <div class="body">
 <div class="title">Exclusive Plan <span>🔒</span></div>
-<div class="row"><div><small>PRICE</small><br><b>UGX 10,000,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
+<div class="row"><div><small>PRICE</small><br><b>{{ invested }}</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
 <div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 2,000,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 60,000,000</b></div></div>
 <div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 70,000,000</b></div>
 <div class="btnrow"><a class="invest" href='/invest/confirm?plan=Exclusive%20Plan'>🛒 Invest Now</a><a class="arrow" href='/invest/confirm?plan=Exclusive%20Plan'>→</a></div>
@@ -1133,7 +1133,7 @@ input,select{{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px 
 <div class="card" style="display:flex;justify-content:space-between;align-items:center"><div>📁<br><small>Available Balance</small><br><b style="color:red;font-size:20px">UGX {bal:,}</b></div><span>👁️</span></div>
 <div class="card"><div class="gold">WITHDRAWAL DETAILS</div><br>
 <label>Withdrawal Amount (UGX)</label><input id="amt" type="number" placeholder="Enter amount to withdraw" min="1000" max="10000000" oninput="calc()">
-<div style="display:flex;justify-content:space-between;font-size:12px;color:#888"><span>Minimum: <b style="color:gold">UGX 1,000</b> | Maximum: <b style="color:gold">UGX 10,000,000</b></span><span>UGX</span></div><br>
+<div style="display:flex;justify-content:space-between;font-size:12px;color:#888"><span>Minimum: <b style="color:gold">UGX 1,000</b> | Maximum: <b style="color:gold">{{ invested }}</b></span><span>UGX</span></div><br>
 <label>Payment Method</label><div class="pay">
 <label><input type="radio" name="method" value="Airtel Money" checked hidden><div>🔴 Airtel Money ✓</div></label>
 <label><input type="radio" name="method" value="MTN Mobile Money" hidden><div>🟡 MTN Mobile Money</div></label></div><br>
