@@ -481,54 +481,101 @@ def raffle_winners():
 def invest():
     if 'uid' not in session:
         return redirect('/login')
-    return '''<h2 style="color:red;text-align:center;background:#000;margin:0;padding:15px">INVESTMENT PLANS<br><small style="color:#888;font-size:12px">Choose a plan that suits you</small></h2><div style="background:#000;padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:2px"><div style="background:#111;border:1px solid gold;border-radius:12px;padding:10px;margin:8px;color:#fff">
-<div style="color:red;font-weight:bold">Starter Plan 🔒 <span style="background:red;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px">HOT</span></div>
-<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:8px"><div>PRICE<br><b style="color:red">UGX 50,000</b></div><div>DURATION<br><b style="color:red">30 Days</b></div></div>
-<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><div>DAILY RETURN (20%)<br><b style="color:red">UGX 20,000</b></div><div>TOTAL RETURN<br><b style="color:red">UGX 600,000</b></div></div>
-<div style="text-align:center;margin:8px 0;background:#000;padding:6px;border-radius:8px">TOTAL RECEIVED<br><b style="color:red;font-size:18px">UGX 600,000</b></div>
-<a href="#" style="background:red;color:#fff;display:block;text-align:center;padding:10px;border-radius:10px;text-decoration:none;font-weight:bold">🛒 Invest Now</a>
-</div><div style="background:#111;border:1px solid gold;border-radius:12px;padding:10px;margin:8px;color:#fff">
-<div style="color:red;font-weight:bold">Bronze Plan 🔒 <span style="background:red;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px">HOT</span></div>
-<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:8px"><div>PRICE<br><b style="color:red">UGX 100,000</b></div><div>DURATION<br><b style="color:red">30 Days</b></div></div>
-<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><div>DAILY RETURN (20%)<br><b style="color:red">UGX 50,000</b></div><div>TOTAL RETURN<br><b style="color:red">UGX 1,500,000</b></div></div>
-<div style="text-align:center;margin:8px 0;background:#000;padding:6px;border-radius:8px">TOTAL RECEIVED<br><b style="color:red;font-size:18px">UGX 1,500,000</b></div>
-<a href="#" style="background:red;color:#fff;display:block;text-align:center;padding:10px;border-radius:10px;text-decoration:none;font-weight:bold">🛒 Invest Now</a>
-</div><div style="background:#111;border:1px solid gold;border-radius:12px;padding:10px;margin:8px;color:#fff">
-<div style="color:red;font-weight:bold">Silver Plan 🔒 <span style="background:red;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px">HOT</span></div>
-<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:8px"><div>PRICE<br><b style="color:red">UGX 250,000</b></div><div>DURATION<br><b style="color:red">30 Days</b></div></div>
-<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><div>DAILY RETURN (20%)<br><b style="color:red">UGX 100,000</b></div><div>TOTAL RETURN<br><b style="color:red">UGX 3,000,000</b></div></div>
-<div style="text-align:center;margin:8px 0;background:#000;padding:6px;border-radius:8px">TOTAL RECEIVED<br><b style="color:red;font-size:18px">UGX 3,000,000</b></div>
-<a href="#" style="background:red;color:#fff;display:block;text-align:center;padding:10px;border-radius:10px;text-decoration:none;font-weight:bold">🛒 Invest Now</a>
-</div><div style="background:#111;border:1px solid gold;border-radius:12px;padding:10px;margin:8px;color:#fff">
-<div style="color:red;font-weight:bold">Gold Plan 🔒 <span style="background:red;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px">HOT</span></div>
-<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:8px"><div>PRICE<br><b style="color:red">UGX 500,000</b></div><div>DURATION<br><b style="color:red">30 Days</b></div></div>
-<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><div>DAILY RETURN (20%)<br><b style="color:red">UGX 100,000</b></div><div>TOTAL RETURN<br><b style="color:red">UGX 3,000,000</b></div></div>
-<div style="text-align:center;margin:8px 0;background:#000;padding:6px;border-radius:8px">TOTAL RECEIVED<br><b style="color:red;font-size:18px">UGX 3,000,000</b></div>
-<a href="#" style="background:red;color:#fff;display:block;text-align:center;padding:10px;border-radius:10px;text-decoration:none;font-weight:bold">🛒 Invest Now</a>
-</div><div style="background:#111;border:1px solid gold;border-radius:12px;padding:10px;margin:8px;color:#fff">
-<div style="color:red;font-weight:bold">Platinum Plan 🔒 <span style="background:red;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px">HOT</span></div>
-<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:8px"><div>PRICE<br><b style="color:red">UGX 1,000,000</b></div><div>DURATION<br><b style="color:red">30 Days</b></div></div>
-<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><div>DAILY RETURN (20%)<br><b style="color:red">UGX 200,000</b></div><div>TOTAL RETURN<br><b style="color:red">UGX 6,000,000</b></div></div>
-<div style="text-align:center;margin:8px 0;background:#000;padding:6px;border-radius:8px">TOTAL RECEIVED<br><b style="color:red;font-size:18px">UGX 7,000,000</b></div>
-<a href="#" style="background:red;color:#fff;display:block;text-align:center;padding:10px;border-radius:10px;text-decoration:none;font-weight:bold">🛒 Invest Now</a>
-</div><div style="background:#111;border:1px solid gold;border-radius:12px;padding:10px;margin:8px;color:#fff">
-<div style="color:red;font-weight:bold">Diamond Plan 🔒 <span style="background:red;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px">HOT</span></div>
-<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:8px"><div>PRICE<br><b style="color:red">UGX 2,000,000</b></div><div>DURATION<br><b style="color:red">30 Days</b></div></div>
-<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><div>DAILY RETURN (20%)<br><b style="color:red">UGX 400,000</b></div><div>TOTAL RETURN<br><b style="color:red">UGX 12,000,000</b></div></div>
-<div style="text-align:center;margin:8px 0;background:#000;padding:6px;border-radius:8px">TOTAL RECEIVED<br><b style="color:red;font-size:18px">UGX 14,000,000</b></div>
-<a href="#" style="background:red;color:#fff;display:block;text-align:center;padding:10px;border-radius:10px;text-decoration:none;font-weight:bold">🛒 Invest Now</a>
-</div><div style="background:#111;border:1px solid gold;border-radius:12px;padding:10px;margin:8px;color:#fff">
-<div style="color:red;font-weight:bold">VIP Plan 🔒 <span style="background:red;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px">HOT</span></div>
-<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:8px"><div>PRICE<br><b style="color:red">UGX 5,000,000</b></div><div>DURATION<br><b style="color:red">30 Days</b></div></div>
-<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><div>DAILY RETURN (20%)<br><b style="color:red">UGX 1,000,000</b></div><div>TOTAL RETURN<br><b style="color:red">UGX 30,000,000</b></div></div>
-<div style="text-align:center;margin:8px 0;background:#000;padding:6px;border-radius:8px">TOTAL RECEIVED<br><b style="color:red;font-size:18px">UGX 35,000,000</b></div>
-<a href="#" style="background:red;color:#fff;display:block;text-align:center;padding:10px;border-radius:10px;text-decoration:none;font-weight:bold">🛒 Invest Now</a>
-</div><div style="background:#111;border:1px solid gold;border-radius:12px;padding:10px;margin:8px;color:#fff">
-<div style="color:red;font-weight:bold">Exclusive Plan 🔒 <span style="background:red;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px">HOT</span></div>
-<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:8px"><div>PRICE<br><b style="color:red">UGX 10,000,000</b></div><div>DURATION<br><b style="color:red">30 Days</b></div></div>
-<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><div>DAILY RETURN (20%)<br><b style="color:red">UGX 2,000,000</b></div><div>TOTAL RETURN<br><b style="color:red">UGX 60,000,000</b></div></div>
-<div style="text-align:center;margin:8px 0;background:#000;padding:6px;border-radius:8px">TOTAL RECEIVED<br><b style="color:red;font-size:18px">UGX 70,000,000</b></div>
-<a href="#" style="background:red;color:#fff;display:block;text-align:center;padding:10px;border-radius:10px;text-decoration:none;font-weight:bold">🛒 Invest Now</a>
-</div></div><div style="text-align:center;background:#000;padding:20px"><a href="/dashboard" style="color:gold">Back to Home</a></div>'''
+    return '''
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<style>
+*{box-sizing:border-box;margin:0}body{background:#000;color:#fff;font-family:Arial;max-width:480px;margin:auto}
+.header{background:#0a0a0a;padding:12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #222}
+.header .logo{width:36px;height:36px;border:1px solid gold;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.header h2{color:#ff0000;font-size:18px}.header small{color:#ff0000;font-size:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px}
+.card{background:#0f0f0f;border:1px solid #8a6d00;border-radius:12px;overflow:hidden}
+.img{height:90px;background:radial-gradient(circle at 50% 30%, #ffdf6b, #8a6d00 70%);font-size:40px;display:flex;align-items:center;justify-content:center;position:relative}
+.hot{position:absolute;top:6px;left:6px;background:red;color:#fff;font-size:10px;padding:3px 8px;border-radius:12px}
+.heart{position:absolute;top:6px;right:6px;color:#ff5555;border:1px solid #ff5555;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.body{padding:8px}.title{color:#ff0000;font-weight:bold;font-size:14px;margin:4px 0}
+.row{display:flex;justify-content:space-between;margin:6px 0}.row small{color:#a00;font-size:9px}.row b{color:#ff0000;font-size:12px}
+.total{background:#1a0f00;text-align:center;padding:6px;border-radius:8px;margin:6px 0}.total small{color:#a00;font-size:9px}.total b{color:#ff0000;font-size:15px}
+.btnrow{display:flex;gap:6px}.invest{flex:1;background:linear-gradient(to bottom,#ff2222,#aa0000);color:#fff;text-align:center;padding:9px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:13px}
+.arrow{background:#5a0000;color:#ff8888;width:36px;display:flex;align-items:center;justify-content:center;border-radius:10px;text-decoration:none}
+.nav{position:sticky;bottom:0;background:#0a0a0a;display:flex;justify-content:space-around;padding:8px 0;border-top:1px solid #222;font-size:10px}
+.nav a{color:#888;text-decoration:none;text-align:center}.nav a.active{color:#ff0000}
+</style></head><body>
+<div class="header"><div class="logo">📈</div><div><h2>INVESTMENT PLANS</h2><small>Choose a plan that suits you</small></div></div>
+<div class="grid">
+<div class="card">
+<div class="img">🌱<span class="hot">🔥 HOT</span><span class="heart">♡</span></div>
+<div class="body">
+<div class="title">Starter Plan <span>🔒</span></div>
+<div class="row"><div><small>PRICE</small><br><b>UGX 50,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
+<div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 20,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 600,000</b></div></div>
+<div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 600,000</b></div>
+<div class="btnrow"><a class="invest" href="#">🛒 Invest Now</a><a class="arrow" href="#">→</a></div>
+</div></div>
+<div class="card">
+<div class="img">🪙<span class="hot">🔥 HOT</span><span class="heart">♡</span></div>
+<div class="body">
+<div class="title">Bronze Plan <span>🔒</span></div>
+<div class="row"><div><small>PRICE</small><br><b>UGX 100,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
+<div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 50,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 1,500,000</b></div></div>
+<div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 1,500,000</b></div>
+<div class="btnrow"><a class="invest" href="#">🛒 Invest Now</a><a class="arrow" href="#">→</a></div>
+</div></div>
+<div class="card">
+<div class="img">🥇<span class="hot">🔥 HOT</span><span class="heart">♡</span></div>
+<div class="body">
+<div class="title">Silver Plan <span>🔒</span></div>
+<div class="row"><div><small>PRICE</small><br><b>UGX 250,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
+<div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 100,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 3,000,000</b></div></div>
+<div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 3,000,000</b></div>
+<div class="btnrow"><a class="invest" href="#">🛒 Invest Now</a><a class="arrow" href="#">→</a></div>
+</div></div>
+<div class="card">
+<div class="img">💰<span class="hot">🔥 HOT</span><span class="heart">♡</span></div>
+<div class="body">
+<div class="title">Gold Plan <span>🔒</span></div>
+<div class="row"><div><small>PRICE</small><br><b>UGX 500,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
+<div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 100,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 3,000,000</b></div></div>
+<div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 3,000,000</b></div>
+<div class="btnrow"><a class="invest" href="#">🛒 Invest Now</a><a class="arrow" href="#">→</a></div>
+</div></div>
+<div class="card">
+<div class="img">🏆<span class="hot">🔥 HOT</span><span class="heart">♡</span></div>
+<div class="body">
+<div class="title">Platinum Plan <span>🔒</span></div>
+<div class="row"><div><small>PRICE</small><br><b>UGX 1,000,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
+<div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 200,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 6,000,000</b></div></div>
+<div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 7,000,000</b></div>
+<div class="btnrow"><a class="invest" href="#">🛒 Invest Now</a><a class="arrow" href="#">→</a></div>
+</div></div>
+<div class="card">
+<div class="img">💎<span class="hot">🔥 HOT</span><span class="heart">♡</span></div>
+<div class="body">
+<div class="title">Diamond Plan <span>🔒</span></div>
+<div class="row"><div><small>PRICE</small><br><b>UGX 2,000,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
+<div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 400,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 12,000,000</b></div></div>
+<div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 14,000,000</b></div>
+<div class="btnrow"><a class="invest" href="#">🛒 Invest Now</a><a class="arrow" href="#">→</a></div>
+</div></div>
+<div class="card">
+<div class="img">👑<span class="hot">🔥 HOT</span><span class="heart">♡</span></div>
+<div class="body">
+<div class="title">VIP Plan <span>🔒</span></div>
+<div class="row"><div><small>PRICE</small><br><b>UGX 5,000,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
+<div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 1,000,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 30,000,000</b></div></div>
+<div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 35,000,000</b></div>
+<div class="btnrow"><a class="invest" href="#">🛒 Invest Now</a><a class="arrow" href="#">→</a></div>
+</div></div>
+<div class="card">
+<div class="img">🏦<span class="hot">🔥 HOT</span><span class="heart">♡</span></div>
+<div class="body">
+<div class="title">Exclusive Plan <span>🔒</span></div>
+<div class="row"><div><small>PRICE</small><br><b>UGX 10,000,000</b></div><div><small>DURATION</small><br><b>30 Days</b></div></div>
+<div class="row"><div><small>DAILY RETURN (20%)</small><br><b>UGX 2,000,000</b></div><div><small>TOTAL RETURN</small><br><b>UGX 60,000,000</b></div></div>
+<div class="total"><small>TOTAL RECEIVED</small><br><b>UGX 70,000,000</b></div>
+<div class="btnrow"><a class="invest" href="#">🛒 Invest Now</a><a class="arrow" href="#">→</a></div>
+</div></div></div>
+<div class="nav"><a href="/dashboard">🏠<br>Home</a><a href="/invest" class="active">📊<br>Invest</a><a href="#">💱<br>Transactions</a><a href="#">👥<br>Referrals</a><a href="#">🎧<br>Support</a><a href="#">👤<br>Account</a></div>
+</body></html>'''
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT',5000)))
