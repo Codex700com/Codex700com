@@ -445,6 +445,79 @@ def raffle_winners():
     if 'uid' not in session: return redirect('/login')
     return '<div style="background:#000;color:#fff;padding:20px;font-family:Arial"><a href="/raffle" style="color:#ffcc33">← Back</a><h2>All Winners</h2><p>John K. - Draw #124<br>Sarah N. - Draw #123<br>David M. - Draw #122<br>Grace A. - Draw #121</p></div>'
 
+
+@app.route('/withdraw', methods=['GET','POST'])
+def withdraw():
+    if 'uid' not in session: return redirect('/login')
+    # TODO: replace 0 with real wallet balance from DB later
+    balance = 0
+    msg=""
+    if request.method=='POST':
+        msg="Withdrawal request submitted. Processing within 1-24 hours."
+    return f"""
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<style>
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{background:#0a0a0a;color:#fff;font-family:Arial;padding-bottom:20px}}
+.top{{display:flex;align-items:center;justify-content:space-between;padding:12px}}
+.top a{{color:#ffcc33;text-decoration:none;font-size:20px}}
+.bal{{margin:10px;border:1px solid #ffcc33;border-radius:12px;padding:15px;display:flex;align-items:center;justify-content:space-between;background:#111}}
+.bal b{{color:red;font-size:20px}}
+.card{{margin:10px;background:#111;border:1px solid #333;border-radius:12px;padding:12px}}
+.card h4{{color:#ffcc33;font-size:13px;margin-bottom:10px}}
+label{{font-size:13px;margin:10px 0 5px;display:block}}
+input{{width:100%;padding:12px;border-radius:10px;border:1px solid #444;background:#0a0a0a;color:#fff}}
+.pay{{display:flex;gap:8px;margin-top:8px}}
+.pay div{{flex:1;border:1px solid #444;border-radius:10px;padding:10px;text-align:center;cursor:pointer}}
+.pay .sel{{border-color:#ff3300;background:#1a0d00}}
+.sum{{margin-top:10px}}
+.sum div{{display:flex;justify-content:space-between;padding:6px 0;font-size:14px}}
+.sum .recv{{color:red;font-weight:bold}}
+.warn{{margin:10px;background:#2a0a0a;border:1px solid #662222;padding:12px;border-radius:10px;font-size:12px;line-height:1.6}}
+.warn b{{color:red}}
+.btn{{margin:10px;width:calc(100% - 20px);padding:15px;background:#cc0000;border:none;border-radius:12px;color:#fff;font-weight:bold;font-size:16px}}
+.minmax{{font-size:12px;margin-top:5px;color:#aaa}}
+.minmax span{{color:red}}
+</style>
+<div class="top"><a href="/dashboard">←</a><b>WITHDRAW</b><a href="#">🎧</a></div>
+<div class="bal"><div>💼</div><div><small>Available Balance</small><br><b>UGX {balance:,}</b></div><div>👁️</div></div>
+<div class="card"><h4>WITHDRAWAL DETAILS</h4>
+<div style="color:#00ff88;text-align:center;font-size:13px">{msg}</div>
+<form method="post" id="wf">
+<label>Withdrawal Amount (UGX)</label>
+<input id="amt" name="amount" type="number" placeholder="Enter amount to withdraw" oninput="upd()" required>
+<div style="text-align:right;font-size:12px;color:#aaa;margin-top:-5px">UGX</div>
+<div class="minmax">Minimum: <span>UGX 1,000</span> | Maximum: <span>UGX 10,000,000</span></div>
+<label>Payment Method</label>
+<div class="pay">
+<div id="a" class="sel" onclick="setM('airtel')">🔴 Airtel Money ✓</div>
+<div id="m" onclick="setM('mtn')">🟡 MTN Mobile Money ○</div>
+</div>
+<input type="hidden" name="method" id="method" value="airtel">
+<label>Mobile Number</label><input name="mobile" placeholder="Enter mobile number (07xxxxxxxx)" required>
+<label>Account Name</label><input name="accname" placeholder="Enter account name" required>
+<div class="card sum"><h4>WITHDRAWAL SUMMARY</h4>
+<div><span>Withdrawal Amount</span><span id="s1">UGX 0</span></div>
+<div><span>Withdrawal Fee (0%)</span><span>UGX 0</span></div>
+<div><span>You Will Receive</span><span class="recv" id="s2">UGX 0</span></div>
+</div>
+<div class="warn">⚠️ <b>IMPORTANT</b><br>
+• Make sure your mobile money number is correct.<br>
+• Withdrawals are processed within 1-24 hours.<br>
+• You will be notified once your withdrawal is approved.
+</div>
+<button class="btn">✈️ CONFIRM WITHDRAWAL</button>
+</form></div>
+<script>
+function setM(v){{document.getElementById('method').value=v;
+document.getElementById('a').className=v=='airtel'?'sel':'';
+document.getElementById('m').className=v=='mtn'?'sel':'';}}
+function upd(){{let v=document.getElementById('amt').value||0;
+document.getElementById('s1').innerText='UGX '+Number(v).toLocaleString();
+document.getElementById('s2').innerText='UGX '+Number(v).toLocaleString();}}
+</script>
+"""
+
 @app.route('/invest')
 def invest():
     if 'uid' not in session:
