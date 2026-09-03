@@ -1,0 +1,54 @@
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<style>
+*{box-sizing:border-box;margin:0}html,body{width:100%;background:#0e0e0e;overflow-x:hidden}
+.dep{background:#0e0e0e;color:#fff;width:100vw;min-height:100vh;font-family:Arial;font-size:14px;padding-bottom:70px}
+.card{background:#1c1c1e;border-radius:12px;padding:12px;margin:8px;width:calc(100% - 16px)}
+.lbl{color:#fc0;font-weight:800;font-size:12px;margin-bottom:6px}
+.inp{width:100%;background:#2c2c2e;border:none;border-radius:8px;padding:12px;color:#fff;margin:6px 0 12px}
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:20px;display:none;z-index:99}
+.upload{border:2px dashed #555;border-radius:10px;padding:18px;text-align:center;color:#888;font-size:12px;cursor:pointer;position:relative}
+.upload img{max-width:100%;border-radius:8px;margin-top:8px}
+.btnR{background:#c00;color:#fff;width:calc(100% - 16px);margin:8px;padding:15px;border:none;border-radius:10px;font-weight:900}
+.nav{position:fixed;bottom:0;left:0;right:0;width:100vw;background:#111;display:flex;justify-content:space-around;padding:8px 0;font-size:10px;color:#888;text-align:center}
+.nav a{color:#888;text-decoration:none}.nav a.on{color:#fc0}
+</style>
+<div id=toast>Copied!</div>
+<div class=dep>
+<div style="padding:12px;background:#111;display:flex;justify-content:space-between"><a href="/home" style="color:#fff;text-decoration:none;font-size:20px">←</a><b>Deposit Funds</b><a href="/history" style="color:#fff;text-decoration:none">🧾</a></div>
+<div style="background:#2a1111;padding:8px;margin:8px;border-radius:8px;font-size:11px">🔺 <b style="color:#f44">IMPORTANT:</b> Send money only to the details below.</div>
+<div class=card><div class=lbl>SEND MONEY TO</div>
+<div style="display:flex;align-items:center;gap:10px">
+<div style="width:42px;height:42px;background:#fc0;border-radius:50%;display:flex;align-items:center;justify-content:center">👤</div>
+<div><div style="font-weight:800">Shakira Nantongo</div><div id=accNum style="color:#fc0;font-weight:900">0758878297</div><div style="color:#f44;font-size:12px">airtel money</div></div>
+<button id=copyBtn style="margin-left:auto;background:#2c2c2e;color:#fc0;border:none;padding:10px;border-radius:8px;font-size:11px">📋<br>Copy Number</button>
+</div></div>
+<div class=card><div class=lbl>HOW TO DEPOSIT</div><div style="font-size:12px;line-height:1.8">1. Dial *185# on your Airtel line<br>2. Select Send Money<br>3. Send money to 0758878297<br>4. Enter the amount you wish to deposit<br>5. After sending, fill in the details below<br>6. Upload screenshot of successful transaction<br>7. Click "Confirm Deposit"</div></div>
+<form method=POST enctype=multipart/form-data>
+<div class=card><div class=lbl>FILL IN YOUR DEPOSIT DETAILS</div>
+Airtel Number Used To Send<input class=inp name=phone required placeholder="Enter the Airtel number you used">
+Amount Deposited (UGX)<input class=inp name=amount type=number required placeholder="Enter amount you deposited">
+Transaction ID / Reference<input class=inp name=txn required placeholder="Enter transaction ID">
+Upload Screenshot
+<div class=upload id=upBox>📤<br><span id=upText>Tap to upload screenshot<br>PNG, JPG, JPEG (Max 5MB)</span><img id=preview style="display:none"><input type=file id=fileInp name=screenshot accept="image/*" style="position:absolute;inset:0;opacity:0;width:100%;height:100%"></div>
+</div>
+<div style="background:#2a1111;border-radius:8px;padding:10px;font-size:11px;color:#f99;margin:8px;width:calc(100% - 16px)"><b>Please Note</b><br>• Minimum: UGX 1,000<br>• Maximum: UGX 10,000,000<br>• Reviewed within few minutes.</div>
+<button class=btnR>✈ CONFIRM DEPOSIT</button>
+</form>
+<div class=nav>
+<a href="/home">🏠<br>Home</a><a href="/invest">📊<br>Invest</a><a href="/deposit" class=on>💼<br>Wallet</a><a href="/referrals">👥<br>Referrals</a><a href="/account">👤<br>Account</a>
+</div>
+</div>
+<script>
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',1500)}
+document.getElementById('copyBtn').onclick=function(){
+  var n=document.getElementById('accNum').textContent.trim();
+  if(navigator.clipboard){navigator.clipboard.writeText(n).then(()=>toast('Number copied: '+n))}
+  else{var i=document.createElement('input');i.value=n;document.body.appendChild(i);i.select();document.execCommand('copy');i.remove();toast('Number copied: '+n)}
+};
+var upBox=document.getElementById('upBox'),fileInp=document.getElementById('fileInp'),preview=document.getElementById('preview'),upText=document.getElementById('upText');
+fileInp.onchange=function(e){
+  var f=e.target.files[0];if(!f)return;
+  if(f.size>5*1024*1024){toast('File too large, max 5MB');return}
+  var r=new FileReader();r.onload=function(ev){preview.src=ev.target.result;preview.style.display='block';upText.innerHTML='✅ '+f.name;toast('Screenshot attached')};r.readAsDataURL(f)
+};
+</script>

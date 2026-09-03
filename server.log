@@ -1,0 +1,19 @@
+nohup: ignoring input
+ * Serving Flask app 'app'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://10.243.155.91:8000
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [03/Sep/2026 19:26:16] "[32mGET /deposit HTTP/1.1[0m" 302 -
+127.0.0.1 - - [03/Sep/2026 19:26:17] "GET /login HTTP/1.1" 200 -
+127.0.0.1 - - [03/Sep/2026 19:26:19] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+127.0.0.1 - - [03/Sep/2026 19:26:24] "POST /login HTTP/1.1" 200 -
+127.0.0.1 - - [03/Sep/2026 19:26:25] "GET /home HTTP/1.1" 200 -
+127.0.0.1 - - [03/Sep/2026 19:26:27] "GET /deposit HTTP/1.1" 200 -
+127.0.0.1 - - [03/Sep/2026 19:26:28] "GET /home HTTP/1.1" 200 -
+127.0.0.1 - - [03/Sep/2026 19:26:41] "GET /deposit HTTP/1.1" 200 -
+127.0.0.1 - - [03/Sep/2026 19:26:45] "GET /home HTTP/1.1" 200 -
+127.0.0.1 - - [03/Sep/2026 19:26:46] "GET /withdraw HTTP/1.1" 200 -
+127.0.0.1 - - [03/Sep/2026 19:26:52] "GET /chat HTTP/1.1" 200 -

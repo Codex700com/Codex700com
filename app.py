@@ -115,8 +115,24 @@ def withdraw():
 
 @app.route("/invest")
 def invest(): return "<h2 style='text-align:center;margin-top:50px'>Invest page coming soon</h2><center><a href='/home'>Back Home</a></center>"
-@app.route("/deposit")
-def deposit(): return "<h2 style='text-align:center;margin-top:50px'>Deposit page coming soon</h2><center><a href='/home'>Back Home</a></center>"
+def init_dep():
+ try:
+  _c=db();_c.execute("CREATE TABLE IF NOT EXISTS deposits(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,phone TEXT,amount INTEGER,txn_id TEXT,status TEXT DEFAULT 'pending')");_c.commit();_c.close()
+ except Exception as e: print(e)
+try:
+ init_dep()
+except: pass
+@app.route("/deposit", methods=["GET","POST"])
+@need
+def deposit():
+ u=cu();c=db()
+ from flask import request
+ if request.method=="POST":
+  ph=request.form.get("phone","");am=int(request.form.get("amount","0") or 0);tx=request.form.get("txn","")
+  c.execute("INSERT INTO deposits(user_id,phone,amount,txn_id) VALUES(?,?,?,?)",(u["id"],ph,am,tx));c.commit();c.close()
+  return "Deposit submitted - pending approval <a href=/home>Home</a>"
+ c.close()
+ import pathlib as _pl; _f=_pl.Path(__file__).parent/"deposit_page.html"; return _f.read_text() if _f.exists() else "missing template"
 @app.route("/checkin")
 def checkin(): return "<h2 style='text-align:center;margin-top:50px'>Check-in successful 🎁</h2><center><a href='/home'>Back Home</a></center>"
 @app.route("/investments")
