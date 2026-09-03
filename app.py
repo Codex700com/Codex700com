@@ -108,4 +108,24 @@ def withdraw():
     bal = 0
     html = open("/data/data/com.termux/files/home/w.html").read().replace("BALPLACE", str(bal))
     return html
+
+@app.route("/invest")
+def invest(): return "<h2 style='text-align:center;margin-top:50px'>Invest page coming soon</h2><center><a href='/home'>Back Home</a></center>"
+@app.route("/deposit")
+def deposit(): return "<h2 style='text-align:center;margin-top:50px'>Deposit page coming soon</h2><center><a href='/home'>Back Home</a></center>"
+@app.route("/checkin")
+def checkin(): return "<h2 style='text-align:center;margin-top:50px'>Check-in successful 🎁</h2><center><a href='/home'>Back Home</a></center>"
+@app.route("/investments")
+def investments(): return "<h2 style='text-align:center;margin-top:50px'>No investments yet</h2><center><a href='/home'>Back Home</a></center>"
+@app.route("/transactions")
+def transactions(): return "<h2 style='text-align:center;margin-top:50px'>No transactions yet</h2><center><a href='/home'>Back Home</a></center>"
+@app.route("/referrals")
+def referrals(): return "<h2 style='text-align:center;margin-top:50px'>Referrals page</h2><center><a href='/home'>Back Home</a></center>"
+@app.route("/raffle")
+def raffle(): return "<h2 style='text-align:center;margin-top:50px'>Raffle Draw coming soon</h2><center><a href='/home'>Back Home</a></center>"
+@app.route("/support")
+def support(): return "<h2 style='text-align:center;margin-top:50px'>Support: contact us on WhatsApp</h2><center><a href='/home'>Back Home</a></center>"
+@app.route("/chat")
+def chat(): return "<h2 style='text-align:center;margin-top:50px'>Chat coming soon</h2><center><a href='/home'>Back Home</a></center>"
+
 if __name__=="__main__": app.run(host="0.0.0.0",port=8000)
