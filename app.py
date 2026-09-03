@@ -114,7 +114,7 @@ def withdraw():
     return html
 
 @app.route("/invest")
-def invest(): return "<h2 style='text-align:center;margin-top:50px'>Invest page coming soon</h2><center><a href='/home'>Back Home</a></center>"
+def invest():  import os; return open(os.path.expanduser('~/codex700/templates/invest.html')).read()
 def init_dep():
  try:
   _c=db();_c.execute("CREATE TABLE IF NOT EXISTS deposits(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,phone TEXT,amount INTEGER,txn_id TEXT,status TEXT DEFAULT 'pending')");_c.commit();_c.close()
@@ -154,3 +154,8 @@ def support(): return "<h2 style='text-align:center;margin-top:50px'>Support: co
 def chat(): return "<h2 style='text-align:center;margin-top:50px'>Chat coming soon</h2><center><a href='/home'>Back Home</a></center>"
 
 if __name__=="__main__": app.run(host="0.0.0.0",port=8000)
+
+@app.route('/invest')
+def invest():
+    import os
+    return open(os.path.expanduser('~/codex700/templates/invest.html')).read()
