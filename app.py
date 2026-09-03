@@ -64,7 +64,7 @@ def home():
  for nm,lk,ic in acts: h+="<a href='"+lk+"'><div class=card>"+ic+"<br>"+nm+"</div></a>"
  h+="</div><a href='/raffle'><div class=card>🏆 <b class=red>RAFFLE DRAW</b><br><span class=btn>View Prizes →</span></div></a>"
  h+="<div class=card><b class=red>INVESTMENT PLANS</b> <a href='/invest' style='float:right'>View All ></a></div><div style='display:flex;gap:8px;overflow:auto;margin:10px'>"
- for pl,amt in [("Starter Plan",50000),("Silver Plan",250000),("Gold Plan",500000),("Platinum Plan",1000000)]: h+="<a href='/invest'><div class=card style='min-width:140px'><b>"+pl+"</b><br>UGX "+str(amt)+"</div></a>"
+ for pl,amt in [("Starter Plan",50000),("Silver Plan",250000),("Gold Plan",500000),("Platinum Plan",10000000)]: h+="<a href='/invest'><div class=card style='min-width:140px'><b>"+pl+"</b><br>UGX "+str(amt)+"</div></a>"
  h+="</div><div class=card>Need Help? <a class=btn href='/support'>Contact Support</a></div>"+N
  return h
 
@@ -82,6 +82,7 @@ def notif():
  h=S+hdr()+"<div class=card><h3>Notifications</h3>"
  for r in rs: h+="<p>"+r["msg"]+"</p>"
  return h+"</div>"+N
+@app.route("/account")
 @app.route("/account_old")
 @need
 def acc():
@@ -91,84 +92,34 @@ def lo(): session.clear();return redirect("/login")
 @app.route("/wallet")
 @need
 def wal():
- u=cu();return S+hdr()+"<div class=card><h3>Wallet UGX "+str(u["balance"])+"</h3><a class=btn href='/deposit'>Deposit</a> <a class=btn href='/withdraw'>Withdraw</a></div>"+N
-@app.route("/invest")
-@need
-def inv():
- h=S+hdr()+"<div class=card><h3>Investment Plans</h3></div>"
- for pl,amt in [("Starter Plan",50000),("Silver Plan",250000),("Gold Plan",500000),("Platinum Plan",1000000)]:
-  h+="<div class=card><b>"+pl+"</b><br>Daily 20% 30 Days<br>Min UGX "+str(amt)+"<br><br><a class=btn href='/do_invest?plan="+pl+"&amt="+str(amt)+"'>Invest Now</a></div>"
- return h+N
-@app.route("/do_invest")
-@need
-def doinv():
- pl=request.args.get("plan");amt=int(request.args.get("amt"));u=cu()
- if u["balance"]<amt: return S+"<div class=card>Insufficient <a href='/deposit'>Deposit</a></div>"+N
- c=db();c.execute("UPDATE users SET balance=balance-? WHERE id=?",(amt,u["id"]));c.execute("INSERT INTO investments(user_id,plan,amount,date) VALUES(?,?,?,?)",(u["id"],pl,amt,datetime.date.today().isoformat()));c.execute("INSERT INTO transactions(user_id,type,amount,status,date,ref) VALUES(?,?,?,?,?,?)",(u["id"],"investment",amt,"completed",datetime.date.today().isoformat(),uuid.uuid4().hex[:8]));c.commit();c.close()
- return redirect("/investments")
-@app.route("/investments")
-@need
-def invs():
- c=db();rs=c.execute("SELECT * FROM investments WHERE user_id=?",(session["uid"],)).fetchall();c.close()
- h=S+hdr()+"<div class=card><h3>My Investments</h3>"
- for r in rs: h+="<p>"+r["plan"]+" UGX "+str(r["amount"])+"</p>"
- return h+"</div>"+N
-@app.route("/deposit",methods=["GET","POST"])
-@need
-def dep():
- if request.method=="POST":
-  amt=int(request.form["amount"]);c=db();c.execute("UPDATE users SET balance=balance+? WHERE id=?",(amt,session["uid"]));c.execute("INSERT INTO transactions(user_id,type,amount,status,date,ref) VALUES(?,?,?,?,?,?)",(session["uid"],"deposit",amt,"completed",datetime.date.today().isoformat(),uuid.uuid4().hex[:8]));c.commit();c.close();return redirect("/wallet")
- return S+hdr()+"<div class=card><h3>Deposit</h3><form method=POST><input name=amount type=number placeholder='Amount' required><button class=btn>Deposit</button></form></div>"+N
-@app.route("/withdraw",methods=["GET","POST"])
-@need
-def wit():
- u=cu();m=""
- if request.method=="POST":
-  amt=int(request.form["amount"])
-  if amt>u["balance"]: m="Insufficient balance"
-  else: c=db();c.execute("UPDATE users SET balance=balance-? WHERE id=?",(amt,u["id"]));c.execute("INSERT INTO transactions(user_id,type,amount,status,date,ref) VALUES(?,?,?,?,?,?)",(u["id"],"withdraw",amt,"completed",datetime.date.today().isoformat(),uuid.uuid4().hex[:8]));c.commit();c.close();return redirect("/transactions")
- return S+hdr()+"<div class=card><h3>Withdraw Bal UGX "+str(u["balance"])+"</h3>"+m+"<form method=POST><input name=amount type=number required><button class=btn>Withdraw</button></form></div>"+N
-@app.route("/transactions")
-@need
-def tr():
- c=db();rs=c.execute("SELECT * FROM transactions WHERE user_id=? ORDER BY id DESC",(session["uid"],)).fetchall();c.close()
- h=S+hdr()+"<div class=card><h3>Transactions</h3>"
- for r in rs: h+="<p>"+r["date"]+" "+r["type"]+" UGX "+str(r["amount"])+" "+r["ref"]+" "+r["status"]+"</p>"
- return h+"</div>"+N
-@app.route("/checkin")
-@need
-def ci():
- c=db();t=datetime.date.today().isoformat();ex=c.execute("SELECT * FROM checkins WHERE user_id=? AND date=?",(session["uid"],t)).fetchone();c.close()
- if ex: h="Today's reward has already been claimed."
- else: h="<a class=btn href='/claim'>CLAIM UGX 500</a>"
- return S+hdr()+"<div class=card><h3>Daily Check-In UGX 500</h3>"+h+"</div>"+N
-@app.route("/claim")
-@need
-def cl():
- t=datetime.date.today().isoformat();c=db()
- try: c.execute("INSERT INTO checkins(user_id,date) VALUES(?,?)",(session["uid"],t));c.execute("UPDATE users SET balance=balance+500 WHERE id=?",(session["uid"],));c.commit()
- except: pass
- c.close();return redirect("/checkin")
-@app.route("/referrals")
-@need
-def rf():
- u=cu();c=db();n=c.execute("SELECT COUNT(*) n FROM users WHERE invite=?",(u["refcode"],)).fetchone()["n"];c.close()
- link="https://codex700com.onrender.com/register?ref="+u["refcode"]
- return S+hdr()+"<div class=card><h3>Referrals</h3><input id=rl value='"+link+"' readonly><button class=btn onclick=\"navigator.clipboard.writeText(document.getElementById('rl').value);alert('Referral link copied.')\">Copy Link</button><p>Total: "+str(n)+"</p><p>Code: "+u["refcode"]+"</p></div>"+N
-@app.route("/raffle")
-@need
-def ra(): return S+hdr()+"<div class=card><h3 class=red>RAFFLE DRAW</h3><p>Prizes daily</p><p>Draw: Tomorrow 8PM</p><p>My tickets: 0</p><p>Winners: Brian, Shakira</p></div>"+N
-@app.route("/support")
-@need
-def sup(): return S+hdr()+"<div class=card><h3>Support</h3><p>FAQ</p><a class=btn href='/chat'>Chat with support</a></div>"+N
-@app.route("/chat",methods=["GET","POST"])
-@need
-def ch():
- c=db()
- if request.method=="POST": c.execute("INSERT INTO chats(user_id,who,msg,date) VALUES(?,?,?,?)",(session["uid"],"user",request.form["msg"],datetime.datetime.now().isoformat()));c.commit()
- rs=c.execute("SELECT * FROM chats WHERE user_id=? ORDER BY id",(session["uid"],)).fetchall();c.close()
- h=S+hdr()+"<div class=card><h3>Chat</h3>"
- for r in rs: h+="<p><b>"+r["who"]+":</b> "+r["msg"]+"</p>"
- return h+"<form method=POST><input name=msg required><button class=btn>Send</button></form></div>"+N
-exec(open('acc_new.py').read(), globals())
-if __name__=="__main__": app.run(host="0.0.0.0",port=5000)
+ return S+hdr()+"<div class=card><h3>Wallet</h3><p>UGX "+str(cu()['balance'])+"</p></div>"+N
+@app.route("/withdraw")
+def withdraw():
+    bal = 0
+    return """<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+    body{background:#0a0a0a;color:#fff;font-family:Arial;margin:0;padding:15px}
+    .bal{background:#111;border:1px solid #f90;border-radius:10px;padding:12px;margin-bottom:15px}
+    .bal b{color:#ff0000;font-size:22px}
+    .card{background:#151515;border-radius:10px;padding:15px;margin-bottom:15px}
+    input{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #333;background:#222;color:#fff;box-sizing:border-box}
+    .btn{width:100%;padding:14px;background:#ff0000;color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:bold}
+    </style></head><body>
+    <div class="bal">Available Balance<br><b>UGX """+str(bal)+"""</b></div>
+    <div class="card"><h3>Withdrawal Details</h3>
+    <form method="post" action="/withdraw_submit">
+    <label>Amount (UGX)</label><input name="amount" type="number" placeholder="Enter amount" required>
+    <label>Phone</label><input name="phone" placeholder="07...">
+    </div>
+    <div class="card"><h3>Payment Method</h3><input type="radio" checked> Mobile Money</div>
+    <div class="card"><h3>Withdrawal Summary</h3><p>Minimum: UGX 10,000</p></div>
+    <button class="btn">Submit Withdrawal</button></form></body></html>"""
+
+@app.route("/withdraw_submit", methods=["POST"])
+def withdraw_submit():
+    from flask import request
+    try: amt=int(request.form.get("amount",0))
+    except: amt=0
+    if amt < 10000:
+        return "<h3 style='color:red;text-align:center;margin-top:50px'>The minimum withdraw is 10k</h3><br><center><a href='/withdraw'>Back</a></center>"
+    return "<h3 style='color:green;text-align:center;margin-top:50px'>withdrawal successful, wait for review</h3><br><center><a href='/withdraw'>Back</a></center>"
+if __name__=="__main__": app.run(host="0.0.0.0",port=8000)
