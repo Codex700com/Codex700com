@@ -125,14 +125,19 @@ except: pass
 @app.route("/deposit", methods=["GET","POST"])
 @need
 def deposit():
- u=cu();c=db()
- from flask import request
- if request.method=="POST":
-  ph=request.form.get("phone","");am=int(request.form.get("amount","0") or 0);tx=request.form.get("txn","")
-  c.execute("INSERT INTO deposits(user_id,phone,amount,txn_id) VALUES(?,?,?,?)",(u["id"],ph,am,tx));c.commit();c.close()
-  return "Deposit submitted - pending approval <a href=/home>Home</a>"
- c.close()
- import pathlib as _pl; _f=_pl.Path(__file__).parent/"deposit_page.html"; return _f.read_text() if _f.exists() else "missing template"
+    from flask import request
+    import pathlib as _pl
+    u=cu();c=db()
+    if request.method=="POST":
+        ph=request.form.get("phone","")
+        am=int(request.form.get("amount","0") or 0)
+        tx=request.form.get("txn","")
+        c.execute("INSERT INTO deposits(user_id,phone,amount,txn_id) VALUES(?,?,?,?)",(u["id"],ph,am,tx))
+        c.commit();c.close()
+        return "Deposit submitted - pending approval <a href=/home>Home</a>"
+    c.close()
+    _f=_pl.Path(__file__).parent/"deposit_page.html"
+    return _f.read_text() if _f.exists() else "missing template file not found: "+str(_f)
 @app.route("/checkin")
 def checkin(): return "<h2 style='text-align:center;margin-top:50px'>Check-in successful 🎁</h2><center><a href='/home'>Back Home</a></center>"
 @app.route("/investments")
