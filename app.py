@@ -114,7 +114,9 @@ def withdraw():
     return html
 
 @app.route("/invest")
-def invest():  import os; return open(os.path.expanduser('~/codex700/templates/invest.html')).read()
+def invest():
+    return open('templates/invest.html').read()
+
 def init_dep():
  try:
   _c=db();_c.execute("CREATE TABLE IF NOT EXISTS deposits(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,phone TEXT,amount INTEGER,txn_id TEXT,status TEXT DEFAULT 'pending')");_c.commit();_c.close()
@@ -122,40 +124,7 @@ def init_dep():
 try:
  init_dep()
 except: pass
-@app.route("/deposit", methods=["GET","POST"])
-@need
-def deposit():
-    from flask import request
-    import pathlib as _pl
-    u=cu();c=db()
-    if request.method=="POST":
-        ph=request.form.get("phone","")
-        am=int(request.form.get("amount","0") or 0)
-        tx=request.form.get("txn","")
-        c.execute("INSERT INTO deposits(user_id,phone,amount,txn_id) VALUES(?,?,?,?)",(u["id"],ph,am,tx))
-        c.commit();c.close()
-        return "Deposit submitted - pending approval <a href=/home>Home</a>"
-    c.close()
-    _f=_pl.Path(__file__).parent/"deposit_page.html"
-    return _f.read_text() if _f.exists() else "missing template file not found: "+str(_f)
-@app.route("/checkin")
-def checkin(): return "<h2 style='text-align:center;margin-top:50px'>Check-in successful 🎁</h2><center><a href='/home'>Back Home</a></center>"
-@app.route("/investments")
-def investments(): return "<h2 style='text-align:center;margin-top:50px'>No investments yet</h2><center><a href='/home'>Back Home</a></center>"
-@app.route("/transactions")
-def transactions(): return "<h2 style='text-align:center;margin-top:50px'>No transactions yet</h2><center><a href='/home'>Back Home</a></center>"
-@app.route("/referrals")
-def referrals(): return "<h2 style='text-align:center;margin-top:50px'>Referrals page</h2><center><a href='/home'>Back Home</a></center>"
-@app.route("/raffle")
-def raffle(): return "<h2 style='text-align:center;margin-top:50px'>Raffle Draw coming soon</h2><center><a href='/home'>Back Home</a></center>"
-@app.route("/support")
-def support(): return "<h2 style='text-align:center;margin-top:50px'>Support: contact us on WhatsApp</h2><center><a href='/home'>Back Home</a></center>"
-@app.route("/chat")
-def chat(): return "<h2 style='text-align:center;margin-top:50px'>Chat coming soon</h2><center><a href='/home'>Back Home</a></center>"
 
-if __name__=="__main__": app.run(host="0.0.0.0",port=8000)
-
-@app.route('/invest')
 def invest():
     import os
-    return open(os.path.expanduser('~/codex700/templates/invest.html')).read()
+    return open('templates/invest.html').read()
