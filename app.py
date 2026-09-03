@@ -123,8 +123,68 @@ def init_dep():
  except Exception as e: print(e)
 try:
  init_dep()
+ init_inv()
 except: pass
 
 def invest():
     import os
     return open('templates/invest.html').read()
+
+@app.route('/invest/<pid>')
+def invest_detail(pid):
+ u=cur_user()
+ if not u: return redirect('/login')
+ p=PLANS.get(pid)
+ if not p: return redirect('/invest')
+ b=wallet(u[0])
+ total=p['daily']*p['days']
+ return f"<style>body{background:#000;color:#fff;font-family:sans-serif;padding:20px}.card{background:#111;border:1px solid gold;border-radius:12px;padding:20px}.btn{background:red;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block;margin:5px}</style><div class=card><h2 style='color:red'>{p['name']}</h2>Amount: UGX {p['price']:,}<br>Duration: {p['days']} Days<br>Configured Daily Return: UGX {p['daily']:,}<br>Projected Total Return: UGX {total:,}<br>Wallet Balance: UGX {b:,}<br><br><small>Actual credits are subject to platform rules. Projected returns are not guaranteed profits.</small><br><br><a class=btn href='/invest/confirm/{pid}'>CONFIRM INVESTMENT</a> <a class=btn style='background:#333' href='/invest'>CANCEL</a></div>"
+
+@app.route('/invest/confirm/<pid>')
+def invest_confirm(pid):
+ import datetime
+ u=cur_user()
+ if not u: return redirect('/login')
+ p=PLANS.get(pid)
+ if not p: return redirect('/invest')
+ b=wallet(u[0])
+ if b < p['price']:
+  need=p['price']-b
+  return f"<style>body{{background:#000;color:#fff;font-family:sans-serif;padding:20px}}.card{{background:#111;border:1px solid red;border-radius:12px;padding:20px}}</style><div class=card><h2 style='color:red'>INSUFFICIENT FUNDS</h2>You need UGX {p['price']:,} to activate {p['name']}.<br>Current balance: UGX {b:,}<br>Additional required: UGX {need:,}<br><br><a href='/deposit' style='background:red;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none'>DEPOSIT FUNDS</a> <a href='/invest' style='color:#fff'>CANCEL</a></div>"
+ # deduct atomically
+ c=db()
+ try:
+  c.execute("BEGIN IMMEDIATE")
+  r=c.execute("SELECT balance FROM users WHERE id=?",(u[0],)).fetchone()
+  if r[0] < p['price']:
+   c.rollback();c.close();return redirect(f'/invest/{pid}')
+  import datetime as dt
+  sd=dt.date.today().isoformat();ed=(dt.date.today()+dt.timedelta(days=p['days'])).isoformat();now=dt.datetime.now().isoformat()
+  c.execute("UPDATE users SET balance=balance-? WHERE id=?",(p['price'],u[0]))
+  cur=c.execute("INSERT INTO investments(user_id,plan_id,plan_name,amount,daily_return,duration_days,start_date,end_date,status,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",(u[0],pid,p['name'],p['daily'],p['daily'],p['days'],sd,ed,'ACTIVE',now))
+  iid=cur.lastrowid
+  c.execute("INSERT INTO transactions(user_id,type,amount,ref,status,created_at) VALUES(?,?,?,?,?,?)",(u[0],'INVESTMENT',-p['price'],f'INV-{iid}-{pid}','completed',now))
+  c.commit()
+ except Exception as e:
+  try:c.rollback()
+  except:pass
+  c.close();return f"Error: {e}"
+ c.close()
+ return f"<style>body{{background:#000;color:#fff;font-family:sans-serif;padding:20px}}.card{{background:#111;border:1px solid gold;border-radius:12px;padding:20px}}</style><div class=card><h2 style='color:red'>INVESTMENT ACTIVATED</h2>Plan: {p['name']}<br>Amount: UGX {p['price']:,}<br>Start: {sd}<br>End: {ed}<br>Status: ACTIVE<br><br><a href='/investments' style='background:red;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none'>VIEW MY INVESTMENT</a></div>"
+
+@app.route('/investments')
+def my_investments():
+ import datetime
+ u=cur_user()
+ if not u: return redirect('/login')
+ credit_daily()
+ c=db();rows=c.execute("SELECT * FROM investments WHERE user_id=? ORDER BY id DESC",(u[0],)).fetchall();c.close()
+ h="<style>body{background:#000;color:#fff;font-family:sans-serif;padding:15px}.card{background:#111;border:1px solid gold;border-radius:12px;padding:15px;margin:10px 0}.bar{background:#333;height:8px;border-radius:4px}.fill{background:gold;height:8px;border-radius:4px}</style><h2 style='color:red'>MY INVESTMENTS</h2>"
+ for r in rows:
+  iid,_,pid,pname,amt,dret,days,sd,ed,st,acc,_,_=r[0],r[1],r[2],r[3],r[4],r[5],r[6],r[7],r[8],r[9],r[10],r[11],r[12]
+  import datetime as dt
+  try:rem=(dt.date.fromisoformat(ed)-dt.date.today()).days
+  except:rem=0
+  rem=max(0,rem);prog=int(((days-rem)/days*100)) if days else 0
+  h+=f"<div class=card><b style='color:red'>{pname}</b><br>Amount: UGX {amt:,}<br>Start: {sd} End: {ed}<br>Status: {st}<br>Daily: UGX {dret:,} Accrued: UGX {acc:,}<br>Remaining: {rem} days<div class=bar><div class=fill style='width:{prog}%'></div></div><small>NEXT RETURN: countdown server-side</small></div>"
+ return h+"<a href='/invest' style='color:red'>← Back to Plans</a>"
