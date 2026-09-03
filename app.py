@@ -93,26 +93,7 @@ def lo(): session.clear();return redirect("/login")
 @need
 def wal():
  return S+hdr()+"<div class=card><h3>Wallet</h3><p>UGX "+str(cu()['balance'])+"</p></div>"+N
-@app.route("/withdraw")
-def withdraw():
-    bal = 0
-    return """<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>
-    body{background:#0a0a0a;color:#fff;font-family:Arial;margin:0;padding:15px}
-    .bal{background:#111;border:1px solid #f90;border-radius:10px;padding:12px;margin-bottom:15px}
-    .bal b{color:#ff0000;font-size:22px}
-    .card{background:#151515;border-radius:10px;padding:15px;margin-bottom:15px}
-    input{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #333;background:#222;color:#fff;box-sizing:border-box}
-    .btn{width:100%;padding:14px;background:#ff0000;color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:bold}
-    </style></head><body>
-    <div class="bal">Available Balance<br><b>UGX """+str(bal)+"""</b></div>
-    <div class="card"><h3>Withdrawal Details</h3>
-    <form method="post" action="/withdraw_submit">
-    <label>Amount (UGX)</label><input name="amount" type="number" placeholder="Enter amount" required>
-    <label>Phone</label><input name="phone" placeholder="07...">
-    </div>
-    <div class="card"><h3>Payment Method</h3><input type="radio" checked> Mobile Money</div>
-    <div class="card"><h3>Withdrawal Summary</h3><p>Minimum: UGX 10,000</p></div>
-    <button class="btn">Submit Withdrawal</button></form></body></html>"""
+
 
 @app.route("/withdraw_submit", methods=["POST"])
 def withdraw_submit():
@@ -122,4 +103,9 @@ def withdraw_submit():
     if amt < 10000:
         return "<h3 style='color:red;text-align:center;margin-top:50px'>The minimum withdraw is 10k</h3><br><center><a href='/withdraw'>Back</a></center>"
     return "<h3 style='color:green;text-align:center;margin-top:50px'>withdrawal successful, wait for review</h3><br><center><a href='/withdraw'>Back</a></center>"
+@app.route("/withdraw")
+def withdraw():
+    bal = 0
+    html = open("/data/data/com.termux/files/home/w.html").read().replace("BALPLACE", str(bal))
+    return html
 if __name__=="__main__": app.run(host="0.0.0.0",port=8000)
