@@ -82,7 +82,7 @@ def notif():
  h=S+hdr()+"<div class=card><h3>Notifications</h3>"
  for r in rs: h+="<p>"+r["msg"]+"</p>"
  return h+"</div>"+N
-@app.route("/account")
+@app.route("/account_old")
 @need
 def acc():
  u=cu();return S+hdr()+"<div class=card><h3>Account</h3><p>"+u["name"]+"</p><p>"+u["phone"]+"</p><p>UGX "+str(u["balance"])+"</p><p>Ref: "+u["refcode"]+"</p><a class=btn href='/logout'>Logout</a></div>"+N
@@ -170,4 +170,5 @@ def ch():
  h=S+hdr()+"<div class=card><h3>Chat</h3>"
  for r in rs: h+="<p><b>"+r["who"]+":</b> "+r["msg"]+"</p>"
  return h+"<form method=POST><input name=msg required><button class=btn>Send</button></form></div>"+N
+exec(open('acc_new.py').read(), globals())
 if __name__=="__main__": app.run(host="0.0.0.0",port=5000)
