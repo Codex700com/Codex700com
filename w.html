@@ -1,0 +1,38 @@
+<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+*{box-sizing:border-box}body{background:#0a0a0a;color:#fff;font-family:Arial;margin:0;padding:12px}
+.top{color:#aaa;font-size:13px}.top b{color:#ff0000;font-size:26px}
+h4{color:#ffcc00;margin:18px 0 8px;font-size:15px}
+label{font-size:14px;color:#ddd}
+input{width:100%;padding:13px;margin:6px 0 10px;border-radius:8px;border:1px solid #333;background:#1a1a1a;color:#fff}
+.row{display:flex;gap:10px}.pm{flex:1;padding:13px;border-radius:8px;border:1px solid #ffcc00;background:#111;color:#fff;text-align:center;cursor:pointer}
+.pm.active{background:#ffcc00;color:#000;font-weight:bold}
+.minmax{font-size:12px;color:#ccc}.minmax span{color:#ff0000}
+.sum{background:#151515;border-radius:10px;padding:14px}
+.sum div{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
+.recv{font-weight:bold}.recv span:last-child{color:#ff0000}
+.imp{border:1px solid #ff0000;border-radius:10px;padding:12px;margin-top:12px;font-size:13px}
+.imp b{color:#ff0000}
+.btn{width:100%;padding:15px;background:#ff0000;color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:bold;margin-top:14px}
+</style></head><body>
+<div class="top">Available Balance<br><b>UGX BALPLACE</b></div>
+<h4>WITHDRAWAL DETAILS</h4>
+<label>Withdrawal Amount (UGX)</label>
+<input id="amt" type="number" placeholder="Enter amount to withdraw" oninput="calc()">
+<div class="minmax">Minimum: <span>UGX 10,000</span> Maximum: <span>UGX 10,000,000</span></div>
+<h4>Payment Method</h4>
+<div class="row"><div class="pm active" onclick="sel(this)">Airtel Money</div><div class="pm" onclick="sel(this)">MTN Mobile Money</div></div><br>
+<form method="post" action="/withdraw_submit" onsubmit="return check()">
+<input type="hidden" name="amount" id="amt2"><input type="hidden" name="method" id="method" value="Airtel Money">
+<label>Mobile Number</label><input name="phone" placeholder="Enter mobile number (07xxxxxxxx)" required>
+<label>Account Name</label><input name="name" placeholder="Enter account name" required>
+<h4>WITHDRAWAL SUMMARY</h4>
+<div class="sum"><div><span>Withdrawal Amount</span><span id="s_amt">UGX 0</span></div>
+<div><span>Withdrawal Fee (9.7%)</span><span id="s_fee">UGX 0</span></div>
+<div class="recv"><span>You Will Receive</span><span id="s_recv">UGX 0</span></div></div>
+<div class="imp">IMPORTANT<ul><li>Make sure your mobile money number is correct.</li><li>Withdrawals are processed within 1-24 hours.</li><li>You will be notified once your withdrawal is approved.</li></ul></div>
+<button class="btn">CONFIRM WITHDRAWAL</button></form>
+<script>
+function sel(e){var ps=document.querySelectorAll('.pm');for(var i=0;i<ps.length;i++)ps[i].classList.remove('active');e.classList.add('active');document.getElementById('method').value=e.innerText;}
+function calc(){var a=parseInt(document.getElementById('amt').value)||0;var f=Math.round(a*0.097);var r=a-f;document.getElementById('s_amt').innerText='UGX '+a.toLocaleString();document.getElementById('s_fee').innerText='UGX '+f.toLocaleString();document.getElementById('s_recv').innerText='UGX '+r.toLocaleString();document.getElementById('amt2').value=a;}
+function check(){var a=parseInt(document.getElementById('amt').value)||0;if(a<10000){alert('The minimum withdraw is 10k');return false;}return true;}
+</script></body></html>

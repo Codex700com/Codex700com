@@ -106,7 +106,11 @@ def withdraw_submit():
 @app.route("/withdraw")
 def withdraw():
     bal = 0
-    html = open("/data/data/com.termux/files/home/w.html").read().replace("BALPLACE", str(bal))
+    import pathlib as _pl
+    _p=_pl.Path(__file__).parent/"w.html"
+    _p2=_pl.Path("w.html")
+    _f=_p if _p.exists() else _p2
+    html=_f.read_text().replace("BALPLACE", str(bal)) if _f.exists() else "withdraw page missing w.html"
     return html
 
 @app.route("/invest")
