@@ -297,7 +297,7 @@ def chat():
         al = "right" if who=="user" else "left"
         h+=f"<div style='background:{bg};margin:6px;padding:8px;border-radius:8px;text-align:{al}'><small>{who} • {date}</small><br>{msg}</div>"
     h+="</div><form method=post style='display:flex;margin-top:10px'><input name=msg required placeholder='Type message...' style='flex:1;padding:10px'><button class=btn>Send</button></form></div>"
-    return page("Chat",h)
+    return h
 
 @app.route("/admin/chats")
 def admin_chats():
@@ -309,7 +309,7 @@ def admin_chats():
         cnt=c.execute("SELECT COUNT(*) FROM chats WHERE user_id=? AND who='user'",(uid,)).fetchone()[0]
         h+=f"<div><a class=btn href='/admin/chat/{uid}'>{name} ({phone}) - {cnt} msgs</a></div>"
     h+="</div>"
-    return page("Chats",h)
+    return h
 
 @app.route("/admin/chat/<int:user_id>", methods=["GET","POST"])
 def admin_chat(user_id):
@@ -327,7 +327,7 @@ def admin_chat(user_id):
         bg="#220000" if who=="admin" else "#002200"
         h+=f"<div style='background:{bg};margin:6px;padding:8px;border-radius:8px'><small>{who} • {date}</small><br>{msg}</div>"
     h+="</div><form method=post style='display:flex;margin-top:10px'><input name=msg required placeholder='Reply...' style='flex:1;padding:10px'><button class=btn>Reply</button></form></div>"
-    return page("Admin Chat",h)
+    return h
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000,debug=True)
