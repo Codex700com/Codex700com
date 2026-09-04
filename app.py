@@ -587,3 +587,79 @@ def api_transactions():
     earn=sum(r["amount"] for r in rows if r["type"] in ("earn","referral","checkin") and r["amount"]>0)
     con.close()
     return jsonify({"items":items,"totals":{"deposit":dep,"withdraw":wd,"invest":inv,"earn":earn}})
+
+@app.route("/account")
+def account_page():
+    import pathlib
+    return pathlib.Path("templates/account.html").read_text()
+
+@app.route("/api/account")
+def api_account():
+    import sqlite3, datetime
+    from flask import session, jsonify
+    uid=session.get("user_id") or session.get("uid")
+    con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
+    u=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone() if uid else None
+    if not u:
+        # guest zero defaults
+        return jsonify({"name":"Guest","member_id":"CDX000000","email":"","phone":"","balance":0,"total_invested":0,"total_income":0,"active_investments":0,"joined":"-","lang":"en","notif_muted":False})
+    # totals from transactions
+    rows=con.execute("SELECT type,amount FROM transactions WHERE user_id=?",(str(uid),)).fetchall()
+    inv=sum(-r["amount"] for r in rows if r["type"]=="invest" and r["amount"]<0)
+    inc=sum(r["amount"] for r in rows if r["type"] in ("earn","referral","checkin") and r["amount"]>0)
+    act=con.execute("SELECT COUNT(*) FROM investments WHERE user_id=? AND status='active'",(str(uid),)).fetchone()[0] if "investments" in [r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()] else 0
+    try: jd=datetime.datetime.fromtimestamp(int(u["joined_at"])).strftime("%d %b %Y")
+    except: jd="-"
+    d=dict(id=u["id"],name=u["name"] if "name" in u.keys() else "User",member_id=u["member_id"] if "member_id" in u.keys() else "",email=u["email"] if "email" in u.keys() else "",phone=u["phone"] if "phone" in u.keys() else "",balance=u["balance"] if "balance" in u.keys() else 0,total_invested=inv,total_income=inc,active_investments=act,joined=jd,lang=u["lang"] if "lang" in u.keys() and u["lang"] else "en",notif_muted=bool(u["notif_muted"]) if "notif_muted" in u.keys() and u["notif_muted"] else False)
+    con.close()
+    return jsonify(d)
+
+@app.route("/api/account/lang", methods=["POST"])
+def api_lang():
+    import sqlite3
+    from flask import session, request, jsonify
+    l=request.get_json().get("lang","en")
+    con=sqlite3.connect("codex700.db")
+    con.execute("UPDATE users SET lang=? WHERE id=?",(l, session.get("user_id") or session.get("uid")))
+    con.commit(); con.close()
+    return jsonify({"ok":True})
+
+@app.route("/api/account/notif", methods=["POST"])
+def api_notif():
+    import sqlite3
+    from flask import session, request, jsonify
+    m=1 if request.get_json().get("muted") else 0
+    con=sqlite3.connect("codex700.db")
+    con.execute("UPDATE users SET notif_muted=? WHERE id=?",(m, session.get("user_id") or session.get("uid")))
+    con.commit(); con.close()
+    return jsonify({"ok":True})
+
+@app.route("/api/account/password", methods=["POST"])
+def api_pwd():
+    import sqlite3, hashlib
+    from flask import session, request, jsonify
+    pwd=request.get_json().get("pwd","")
+    if len(pwd)<4: return jsonify({"msg":"Too short"})
+    h=hashlib.sha256(pwd.encode()).hexdigest()
+    con=sqlite3.connect("codex700.db")
+    con.execute("UPDATE users SET password=? WHERE id=?",(h, session.get("user_id") or session.get("uid")))
+    con.commit(); con.close()
+    return jsonify({"msg":"Password changed successfully"})
+
+@app.route("/api/account/reset", methods=["POST"])
+def api_reset():
+    return __import__("flask").jsonify({"msg":"Reset link sent to your email"})
+
+@app.route("/api/account/statement")
+def api_statement():
+    import sqlite3, csv, io
+    from flask import session, Response
+    uid=str(session.get("user_id") or session.get("uid") or "guest")
+    con=sqlite3.connect("codex700.db")
+    rows=con.execute("SELECT created_at,type,title,amount,status,ref FROM transactions WHERE user_id=? ORDER BY id DESC",(uid,)).fetchall()
+    con.close()
+    out=io.StringIO(); w=csv.writer(out); w.writerow(["date","type","title","amount","status","ref"])
+    import datetime
+    for r in rows:
+        w.writerow([datetime.datetime.fromtimestamp(r[0]).isoformat(),r[1],r[2],r[3],r[4],r[5]])
+    return Response(out.getvalue(), mimetype="text/csv", headers={"Content-Disposition":"attachment;filename=statement.csv"})

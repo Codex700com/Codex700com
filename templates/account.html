@@ -1,0 +1,58 @@
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+body{background:#000;color:#fff;font-family:sans-serif;margin:0;padding:0 0 90px}.top{display:flex;align-items:center;gap:10px;padding:12px}.card{margin:10px;background:#0e0a0a;border:1px solid #331111;border-radius:12px;padding:14px}.gold{color:gold;font-size:12px;font-weight:700}.row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #222;cursor:pointer}.row:last-child{border:0}.w2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.w2 b{color:#c00}.nav{position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;display:flex;justify-content:space-around;padding:10px;border-top:1px solid #222}.nav a{color:#888;text-decoration:none;font-size:12px;text-align:center}.nav a.on{color:#c00}.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);align-items:center;justify-content:center;z-index:10}.box{background:#111;border:1px solid gold;border-radius:12px;padding:20px;width:90%;max-width:360px}input,select{width:100%;padding:10px;margin:6px 0;background:#000;color:#fff;border:1px solid #444;border-radius:8px}.btn{background:#c00;color:#fff;border:0;padding:10px;border-radius:8px;width:100%;cursor:pointer}
+</style></head><body>
+<div class="top"><a href="/home" style="color:#fff;text-decoration:none;font-size:22px">←</a><div style="font-size:22px;font-weight:800"><span style="color:gold">C</span> <span style="color:#c00">CODEX</span></div><div style="margin-left:auto">🔔 <span id="bell">3</span></div></div>
+<div style="padding:0 14px"><h2 style="margin:0" data-i="title">My Account</h2><small style="color:#888" data-i="sub">Manage your profile and account settings</small></div>
+<div class="card"><div style="display:flex;gap:12px;align-items:center"><div style="width:70px;height:70px;border-radius:50%;background:#333;display:flex;align-items:center;justify-content:center;font-size:36px">👤</div><div><b id="uname" style="font-size:18px">-</b> <span style="color:#c00;border:1px solid #c00;font-size:11px;padding:2px 6px;border-radius:6px">✓ Verified</span><br><small>Member ID: <span id="mid"></span></small><br><small id="email"></small><br><small id="phone"></small></div></div></div>
+<div class="card"><div style="display:flex;justify-content:space-between"><span class="gold" data-i="wallet">WALLET OVERVIEW</span><a href="#" id="hide" style="color:#888;font-size:12px">Hide Balance 👁️</a></div><div class="w2" style="margin-top:10px"><div>💼 <small data-i="wb">Wallet Balance</small><br><b id="bal">UGX 0</b></div><div>📈 <small data-i="ti">Total Invested</small><br><b id="inv">UGX 0</b></div><div>💰 <small data-i="tinc">Total Income</small><br><b id="inc">UGX 0</b></div><div>💼 <small data-i="ai">Active Investments</small><br><b id="act">0</b></div></div></div>
+<div class="card"><span class="gold" data-i="menu">ACCOUNT MENU</span>
+<div class="row" onclick="openM('pinfo')"><div>👤 <b data-i="pi">Personal Information</b><br><small data-i="pis">View and update your personal details</small></div><span>›</span></div>
+<div class="row" onclick="openM('sec')"><div>🔒 <b data-i="ss">Security Settings</b><br><small data-i="sss">Change password and manage security</small></div><span>›</span></div>
+<div class="row" onclick="bank()"><div>💳 <b data-i="bank">Bank / Payment Details</b><br><small data-i="banks">Manage your payment methods</small></div><span>›</span></div>
+<div class="row" onclick="openM('kyc')"><div>🛡️ <b>KYC Verification</b><br><small>Verify your account (if required)</small></div><span style="color:#c00;font-size:12px">Not Required ›</span></div>
+<div class="row" onclick="openM('notif')"><div>🔔 <b data-i="ns">Notification Settings</b><br><small data-i="nss">Manage your notification preferences</small></div><span>›</span></div>
+<div class="row" onclick="openM('lang')"><div>🌐 <b data-i="lg">Language</b><br><small data-i="lgs">Choose your preferred language</small></div><span style="color:#c00;font-size:12px" id="clang">English ›</span></div>
+</div>
+<div class="card"><span class="gold" data-i="actt">ACCOUNT ACTIONS</span><div style="display:flex;gap:10px;margin-top:10px"><button class="btn" style="background:#222" onclick="dl()">⬇️ <b data-i="dl">Download Statement</b><br><small>Download your account statement</small></button><button class="btn" onclick="location.href='/logout'">↪️ Logout<br><small>Sign out</small></button></div></div>
+<div class="nav"><a href="/home">🏠<br>Home</a><a href="/invest">📊<br>Invest</a><a href="/transactions">🔄<br>Transactions</a><a href="/referrals">👥<br>Referrals</a><a href="/account" class="on">👤<br>Account</a></div>
+
+<div class="modal" id="m"><div class="box"><div id="mc"></div><button class="btn" style="background:#222;margin-top:10px" onclick="closeM()">Close</button></div></div>
+<script>
+const I={en:{title:"My Account",sub:"Manage your profile and account settings",wallet:"WALLET OVERVIEW",wb:"Wallet Balance",ti:"Total Invested",tinc:"Total Income",ai:"Active Investments",menu:"ACCOUNT MENU",pi:"Personal Information",pis:"View and update your personal details",ss:"Security Settings",sss:"Change password and manage security",bank:"Bank / Payment Details",banks:"Manage your payment methods",ns:"Notification Settings",nss:"Manage your notification preferences",lg:"Language",lgs:"Choose your preferred language",actt:"ACCOUNT ACTIONS",dl:"Download Statement"},
+zh:{title:"我的账户",sub:"管理您的个人资料和账户设置",wallet:"钱包概览",wb:"钱包余额",ti:"总投资",tinc:"总收入",ai:"活跃投资",menu:"账户菜单",pi:"个人信息",pis:"查看和更新您的个人详细信息",ss:"安全设置",sss:"更改密码和管理安全",bank:"银行/支付详情",banks:"管理您的支付方式",ns:"通知设置",nss:"管理您的通知偏好",lg:"语言",lgs:"选择您的首选语言",actt:"账户操作",dl:"下载对账单"},
+ja:{title:"マイアカウント",sub:"プロフィールとアカウント設定を管理",wallet:"ウォレット概要",wb:"ウォレット残高",ti:"総投資額",tinc:"総収入",ai:"アクティブ投資",menu:"アカウントメニュー",pi:"個人情報",pis:"個人情報の表示と更新",ss:"セキュリティ設定",sss:"パスワード変更とセキュリティ管理",bank:"銀行/支払い詳細",banks:"支払い方法の管理",ns:"通知設定",nss:"通知設定の管理",lg:"言語",lgs:"希望の言語を選択",actt:"アカウント操作",dl:"明細書をダウンロード"},
+sw:{title:"Akaunti Yangu",sub:"Simamia wasifu na mipangilio ya akaunti",wallet:"MUHTASARI WA WALLET",wb:"Salio la Wallet",ti:"Jumla Uliyowekeza",tinc:"Jumla ya Mapato",ai:"Uwekezaji Hai",menu:"MENU YA AKAUNTI",pi:"Taarifa Binafsi",pis:"Tazama na sasisha taarifa zako",ss:"Mipangilio ya Usalama",sss:"Badilisha nenosiri",bank:"Benki / Malipo",banks:"Simamia njia za malipo",ns:"Mipangilio ya Arifa",nss:"Simamia mapendeleo ya arifa",lg:"Lugha",lgs:"Chagua lugha",actt:"VITENDO VYA AKAUNTI",dl:"Pakua Taarifa"}};
+let U={};
+async function load(){let r=await fetch('/api/account');U=await r.json();
+ document.getElementById('uname').innerText=U.name||'User';
+ document.getElementById('mid').innerText=U.member_id||'';
+ document.getElementById('email').innerText='✉️ '+(U.email||'');
+ document.getElementById('phone').innerText='📞 '+(U.phone||'';
+ document.getElementById('bal').innerText='UGX '+(U.balance||0).toLocaleString();
+ document.getElementById('inv').innerText='UGX '+(U.total_invested||0).toLocaleString();
+ document.getElementById('inc').innerText='UGX '+(U.total_income||0).toLocaleString();
+ document.getElementById('act').innerText=U.active_investments||0;
+ document.getElementById('clang').innerText=(U.lang||'en')+' ›';
+ setLang(U.lang||'en');
+ document.getElementById('bell').style.display=U.notif_muted?'none':'';
+}
+function setLang(l){let d=I[l]||I.en;document.querySelectorAll('[data-i]').forEach(e=>{let k=e.getAttribute('data-i');if(d[k])e.innerText=d[k];});}
+function openM(k){let c=document.getElementById('mc');let h='';
+ if(k=='pinfo')h=`<h3>Personal Information</h3><p>Member ID: <b>${U.member_id}</b><br>Phone: <b>${U.phone}</b><br>Balance: <b>UGX ${(U.balance||0).toLocaleString()}</b><br>Joined: <b>${U.joined}</b><br>Active Investments: <b>${U.active_investments||0}</b></p>`;
+ if(k=='sec')h=`<h3>Security Settings</h3><input id="np" type="password" placeholder="New password"><button class="btn" onclick="chpwd()">Change Password</button><button class="btn" style="background:#222;margin-top:6px" onclick="rst()">Reset Password</button><p id="sm"></p>`;
+ if(k=='kyc')h=`<h3>KYC Verification</h3><p style="color:#0f0">KYC not required for your account.</p>`;
+ if(k=='notif')h=`<h3>Notification Settings</h3><label><input type="checkbox" id="mute" ${U.notif_muted?'checked':''}> Mute notifications</label><br><br><button class="btn" onclick="saveNotif()">Save</button>`;
+ if(k=='lang')h=`<h3>Language</h3><select id="ls"><option value="en">English</option><option value="zh">Chinese (中文)</option><option value="ja">Japanese (日本語)</option><option value="sw">Kiswahili</option></select><br><button class="btn" onclick="saveLang()">Apply</button>`;
+ c.innerHTML=h;document.getElementById('m').style.display='flex';
+ let ls=document.getElementById('ls');if(ls)ls.value=U.lang||'en';
+}
+function closeM(){document.getElementById('m').style.display='none'}
+function bank(){alert('Bank payment not available for your account');}
+async function chpwd(){let v=document.getElementById('np').value;let r=await fetch('/api/account/password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pwd:v})});let j=await r.json();document.getElementById('sm').innerText=j.msg;}
+async function rst(){let r=await fetch('/api/account/reset',{method:'POST'});let j=await r.json();document.getElementById('sm').innerText=j.msg;}
+async function saveNotif(){let m=document.getElementById('mute').checked;await fetch('/api/account/notif',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({muted:m})});U.notif_muted=m;closeM();load();}
+async function saveLang(){let l=document.getElementById('ls').value;await fetch('/api/account/lang',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lang:l})});closeM();load();}
+function dl(){location.href='/api/account/statement';}
+document.getElementById('hide').onclick=e=>{e.preventDefault();let b=document.getElementById('bal');b.innerText=b.innerText.includes('*')?'UGX '+(U.balance||0).toLocaleString():'****';};
+load();
+</script></body></html>
