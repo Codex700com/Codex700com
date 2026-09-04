@@ -278,5 +278,56 @@ def my_investments():
   h+=f"<div class=card><b style='color:red'>{pname}</b><br>Amount: UGX {amt:,}<br>Start: {sd} End: {ed}<br>Status: {st}<br>Daily: UGX {dret:,} Accrued: UGX {acc:,}<br>Remaining: {rem} days<div class=bar><div class=fill style='width:{prog}%'></div></div><small>NEXT RETURN: countdown server-side</small></div>"
  return h+"<a href='/invest' style='color:red'>← Back to Plans</a>"
 
+
+@app.route("/chat", methods=["GET","POST"])
+def chat():
+    if "uid" not in session: return redirect("/login")
+    uid = session["uid"]
+    c = db()
+    if request.method=="POST":
+        msg = request.form.get("msg","").strip()
+        if msg:
+            c.execute("INSERT INTO chats(user_id,who,msg,date) VALUES(?,?,?,datetime('now'))",(uid,"user",msg))
+            c.commit()
+        return redirect("/chat")
+    msgs = c.execute("SELECT who,msg,date FROM chats WHERE user_id=? ORDER BY id",(uid,)).fetchall()
+    h = "<div class=card><h3>💬 Chat with Admin</h3><div style='max-height:400px;overflow-y:auto;text-align:left'>"
+    for who,msg,date in msgs:
+        bg = "#220000" if who=="user" else "#001122"
+        al = "right" if who=="user" else "left"
+        h+=f"<div style='background:{bg};margin:6px;padding:8px;border-radius:8px;text-align:{al}'><small>{who} • {date}</small><br>{msg}</div>"
+    h+="</div><form method=post style='display:flex;margin-top:10px'><input name=msg required placeholder='Type message...' style='flex:1;padding:10px'><button class=btn>Send</button></form></div>"
+    return page("Chat",h)
+
+@app.route("/admin/chats")
+def admin_chats():
+    if not session.get("is_admin"): return redirect("/login")
+    c=db()
+    users=c.execute("SELECT DISTINCT u.id,u.name,u.phone FROM chats ch JOIN users u ON u.id=ch.user_id ORDER BY ch.id DESC").fetchall()
+    h="<div class=card><h3>Chat Manager</h3>"
+    for uid,name,phone in users:
+        cnt=c.execute("SELECT COUNT(*) FROM chats WHERE user_id=? AND who='user'",(uid,)).fetchone()[0]
+        h+=f"<div><a class=btn href='/admin/chat/{uid}'>{name} ({phone}) - {cnt} msgs</a></div>"
+    h+="</div>"
+    return page("Chats",h)
+
+@app.route("/admin/chat/<int:user_id>", methods=["GET","POST"])
+def admin_chat(user_id):
+    if not session.get("is_admin"): return redirect("/login")
+    c=db()
+    if request.method=="POST":
+        msg=request.form.get("msg","").strip()
+        if msg:
+            c.execute("INSERT INTO chats(user_id,who,msg,date) VALUES(?,?,?,datetime('now'))",(user_id,"admin",msg))
+            c.commit()
+        return redirect(f"/admin/chat/{user_id}")
+    msgs=c.execute("SELECT who,msg,date FROM chats WHERE user_id=? ORDER BY id",(user_id,)).fetchall()
+    h=f"<div class=card><h3>Chat with user {user_id}</h3><a href='/admin/chats'>← Back</a><div style='max-height:400px;overflow-y:auto;text-align:left'>"
+    for who,msg,date in msgs:
+        bg="#220000" if who=="admin" else "#002200"
+        h+=f"<div style='background:{bg};margin:6px;padding:8px;border-radius:8px'><small>{who} • {date}</small><br>{msg}</div>"
+    h+="</div><form method=post style='display:flex;margin-top:10px'><input name=msg required placeholder='Reply...' style='flex:1;padding:10px'><button class=btn>Reply</button></form></div>"
+    return page("Admin Chat",h)
+
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000,debug=True)
