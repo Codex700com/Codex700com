@@ -20,6 +20,26 @@ S="<meta name='viewport' content='width=device-width,initial-scale=1,maximum-sca
 N="<div class=nav><a href='/home'><div>🏠<br>Home</div></a><a href='/invest'><div>📈<br>Invest</div></a><a href='/transactions'><div>⇄<br>Transactions</div></a><a href='/referrals'><div>👥<br>Referrals</div></a><a href='/account'><div>👤<br>Account</div></a></div>"
 def hdr(): return "<div style='display:flex;justify-content:space-between;padding:12px;'><a href='/menu'>☰</a><div class=logo>⬣ CODEX</div><div><a href='/notifications'>🔔</a> <a href='/account'>👤</a></div></div>"
 
+
+def fix_chats_table():
+    try:
+        import sqlite3
+        con = sqlite3.connect("codex700.db")
+        cols = [r[1] for r in con.execute("PRAGMA table_info(chats)").fetchall()]
+        print("chats cols:", cols)
+        if not cols:
+            con.execute("CREATE TABLE chats (id INTEGER PRIMARY KEY AUTOINCREMENT, uid TEXT, user_id TEXT, sender TEXT, who TEXT, msg TEXT, date TEXT, created TEXT)")
+        else:
+            for col in ["uid","user_id","sender","who","msg","date","created"]:
+                if col not in cols:
+                    con.execute(f"ALTER TABLE chats ADD COLUMN {col} TEXT")
+                    print("added", col)
+        con.commit(); con.close()
+    except Exception as e:
+        print("fix_chats_table error:", e)
+
+fix_chats_table()
+
 @app.route("/")
 def i(): return redirect("/register")
 @app.route("/register",methods=["GET","POST"])
