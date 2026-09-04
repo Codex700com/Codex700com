@@ -536,3 +536,60 @@ def raffle_winners():
     rows=con.execute("SELECT name,prize,draw_no FROM raffle_winners ORDER BY id DESC").fetchall()
     con.close()
     return jsonify(rows)
+
+@app.route("/raffle-buy", methods=["POST"])
+def raffle_buy():
+    import sqlite3
+    from flask import request, session, jsonify
+    uid=str(session.get("user_id") or session.get("uid") or "guest")
+    data=request.get_json(force=True)
+    try: qty=int(data.get("qty",1))
+    except: return jsonify({"ok":False,"msg":"Invalid qty"})
+    if qty<1: return jsonify({"ok":False,"msg":"Min 1 ticket"})
+    PRICE=5000
+    cost=qty*PRICE
+    con=sqlite3.connect("codex700.db")
+    con.row_factory=sqlite3.Row
+    # find user row - try multiple table layouts
+    bal=None; user_row=None; table=None; idcol=None
+    for tbl in ["users","user","accounts"]:
+        try:
+            cols=[c[1] for c in con.execute(f"PRAGMA table_info({tbl})").fetchall()]
+            if not cols: continue
+            # guess id column and balance column
+            idc="id" if "id" in cols else cols[0]
+            balc=next((c for c in ["balance","wallet","funds","amount"] if c in cols), None)
+            if not balc: continue
+            # try match by id
+            try:
+                uid_int=int(uid)
+            except: uid_int=None
+            row=None
+            if uid_int is not None:
+                row=con.execute(f"SELECT * FROM {tbl} WHERE {idc}=?",(uid_int,)).fetchone()
+            if not row:
+                # try string match on id or phone/username
+                for c in cols:
+                    try:
+                        row=con.execute(f"SELECT * FROM {tbl} WHERE {c}=? LIMIT 1",(uid,)).fetchone()
+                        if row: idc=c; break
+                    except: pass
+            if row:
+                user_row=row; table=tbl; idcol=idc; bal=float(row[balc]); balcol=balc
+                break
+        except: continue
+    if user_row is None:
+        con.close()
+        return jsonify({"ok":False,"msg":"Failed due to insufficient funds"})
+    if bal < cost:
+        con.close()
+        return jsonify({"ok":False,"msg":"Failed due to insufficient funds"})
+    import time
+    # deduct
+    con.execute(f"UPDATE {table} SET {balcol}={balcol}-? WHERE {idcol}=?",(cost, user_row[idcol]))
+    con.execute("INSERT INTO raffle_tickets(user_id,tickets,created_at) VALUES(?,?,?)",(uid,qty,int(time.time())))
+    con.commit()
+    total=con.execute("SELECT SUM(tickets) FROM raffle_tickets WHERE user_id=?",(uid,)).fetchone()[0] or 0
+    new_bal=bal-cost
+    con.close()
+    return jsonify({"ok":True,"msg":f"Successfully bought {qty} ticket(s)! New balance: UGX {int(new_bal):,}","total":total})
