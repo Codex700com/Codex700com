@@ -167,7 +167,7 @@ def invest_detail(pid):
    if not u: return redirect('/login')
    credit_due_returns()
    plans={"starter":{"name":"Starter Plan","amount":50000,"daily":10000,"days":7},"silver":{"name":"Silver Plan","amount":250000,"daily":100000,"days":30},"gold":{"name":"Gold Plan","amount":500000,"daily":100000,"days":30},"platinum":{"name":"Platinum Plan","amount":1000000,"daily":200000,"days":30},"diamond":{"name":"Diamond Plan","amount":2000000,"daily":400000,"days":30},"vip":{"name":"VIP Plan","amount":5000000,"daily":1000000,"days":30},"exclusive":{"name":"Exclusive Plan","amount":10000000,"daily":2000000,"days":30}}
-   pl=plans.get(pid)
+   pl=plans.get(pid.lower())
    if not pl: return "Plan not found",404
    bal=u[5]
    proj=pl['daily']*pl['days']
@@ -188,7 +188,7 @@ def invest_activate(pid):
    u=cu()
    if not u: return redirect('/login')
    plans={"starter":{"name":"Starter Plan","amount":50000,"daily":10000,"days":7},"silver":{"name":"Silver Plan","amount":250000,"daily":100000,"days":30},"gold":{"name":"Gold Plan","amount":500000,"daily":100000,"days":30},"platinum":{"name":"Platinum Plan","amount":1000000,"daily":200000,"days":30},"diamond":{"name":"Diamond Plan","amount":2000000,"daily":400000,"days":30},"vip":{"name":"VIP Plan","amount":5000000,"daily":1000000,"days":30},"exclusive":{"name":"Exclusive Plan","amount":10000000,"daily":2000000,"days":30}}
-   pl=plans.get(pid)
+   pl=plans.get(pid.lower())
    if not pl: return "Plan not found",404
    c=db()
    # idempotency: prevent double click creating 2 in 5 sec
