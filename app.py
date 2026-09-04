@@ -492,3 +492,47 @@ def deposit_submit():
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000,debug=True)
+
+@app.route("/raffle")
+def raffle_page():
+    import sqlite3
+    from flask import session, render_template_string
+    import pathlib
+    uid=str(session.get("user_id") or session.get("uid") or "guest")
+    con=sqlite3.connect("codex700.db")
+    r=con.execute("SELECT SUM(tickets) FROM raffle_tickets WHERE user_id=?",(uid,)).fetchone()[0] or 0
+    winners=con.execute("SELECT * FROM raffle_winners ORDER BY id DESC LIMIT 8").fetchall()
+    con.close()
+    html=pathlib.Path("templates/raffle.html").read_text()
+    # simple replace for jinja loops
+    win_html="".join([f"<div class='w'><img src='{w[4]}'><br><b>{w[1]}</b><br><small>{w[2]}</small><br><small style='color:#c00'>{w[3]}</small></div>" for w in winners])
+    html=html.replace("{{my_tickets}}",str(r))
+    import re
+    html=re.sub(r"{% for w in winners %}.*?{% endfor %}",win_html,html,flags=re.DOTALL)
+    return html
+
+@app.route("/raffle-buy", methods=["POST"])
+def raffle_buy():
+    import sqlite3
+    from flask import request, session, jsonify
+    uid=str(session.get("user_id") or session.get("uid") or "guest")
+    data=request.get_json(force=True)
+    try: qty=int(data.get("qty",1))
+    except: return jsonify({"ok":False,"msg":"Invalid qty"})
+    if qty<1: return jsonify({"ok":False,"msg":"Min 1 ticket"})
+    con=sqlite3.connect("codex700.db")
+    import time
+    con.execute("INSERT INTO raffle_tickets(user_id,tickets,created_at) VALUES(?,?,?)",(uid,qty,int(time.time())))
+    con.commit()
+    total=con.execute("SELECT SUM(tickets) FROM raffle_tickets WHERE user_id=?",(uid,)).fetchone()[0] or 0
+    con.close()
+    return jsonify({"ok":True,"msg":f"Successfully bought {qty} ticket(s)!","total":total})
+
+@app.route("/raffle-winners")
+def raffle_winners():
+    import sqlite3
+    from flask import jsonify
+    con=sqlite3.connect("codex700.db")
+    rows=con.execute("SELECT name,prize,draw_no FROM raffle_winners ORDER BY id DESC").fetchall()
+    con.close()
+    return jsonify(rows)
