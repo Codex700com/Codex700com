@@ -488,6 +488,7 @@ def deposit_submit():
     con.execute("INSERT INTO deposits (user_id,airtel_number,amount,txid,screenshot,created_at) VALUES (?,?,?,?,?,?)",
         (uid,airtel,amt,txid,fname,int(time.time())))
     con.commit(); con.close()
+    log_tx(session.get("user_id") or session.get("uid") or "guest","deposit","Deposit","Airtel Money",txid,int(amount),"Pending")
     return jsonify({"ok":True,"msg":"Deposit submitted! Will be approved shortly."})
 
 if __name__=="__main__":
@@ -550,7 +551,39 @@ def raffle_buy():
         return jsonify({"ok":False,"msg":"Failed due to insufficient funds"})
     con.execute("UPDATE users SET balance=balance-? WHERE id=?",(cost,int(uid)))
     con.execute("INSERT INTO raffle_tickets(user_id,tickets,created_at) VALUES(?,?,?)",(uid,qty,int(time.time())))
+    try:
+        import time as _t; _c2=sqlite3.connect("codex700.db"); _c2.execute("INSERT INTO transactions(user_id,type,title,detail,ref,amount,status,created_at) VALUES(?,?,?,?,?,?,?,?)",(str(uid),"raffle","Raffle Ticket Purchase","Raffle Draw",f"RFL-{int(_t.time())}",-int(cost),"Completed",int(_t.time()))); _c2.commit(); _c2.close()
+    except: pass
     con.commit()
     total=con.execute("SELECT SUM(tickets) FROM raffle_tickets WHERE user_id=?",(uid,)).fetchone()[0] or 0
     con.close()
     return jsonify({"ok":True,"msg":f"Bought {qty} ticket(s)","total":total})
+
+def log_tx(user_id, type, title, detail, ref, amount, status="Completed"):
+    import sqlite3, time
+    con=sqlite3.connect("codex700.db")
+    con.execute("INSERT INTO transactions(user_id,type,title,detail,ref,amount,status,created_at) VALUES(?,?,?,?,?,?,?,?)",
+        (str(user_id),type,title,detail,ref,int(amount),status,int(time.time())))
+    con.commit(); con.close()
+
+@app.route("/transactions")
+def transactions_page():
+    import pathlib
+    return pathlib.Path("templates/transactions.html").read_text()
+
+@app.route("/api/transactions")
+def api_transactions():
+    import sqlite3
+    from flask import session, jsonify
+    uid=str(session.get("user_id") or session.get("uid") or "guest")
+    con=sqlite3.connect("codex700.db")
+    con.row_factory=sqlite3.Row
+    rows=con.execute("SELECT * FROM transactions WHERE user_id=? ORDER BY id DESC LIMIT 100",(uid,)).fetchall()
+    items=[dict(r) for r in rows]
+    # totals default 0
+    dep=sum(r["amount"] for r in rows if r["type"]=="deposit" and r["amount"]>0)
+    wd=sum(-r["amount"] for r in rows if r["type"]=="withdraw" and r["amount"]<0)
+    inv=sum(-r["amount"] for r in rows if r["type"]=="invest" and r["amount"]<0)
+    earn=sum(r["amount"] for r in rows if r["type"] in ("earn","referral","checkin") and r["amount"]>0)
+    con.close()
+    return jsonify({"items":items,"totals":{"deposit":dep,"withdraw":wd,"invest":inv,"earn":earn}})

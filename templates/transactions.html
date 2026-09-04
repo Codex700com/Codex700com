@@ -1,0 +1,49 @@
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{background:#000;color:#fff;font-family:sans-serif;margin:0;padding:0 0 90px}.h{padding:15px}.h h1{color:#c00;margin:0}.sum{margin:10px;border:1px solid #a60;border-radius:12px;display:flex;justify-content:space-around;padding:15px;background:#0a0a0a}.sum div{text-align:center;flex:1}.sum small{color:#ccc}.sum b{color:#c00}.filters{display:flex;gap:8px;overflow-x:auto;padding:10px}.f{background:#111;border:1px solid #333;color:#fff;padding:8px 14px;border-radius:8px;white-space:nowrap;cursor:pointer}.f.on{background:#c00;border-color:#c00}.tx{margin:8px 10px;background:#0f0f0f;border:1px solid #222;border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center}.ic{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}.amt{margin-left:auto;text-align:right}.pos{color:#0f0}.neg{color:#c00}.st{font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid}.ok{color:#0f0;border-color:#0f0}.pd{color:gold;border-color:gold}.empty{text-align:center;color:#666;padding:40px}.nav{position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;display:flex;justify-content:space-around;padding:10px;border-top:1px solid #222}.nav a{color:#888;text-decoration:none;font-size:12px;text-align:center}.nav a.on{color:#c00}</style></head><body>
+<div class="h"><h1>Transactions</h1><small style="color:#888">View all your deposits, withdrawals, investments and earnings</small></div>
+<div class="sum"><div>💼<br><small>Total Deposits</small><br><b id="tDep">UGX 0</b></div><div>🔝<br><small>Total Withdrawals</small><br><b id="tW">UGX 0</b></div><div>📊<br><small>Total Investments</small><br><b id="tI">UGX 0</b></div><div>💰<br><small>Total Earnings</small><br><b id="tE">UGX 0</b></div></div>
+<div class="filters" id="filters"><button class="f on" data-k="all">All</button><button class="f" data-k="deposit">Deposits</button><button class="f" data-k="withdraw">Withdrawals</button><button class="f" data-k="invest">Investments</button><button class="f" data-k="earn">Returns / Earnings</button><button class="f" data-k="other">Other</button></div>
+<div id="list"></div>
+<div class="nav"><a href="/home">🏠<br>Home</a><a href="/invest">📊<br>Invest</a><a href="/transactions" class="on">🔄<br>Transactions</a><a href="/referrals">👥<br>Referrals</a><a href="/account">👤<br>Account</a></div>
+<script>
+let all=[];
+async function load(){
+ let r=await fetch('/api/transactions'); let j=await r.json();
+ all=j.items;
+ document.getElementById('tDep').innerText='UGX '+j.totals.deposit.toLocaleString();
+ document.getElementById('tW').innerText='UGX '+j.totals.withdraw.toLocaleString();
+ document.getElementById('tI').innerText='UGX '+j.totals.invest.toLocaleString();
+ document.getElementById('tE').innerText='UGX '+j.totals.earn.toLocaleString();
+ render('all');
+}
+function icon(t){
+ if(t=='deposit') return ['⬇️','#0f0'];
+ if(t=='withdraw') return ['⬆️','#f80'];
+ if(t=='invest') return ['📈','#fc0'];
+ if(t=='earn') return ['🪙','#fc0'];
+ if(t=='referral') return ['👥','#fc0'];
+ if(t=='raffle') return ['🎟️','#fc0'];
+ if(t=='checkin') return ['📅','#0af'];
+ return ['💳','#888'];
+}
+function render(k){
+ let f=all.filter(x=> k=='all'?true : k=='deposit'?x.type=='deposit' : k=='withdraw'?x.type=='withdraw' : k=='invest'?x.type=='invest' : k=='earn'?['earn','referral','checkin'].includes(x.type) : ['raffle','other'].includes(x.type));
+ let el=document.getElementById('list');
+ if(!f.length){el.innerHTML='<div class="empty">No transactions yet</div>';return;}
+ el.innerHTML=f.map(x=>{
+  let [ic,col]=icon(x.type);
+  let sign=x.amount>=0?'+':'-';
+  let cls=x.amount>=0?'pos':'neg';
+  let st=x.status=='Completed'?'<span class="st ok">Completed</span>':'<span class="st pd">Pending</span>';
+  let d=new Date(x.created_at*1000).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});
+  return `<div class="tx"><div class="ic" style="border:1px solid ${col}">${ic}</div><div><b>${x.title}</b><br><small style="color:#888">${x.detail}</small><br><small style="color:#666">Ref: ${x.ref}</small></div><div class="amt"><b class="${cls}">${sign} UGX ${Math.abs(x.amount).toLocaleString()}</b><br>${st}<br><small style="color:#888">${d}</small></div></div>`;
+ }).join('');
+}
+document.getElementById('filters').onclick=e=>{
+ if(e.target.classList.contains('f')){
+  document.querySelectorAll('.f').forEach(b=>b.classList.remove('on'));
+  e.target.classList.add('on'); render(e.target.dataset.k);
+ }
+};
+load();
+</script></body></html>
