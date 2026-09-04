@@ -234,7 +234,7 @@ def invest_confirm(pid):
  import datetime
  u=cu()
  if not u: return redirect('/login')
- p=PLANS.get(pid)
+ p=PLANS.get(pid.lower())
  if not p: return redirect('/invest')
  b=wallet(u[0])
  if b < p['price']:
