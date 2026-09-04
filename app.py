@@ -280,23 +280,51 @@ def my_investments():
 
 
 @app.route("/chat", methods=["GET","POST"])
+@need
 def chat():
-    if "uid" not in session: return redirect("/login")
-    uid = session["uid"]
-    c = db()
+    uid = session.get("uid")
     if request.method=="POST":
         msg = request.form.get("msg","").strip()
         if msg:
-            c.execute("INSERT INTO chats(user_id,who,msg,date) VALUES(?,?,?,datetime('now'))",(uid,"user",msg))
-            c.commit()
+            db.execute("INSERT INTO chats (uid, sender, msg) VALUES (?,?,?)", (uid, "user", msg))
+            db.commit()
         return redirect("/chat")
-    msgs = c.execute("SELECT who,msg,date FROM chats WHERE user_id=? ORDER BY id",(uid,)).fetchall()
-    h = "<div class=card><h3>💬 Chat with Admin</h3><div style='max-height:400px;overflow-y:auto;text-align:left'>"
-    for who,msg,date in msgs:
-        bg = "#220000" if who=="user" else "#001122"
-        al = "right" if who=="user" else "left"
-        h+=f"<div style='background:{bg};margin:6px;padding:8px;border-radius:8px;text-align:{al}'><small>{who} • {date}</small><br>{msg}</div>"
-    h+="</div><form method=post style='display:flex;margin-top:10px'><input name=msg required placeholder='Type message...' style='flex:1;padding:10px'><button class=btn>Send</button></form></div>"
+    rows = db.execute("SELECT sender, msg, created FROM chats WHERE uid=? ORDER BY id", (uid,)).fetchall()
+    msgs=""
+    for sender, msg, created in rows:
+        if sender=="user":
+            msgs+=f"<div style='text-align:right;margin:8px 0'><div style='display:inline-block;background:#d4a24e;color:#3a0a0a;padding:10px 14px;border-radius:18px 18px 4px 18px;max-width:75%;font-size:14px'>{msg}</div></div>"
+        else:
+            msgs+=f"<div style='text-align:left;margin:8px 0'><div style='display:inline-block;background:rgba(255,255,255,0.12);color:#ffe9b0;padding:10px 14px;border-radius:18px 18px 18px 4px;max-width:75%;font-size:14px;border:1px solid rgba(212,162,78,0.4)'>{msg}</div></div>"
+    if not msgs:
+        msgs="<div style='text-align:center;color:#caa25a;margin-top:40px;font-size:14px'>No messages yet. Say hello! 👋</div>"
+
+    h=f"""<html><head><meta name='viewport' content='width=device-width,initial-scale=1'>
+    <style>
+    body{{margin:0;background:#4a0a0a;font-family:Arial;color:#ffe9b0}}
+   .header{{background:linear-gradient(#6b0f0f,#4a0a0a);padding:16px;text-align:center;position:sticky;top:0;z-index:10;border-bottom:1px solid #d4a24e}}
+   .header h2{{margin:0;color:#e8b86a;font-size:20px}}
+   .back{{position:absolute;left:15px;top:18px;color:#e8b86a;font-size:22px;text-decoration:none}}
+   .profile{{text-align:center;padding:20px 15px;background:radial-gradient(circle at 50% 0%, #6b1212, #4a0a0a);border:2px solid #d4a24e;border-radius:16px;margin:12px}}
+   .avatar{{width:80px;height:80px;border-radius:50%;border:3px solid #d4a24e;margin:0 auto;background:#5a0e0e;display:flex;align-items:center;justify-content:center;font-size:40px;box-shadow:0 0 20px rgba(212,162,78,0.6)}}
+   .online{{display:inline-block;background:rgba(0,0,0,0.3);border:1px solid #d4a24e;border-radius:20px;padding:4px 12px;font-size:12px;margin-top:8px}}
+   .dot{{color:#22c55e}}
+   .msgs{{padding:15px;min-height:50vh;max-height:55vh;overflow-y:auto}}
+   .inputbar{{position:fixed;bottom:0;left:0;right:0;padding:12px;background:#4a0a0a;border-top:1px solid #d4a24e;display:flex;gap:10px;align-items:center}}
+   .inputbar input{{flex:1;padding:14px;border-radius:12px;border:1px solid #d4a24e;background:rgba(0,0,0,0.3);color:#ffe9b0;outline:none}}
+   .sendbtn{{width:50px;height:50px;border-radius:50%;background:#d4a24e;border:none;font-size:20px;cursor:pointer}}
+    </style></head><body>
+    <div class='header'><a href='/' class='back'>←</a><h2>Chat with Manager</h2></div>
+    <div class='profile'>
+        <div class='avatar'>🎧</div>
+        <h3 style='margin:10px 0 5px;color:#e8b86a'>Manager Support</h3>
+        <div class='online'><span class='dot'>●</span> Online</div>
+        <p style='margin:10px 0 0;font-size:14px;color:#ffdf9e'>Welcome! How can we help you today?</p>
+    </div>
+    <div class='msgs'>{msgs}</div>
+    <div style='height:80px'></div>
+    <form method='post' class='inputbar'><input name='msg' placeholder='Type your message...' required autocomplete='off'><button class='sendbtn'>➤</button></form>
+    </body></html>"""
     return h
 
 @app.route("/admin/chats")
