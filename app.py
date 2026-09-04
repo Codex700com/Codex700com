@@ -286,10 +286,10 @@ def chat():
     if request.method=="POST":
         msg = request.form.get("msg","").strip()
         if msg:
-            db().execute("INSERT INTO chats (uid, sender, msg) VALUES (?,?,?)", (uid, "user", msg))
+            db().execute("INSERT INTO chats (uid, user_id, sender, who, msg, date, created) VALUES (?,?,?,?,?,datetime('now'),datetime('now'))", (uid, uid, "user", "user", msg))
             db().commit()
         return redirect("/chat")
-    rows = db().execute("SELECT sender, msg, created FROM chats WHERE uid=? ORDER BY id", (uid,)).fetchall()
+    rows = db().execute("SELECT COALESCE(sender,who,'user'), msg, COALESCE(created,date, '') FROM chats WHERE uid=? OR user_id=? ORDER BY id", (uid,uid)).fetchall()
     msgs=""
     for sender, msg, created in rows:
         if sender=="user":
@@ -346,10 +346,10 @@ def admin_chat(user_id):
     if request.method=="POST":
         msg=request.form.get("msg","").strip()
         if msg:
-            c.execute("INSERT INTO chats(user_id,who,msg,date) VALUES(?,?,?,datetime('now'))",(user_id,"admin",msg))
+            c.execute("INSERT INTO chats(uid,user_id,sender,who,msg,date,created) VALUES(?,?,?,?,?,datetime('now'),datetime('now'))",(user_id,user_id,"admin","admin",msg))
             c.commit()
         return redirect(f"/admin/chat/{user_id}")
-    msgs=c.execute("SELECT who,msg,date FROM chats WHERE user_id=? ORDER BY id",(user_id,)).fetchall()
+    msgs=c.execute("SELECT COALESCE(who,sender,'user'),msg,COALESCE(date,created,'') FROM chats WHERE user_id=? OR uid=? ORDER BY id",(user_id,user_id)).fetchall()
     h=f"<div class=card><h3>Chat with user {user_id}</h3><a href='/admin/chats'>← Back</a><div style='max-height:400px;overflow-y:auto;text-align:left'>"
     for who,msg,date in msgs:
         bg="#220000" if who=="admin" else "#002200"
