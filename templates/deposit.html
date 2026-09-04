@@ -1,0 +1,43 @@
+<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box;margin:0}body{background:#0a0a0a;color:#fff;font-family:Arial;padding-bottom:80px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px;font-size:18px;font-weight:700}
+.warn{background:#2a0f0f;border:1px solid #5a1a1a;border-radius:10px;margin:0 12px;padding:10px;font-size:12px;color:#ff9a9a}
+.card{background:#141414;border:1px solid #2a2a2a;border-radius:12px;margin:12px;padding:14px}
+.lbl{color:#f5b301;font-size:12px;font-weight:700;margin-bottom:8px;letter-spacing:.5px}
+.agent{display:flex;align-items:center;gap:12px}
+.avatar{width:52px;height:52px;border-radius:50%;background:#3a2a00;display:flex;align-items:center;justify-content:center;font-size:28px}
+.num{color:#f5b301;font-size:20px;font-weight:800;letter-spacing:1px}
+.copybtn{background:none;border:none;color:#f5b301;font-size:11px;cursor:pointer;text-align:center}
+input{width:100%;background:#1e1e1e;border:1px solid #333;color:#fff;border-radius:10px;padding:12px;margin:6px 0 12px}
+.upload{border:2px dashed #444;border-radius:12px;padding:24px;text-align:center;color:#aaa;cursor:pointer}
+.note{color:#ccc;font-size:12px;line-height:1.6}.note b{color:#ff5555}
+.confirm{margin:16px 12px;background:linear-gradient(90deg,#d00000,#ff1a1a);border:none;color:#fff;font-weight:800;font-size:16px;border-radius:12px;padding:16px;width:calc(100% - 24px);cursor:pointer}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#111;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #222}
+.nav a{color:#888;text-decoration:none;font-size:11px;text-align:center}.nav a.active{color:#ff3333}
+ol{font-size:13px;line-height:1.8;color:#ddd;margin-left:18px}
+</style></head><body>
+<div class="top"><a href="/wallet" style="color:#fff;text-decoration:none">←</a><span>Deposit Funds</span><span>📋</span></div>
+<div class="warn">⚠️ <b>IMPORTANT:</b> Send money only to the details below. Deposits to other numbers will not be accepted.</div>
+<div class="card"><div class="lbl">SEND MONEY TO</div>
+<div class="agent"><div class="avatar">👤</div>
+<div style="flex:1"><div style="font-weight:700">Shakira Nantongo</div><div class="num" id="agentNum">0758878297</div><div style="color:#ff3333;font-size:12px">🔥 airtel money</div></div>
+<button class="copybtn" onclick="copyNum()">📋<br>Copy Number</button></div></div>
+<div class="card"><div class="lbl">HOW TO DEPOSIT</div>
+<ol><li>Dial *185# on your Airtel line</li><li>Select Send Money</li><li>Send money to 0758878297</li><li>Enter the amount you wish to deposit</li><li>After sending, fill in the details below</li><li>Upload screenshot of successful transaction</li><li>Click "Confirm Deposit"</li></ol></div>
+<form id="depForm" enctype="multipart/form-data">
+<div class="card"><div class="lbl">FILL IN YOUR DEPOSIT DETAILS</div>
+<label>Airtel Number Used To Send</label><input name="airtel_number" required placeholder="Enter the Airtel number you used">
+<label>Amount Deposited (UGX)</label><input name="amount" type="number" min="1000" max="10000000" required placeholder="Enter amount you deposited">
+<label>Transaction ID / Reference</label><input name="txid" required placeholder="Enter transaction ID">
+<label>Upload Screenshot</label>
+<div class="upload" onclick="document.getElementById('shot').click()"><div style="font-size:32px">☁️⬆️</div><div>Tap to upload screenshot</div><small>PNG, JPG, JPEG (Max 5MB)</small><div id="fname" style="color:#0f0"></div></div>
+<input type="file" id="shot" name="screenshot" accept="image/*" style="display:none" required onchange="document.getElementById('fname').innerText=this.files[0].name">
+</div>
+<div class="card note"><b>Please Note</b><br>• Minimum deposit: UGX 1,000<br>• Maximum deposit: UGX 10,000,000<br>• Your deposit will be reviewed and approved within a few minutes.<br>• You will be notified once your deposit is approved.</div>
+<button class="confirm" type="submit">✈️ CONFIRM DEPOSIT</button></form>
+<div class="nav"><a href="/">🏠<br>Home</a><a href="/invest">📊<br>Invest</a><a href="/wallet" class="active">👛<br>Wallet</a><a href="/referrals">👥<br>Referrals</a><a href="/account">👤<br>Account</a></div>
+<script>
+function copyNum(){navigator.clipboard.writeText(document.getElementById('agentNum').innerText);alert('Number copied: 0758878297')}
+document.getElementById('depForm').onsubmit=async e=>{e.preventDefault();let f=new FormData(e.target);let r=await fetch('/deposit-submit',{method:'POST',body:f}).then(r=>r.json());alert(r.msg);if(r.ok)e.target.reset()}
+</script></body></html>

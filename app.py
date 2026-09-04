@@ -40,6 +40,23 @@ def fix_chats_table():
 
 fix_chats_table()
 
+
+def ensure_checkin_schema():
+    try:
+        import sqlite3, time
+        con = sqlite3.connect("codex700.db")
+        con.execute("CREATE TABLE IF NOT EXISTS checkins (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, created_at INTEGER)")
+        # ensure users has balance and last_checkin
+        cols = [r[1] for r in con.execute("PRAGMA table_info(users)").fetchall()]
+        for col, typ in [("balance","INTEGER DEFAULT 0"),("last_checkin","INTEGER DEFAULT 0")]:
+            if col not in cols:
+                con.execute(f"ALTER TABLE users ADD COLUMN {col} {typ}")
+                print(f"added users.{col}")
+        con.commit(); con.close()
+    except Exception as e:
+        print("checkin schema error:", e)
+ensure_checkin_schema()
+
 @app.route("/")
 def i(): return redirect("/register")
 @app.route("/register",methods=["GET","POST"])
@@ -376,6 +393,102 @@ def admin_chat(user_id):
         h+=f"<div style='background:{bg};margin:6px;padding:8px;border-radius:8px'><small>{who} • {date}</small><br>{msg}</div>"
     h+="</div><form method=post style='display:flex;margin-top:10px'><input name=msg required placeholder='Reply...' style='flex:1;padding:10px'><button class=btn>Reply</button></form></div>"
     return h
+
+
+@app.route("/checkin-page")
+def checkin_page():
+    return open("templates/checkin.html").read()
+
+@app.route("/checkin-status")
+def checkin_status():
+    import sqlite3, time
+    from flask import session, jsonify
+    uid = session.get("user_id") or session.get("uid")
+    if not uid:
+        return jsonify({"ok":False, "msg":"login"})
+    con = sqlite3.connect("codex700.db")
+    con.row_factory = sqlite3.Row
+    r = con.execute("SELECT last_checkin, balance FROM users WHERE id=? OR phone=? OR username=?", (uid,uid,uid)).fetchone()
+    con.close()
+    now = int(time.time())
+    last = int(r["last_checkin"] or 0) if r else 0
+    bal = int(r["balance"] or 0) if r else 0
+    remain = 86400 - (now - last)
+    can = remain <= 0
+    return jsonify({"ok":True, "can":can, "remain":0 if can else remain, "balance":bal, "last":last})
+
+@app.route("/checkin", methods=["GET","POST"])
+def checkin():
+    from flask import request
+    if request.method == "GET":
+        try:
+            return open("templates/checkin.html").read()
+        except:
+            return "<h2>Check In</h2><a href='/checkin-page'>Go to check-in</a>"
+    import sqlite3, time
+    from flask import session, jsonify
+    uid = session.get("user_id") or session.get("uid")
+    if not uid:
+        return jsonify({"ok":False, "msg":"Please login"})
+    now = int(time.time())
+    con = sqlite3.connect("codex700.db")
+    con.row_factory = sqlite3.Row
+    r = con.execute("SELECT id, last_checkin, balance FROM users WHERE id=? OR phone=? OR username=?", (uid,uid,uid)).fetchone()
+    if not r:
+        con.close()
+        return jsonify({"ok":False, "msg":"User not found"})
+    last = int(r["last_checkin"] or 0)
+    if now - last < 86400:
+        remain = 86400 - (now - last)
+        h, rem = divmod(remain, 3600); m, s = divmod(rem, 60)
+        con.close()
+        return jsonify({"ok":False, "wait":True, "remain":remain, "msg":f"Come back in {h}h {m}m"})
+    new_bal = int(r["balance"] or 0) + 500
+    con.execute("UPDATE users SET balance=?, last_checkin=? WHERE id=?", (new_bal, now, r["id"]))
+    con.execute("INSERT INTO checkins (user_id, created_at) VALUES (?,?)", (r["id"], now))
+    con.commit(); con.close()
+    return jsonify({"ok":True, "msg":"+500 added to balance", "balance":new_bal, "remain":86400})
+
+
+
+@app.route("/deposit")
+def deposit_page():
+    return open("templates/deposit.html").read()
+
+@app.route("/deposit-submit", methods=["POST"])
+def deposit_submit():
+    import sqlite3, time, os
+    from flask import request, session, jsonify
+    from werkzeug.utils import secure_filename
+    uid = session.get("user_id") or session.get("uid") or "guest"
+    airtel = request.form.get("airtel_number","").strip()
+    amount = request.form.get("amount","").strip()
+    txid = request.form.get("txid","").strip()
+    if not airtel or not amount or not txid:
+        return jsonify({"ok":False,"msg":"Fill all fields"})
+    try:
+        amt=int(amount)
+        if amt<1000: return jsonify({"ok":False,"msg":"Minimum is 1000 UGX"})
+        if amt>10000000: return jsonify({"ok":False,"msg":"Maximum is 10,000,000 UGX"})
+    except: return jsonify({"ok":False,"msg":"Invalid amount"})
+    # duplicate txid check
+    con=sqlite3.connect("codex700.db")
+    if con.execute("SELECT id FROM deposits WHERE txid=?",(txid,)).fetchone():
+        con.close(); return jsonify({"ok":False,"msg":"This Transaction ID was already used"})
+    # save screenshot
+    f=request.files.get("screenshot")
+    fname=""
+    if f and f.filename:
+        os.makedirs("uploads",exist_ok=True)
+        fname=secure_filename(f"{int(time.time())}_{f.filename}")
+        f.save(os.path.join("uploads",fname))
+        # 5MB check done client-side, double check
+    else:
+        con.close(); return jsonify({"ok":False,"msg":"Upload screenshot"})
+    con.execute("INSERT INTO deposits (user_id,airtel_number,amount,txid,screenshot,created_at) VALUES (?,?,?,?,?,?)",
+        (uid,airtel,amt,txid,fname,int(time.time())))
+    con.commit(); con.close()
+    return jsonify({"ok":True,"msg":"Deposit submitted! Will be approved shortly."})
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000,debug=True)
