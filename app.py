@@ -286,10 +286,10 @@ def chat():
     if request.method=="POST":
         msg = request.form.get("msg","").strip()
         if msg:
-            db.execute("INSERT INTO chats (uid, sender, msg) VALUES (?,?,?)", (uid, "user", msg))
-            db.commit()
+            db().execute("INSERT INTO chats (uid, sender, msg) VALUES (?,?,?)", (uid, "user", msg))
+            db().commit()
         return redirect("/chat")
-    rows = db.execute("SELECT sender, msg, created FROM chats WHERE uid=? ORDER BY id", (uid,)).fetchall()
+    rows = db().execute("SELECT sender, msg, created FROM chats WHERE uid=? ORDER BY id", (uid,)).fetchall()
     msgs=""
     for sender, msg, created in rows:
         if sender=="user":
