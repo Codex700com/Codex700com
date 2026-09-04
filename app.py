@@ -452,7 +452,7 @@ def checkin():
 
 
 @app.route("/deposit")
-def deposit_page():
+def deposit_page(): # v1788545924
     return open("templates/deposit.html").read()
 
 @app.route("/deposit-submit", methods=["POST"])
