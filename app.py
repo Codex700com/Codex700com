@@ -259,16 +259,18 @@ def confirm_buy(pid):
     if is_a and cur_cnt>=2:
         con.close()
         return "<h3>Limit reached: A-series max 2 per user</h3>"
-    # get balance - try users table
+    # strict balance check - block if no money
     try:
-        bal=con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()
-        bal=bal[0] if bal else 0
-        if bal < price:
-            con.close()
-            return f"<h3>Insufficient balance for {pid}. Need UGX {price:,}. <a href='/deposit'>Deposit</a></h3>"
+        bal_row=con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()
+        bal=bal_row[0] if bal_row else 0
+    except:
+        bal=0
+    if bal < price:
+        con.close()
+        return f"<h3>Insufficient balance for {pid}. Need UGX {price:,}. <a href='/deposit'>Deposit</a></h3>"
+    try:
         con.execute("UPDATE users SET balance=balance-? WHERE id=?",(price,uid))
-    except Exception as e:
-        # fallback if no users table, just allow
+    except:
         pass
     con.execute("INSERT INTO investments (user_id, plan, amount) VALUES (?,?,?)",(uid,pid,price))
     con.commit(); con.close()
