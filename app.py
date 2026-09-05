@@ -108,7 +108,7 @@ def home():
 @app.route("/menu")
 @need
 def menu():
- ls=[("Home","/home"),("Invest","/invest"),("Deposit","/deposit"),("Withdraw","/withdraw"),("Transactions","/transactions"),("Referrals","/referrals"),("Raffle","/raffle"),("Support","/support"),("Chat Manager","/chat"),("Account","/account"),("Logout","/logout")]
+ ls=[("Home","/home"),("Invest","/invest"),("Deposit","/deposit"),("Withdraw","/withdraw"),("Transactions","/transactions"),("Referrals","/referrals"),("Raffle","/raffle"),("About Us","/about"),("Support","/support"),("Chat Manager","/chat"),("Account","/account"),("Logout","/logout")]
  h=S+hdr()+"<div class=card><h3>Menu</h3>"
  for nm,lk in ls: h+="<p><a href='"+lk+"'>"+nm+"</a></p>"
  return h+"</div>"+N
@@ -315,6 +315,10 @@ def referrals_page():
  link="https://codex700com.onrender.com/register?ref="+code
  return render_template("referrals.html",code=code,link=link,total=0,active=0,earnings=0,month_earnings=0,referrals=[],lv1=0,lv2=0,lv3=0)
 
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
 @app.route("/support")
 def support_page():
  from flask import render_template
