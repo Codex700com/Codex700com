@@ -58,7 +58,8 @@ def ensure_checkin_schema():
 ensure_checkin_schema()
 
 @app.route("/")
-def i(): return redirect("/register")
+def i():
+    return redirect("/home") if "uid" in session else redirect("/register")
 @app.route("/register",methods=["GET","POST"])
 def reg():
  m=""
