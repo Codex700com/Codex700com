@@ -70,8 +70,19 @@ input{width:100%;background:#000;border:1px solid #333;color:#ffb700;padding:10p
 </div>
 
 <script>
-function copyCode(){navigator.clipboard.writeText(document.getElementById('rcode').innerText);alert('Code copied: '+document.getElementById('rcode').innerText)}
-function copyLink(){navigator.clipboard.writeText(document.getElementById('rlink').value);alert('Link copied')}
+function copyCode(){var el=document.getElementById('rcode'); el.select(); try{document.execCommand('copy'); alert('Code copied!');}catch(e){prompt('Copy:',el.value)}}
+function copyLink(){
+  var el=document.getElementById('rlink');
+  el.select(); el.setSelectionRange(0,99999);
+  try{
+    document.execCommand('copy');
+    alert('Copied! Open WhatsApp and paste.');
+  }catch(e){
+    // fallback for mobile
+    if(navigator.clipboard){ navigator.clipboard.writeText(el.value).then(()=>alert('Copied! Open WhatsApp and paste.')); }
+    else{ prompt('Long-press to copy:', el.value); }
+  }
+}
 function showHow(){document.getElementById('howModal').style.display='flex'}
 function hideHow(){document.getElementById('howModal').style.display='none'}
 function viewAll(){alert('Total referrals: {{total}}');}
