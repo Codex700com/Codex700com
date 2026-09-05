@@ -320,6 +320,33 @@ def support_page():
  from flask import render_template
  return render_template("support.html")
 
+
+import os, json, datetime
+CHAT_FILE="chat.json"
+if not os.path.exists(CHAT_FILE):
+    open(CHAT_FILE,"w").write("[]")
+
+@app.route("/chat")
+def chat_page():
+    from flask import render_template
+    return render_template("chat.html")
+
+@app.route("/api/chat", methods=["GET","POST"])
+def api_chat():
+    from flask import request, jsonify
+    if request.method=="POST":
+        data=request.get_json(force=True)
+        text=data.get("text","")[:1000]
+        user=data.get("user","Anonymous")[:30]
+        if not text.strip():
+            return jsonify({"ok":False})
+        msgs=json.load(open(CHAT_FILE))
+        msgs.append({"user":user,"text":text,"time":datetime.datetime.now().strftime("%H:%M")})
+        msgs=msgs[-200:]
+        json.dump(msgs, open(CHAT_FILE,"w"))
+        return jsonify({"ok":True})
+    return json.load(open(CHAT_FILE))
+
 if __name__ == "__main__":
     print("Starting on http://127.0.0.1:5000/")
     app.run(host="127.0.0.1", port=5000, debug=True)

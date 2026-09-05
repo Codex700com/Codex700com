@@ -1,0 +1,42 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Group Chat</title><style>
+body{background:#000;color:#fff;font-family:Arial;margin:0;display:flex;flex-direction:column;height:100vh}
+.top{background:#0f0f0f;padding:10px;color:#ffcc00;font-weight:bold;display:flex;justify-content:space-between}
+.hd{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #222}
+.av{width:48px;height:48px;background:#7a2bff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px}
+.on{color:#00ff00;font-size:12px}
+#box{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:10px}
+.empty{color:#888;text-align:center;margin-top:40px}
+.m{max-width:80%;padding:10px 12px;border-radius:12px;background:#1a1a1a;border:1px solid #333}
+.m small{color:#888;display:block;font-size:11px}
+.me{align-self:flex-end;background:#0d47a1;border-color:#0d47a1}
+.bar{display:flex;gap:8px;padding:10px;border-top:1px solid #222}
+#tin{flex:1;background:#1a1a1a;border:1px solid #333;color:#fff;padding:12px;border-radius:25px;outline:none}
+button{background:#1e6fb8;border:none;width:45px;height:45px;border-radius:50%;color:#fff;font-size:18px;cursor:pointer}
+</style></head><body>
+<div class="top"><span>📌 How to Deposit & Withdraw</span><span>▼</span></div>
+<div class="hd"><a href="/" style="color:#1e90ff;text-decoration:none;font-size:20px">←</a><div class="av">🌐</div><div><b>Group Chat</b><div class="on">Everyone can see this</div></div></div>
+<div id="box"><div class="empty">No messages yet. Say hello!</div></div>
+<div class="bar"><input id="tin" placeholder="Type a message... use @ to mention" onkeypress="if(event.key==='Enter')send()"><button onclick="send()">➤</button></div>
+<script>
+let user = localStorage.getItem('chat_user') || 'User'+Math.floor(Math.random()*9000+1000);
+localStorage.setItem('chat_user',user);
+async function load(){
+ let r=await fetch('/api/chat'); let j=await r.json();
+ let b=document.getElementById('box'); b.innerHTML='';
+ if(j.length===0) b.innerHTML='<div class="empty">No messages yet. Say hello!</div>';
+ j.forEach(m=>{
+  let d=document.createElement('div'); d.className='m'+(m.user===user?' me':'');
+  d.innerHTML='<small>'+m.user+' • '+m.time+'</small>'+m.text.replace(/</g,'&lt;');
+  b.appendChild(d);
+ });
+ b.scrollTop=b.scrollHeight;
+}
+async function send(){
+ let t=document.getElementById('tin'); let txt=t.value.trim(); if(!txt) return;
+ await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:user,text:txt})});
+ t.value=''; load();
+}
+setInterval(load,2000); load();
+</script>
+</body></html>
