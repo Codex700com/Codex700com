@@ -1,40 +1,79 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>
-body{background:#0a0a0a;color:#fff;font-family:sans-serif;margin:0;padding:12px;padding-bottom:80px}
-.card{border:1px solid #c9a400;border-radius:12px;padding:14px;margin:10px 0;background:#111}
-.redbtn{background:#d00;color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer}
-.grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px 0}
-.box{border:1px solid #333;border-radius:10px;padding:10px;text-align:center;background:#111}
-.gold{color:#ffcc00}.red{color:red}
-#modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);justify-content:center;align-items:center}
-#modal div{background:#111;padding:20px;border-radius:12px;border:1px solid gold;text-align:center}
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Referrals</title><style>
+body{background:#0a0a0a;color:#fff;font-family:Arial;margin:0;padding-bottom:80px}
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px}
+.card{background:#111;border:1px solid #5a3d00;border-radius:12px;margin:10px;padding:14px}
+.red{color:#ff1a1a}.gold{color:#ffb700}
+.btn-red{background:#c40000;color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer}
+.code-box{display:flex;align-items:center;gap:10px}
+.code{background:#000;border:1px dashed #ffb700;padding:8px 16px;font-size:22px;letter-spacing:2px;color:#ffb700;border-radius:8px}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px}
+.stat{background:#111;border:1px solid #333;border-radius:10px;padding:10px;text-align:center}
+.lv{display:flex;justify-content:space-around;text-align:center}
+.ref-row{display:flex;align-items:center;justify-content:space-between;padding:10px;border-bottom:1px solid #222}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#111;display:flex;justify-content:space-around;padding:10px;border-top:1px solid #333}
+.nav a{color:#888;text-decoration:none;font-size:12px;text-align:center}.nav a.active{color:#ff1a1a}
+.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);align-items:center;justify-content:center}
+.modal div{background:#1a1a1a;padding:20px;border-radius:12px;max-width:320px;text-align:center}
+input{width:100%;background:#000;border:1px solid #333;color:#ffb700;padding:10px;border-radius:8px}
 </style></head><body>
-<h3 style="text-align:center">Referrals</h3>
-<div class="card"><div class="red">Invite Friends & Earn</div><p>Earn unlimited commissions from your referrals.</p>
-<button class="redbtn" onclick="showModal()">How it Works →</button>
-<div style="float:right;text-align:right"><div>Your Referral Code</div><div class="gold" style="font-size:22px">{{code}} <button onclick="copyCode()">📋</button></div></div><div style="clear:both"></div></div>
+<div class="header"><a href="/" style="color:#ffb700;font-size:24px;text-decoration:none">←</a><h3>Referrals</h3><div>🔔👤</div></div>
 
-<div class="card"><div>Your Referral Link</div><div style="display:flex;gap:8px;margin-top:6px"><input id="link" value="{{link}}" readonly style="flex:1;background:#222;color:#ffcc00;border:1px solid #333;border-radius:8px;padding:10px"><button class="redbtn" onclick="copyLink()">Copy Link</button></div></div>
+<div class="card">
+<div style="display:flex;justify-content:space-between">
+<div><div class="red"><b>Invite Friends & Earn</b></div><small>Earn unlimited commissions from your referrals.</small><br><br>
+<button class="btn-red" onclick="showHow()">How it Works →</button></div>
+<div style="text-align:center"><small>Your Referral Code</small><div class="code-box"><div class="code" id="rcode">{{code}}</div><button class="btn-red" onclick="copyCode()">📋</button></div></div>
+</div></div>
 
-<div class="grid">
-<div class="box">Total Referrals<br><b class="red">{{total}}</b><br><small>All Time</small></div>
-<div class="box">Active Referrals<br><b class="red">{{active}}</b><br><small>Active Now</small></div>
-<div class="box">Total Earnings<br><b class="red">UGX {{ "{:,}".format(earnings) }}</b><br><small>All Time</small></div>
-<div class="box">This Month<br><b class="red">UGX {{ "{:,}".format(month_earnings) }}</b><br><small>Earnings</small></div>
+<div class="card"><small>Your Referral Link</small><div style="display:flex;gap:8px;margin-top:8px"><input id="rlink" readonly value="{{link}}"><button class="btn-red" onclick="copyLink()">Copy Link 📋</button></div></div>
+
+<div class="stats">
+<div class="stat">Total Referrals<br><b class="red">{{total}}</b><br><small>All Time</small></div>
+<div class="stat">Active Referrals<br><b class="gold">{{active}}</b><br><small>Active Now</small></div>
+<div class="stat">Total Earnings<br><b class="red">UGX {{earnings}}</b><br><small>All Time</small></div>
+<div class="stat">This Month<br><b class="red">UGX {{month_earnings}}</b><br><small>Earnings</small></div>
 </div>
 
-<div class="card"><b>Referral Commission Structure</b><div style="display:flex;justify-content:space-around;text-align:center;margin-top:10px"><div><div class="red">Lv1<br>32%</div><small>First Level</small></div><div><div class="red">Lv2<br>5%</div><small>Second Level</small></div><div><div class="red">Lv3<br>1%</div><small>Third Level</small></div></div></div>
+<div class="card"><b>Referral Commission Structure</b><div class="lv" style="margin-top:10px">
+<div><div class="red">Lv1</div><div class="red"><b>32%</b></div><small>First Level</small></div>
+<div><div class="red">Lv2</div><div class="red"><b>5%</b></div><small>Second Level</small></div>
+<div><div class="red">Lv3</div><div class="red"><b>1%</b></div><small>Third Level</small></div>
+</div></div>
 
-<div class="card"><b>Your Referrals</b> <a href="#" style="float:right;color:red" onclick="alert('No more referrals');return false">View All ></a>
-{% if referrals %}{% for r in referrals %}<div>{{r}}</div>{% endfor %}{% else %}<p style="color:#888;text-align:center;padding:20px">No referrals yet. Share your link to invite friends.</p>{% endif %}
+<div class="card"><div style="display:flex;justify-content:space-between"><b>Your Referrals</b><a href="#" onclick="viewAll();return false" class="red">View All ></a></div>
+{% if referrals %}
+{% for r in referrals %}
+<div class="ref-row"><div>{{r.name}}<br><small>{{r.phone}}</small></div><span class="red">{{r.level}}</span><span style="color:{{'green' if r.active else 'red'}}">{{'Active' if r.active else 'Inactive'}}</span><small>{{r.date}}</small></div>
+{% endfor %}
+{% else %}
+<div style="text-align:center;padding:20px;color:#888">No referrals yet.<br>Share your link to start earning.</div>
+{% endif %}
 </div>
 
-<div class="card"><b>Earnings Summary</b><div style="display:flex;justify-content:space-between"><div>Lv1<br><span class="red">UGX {{ "{:,}".format(lv1) }}</span></div><div>Lv2<br><span class="red">UGX {{ "{:,}".format(lv2) }}</span></div><div>Lv3<br><span class="red">UGX {{ "{:,}".format(lv3) }}</span></div><div style="background:#d00;padding:10px;border-radius:8px">Total<br>UGX {{ "{:,}".format(earnings) }}</div></div></div>
+<div class="card"><b>Earnings Summary</b><div style="display:flex;justify-content:space-between;margin-top:10px">
+<div>Lv1 Earnings<br><b class="red">UGX {{lv1}}</b></div>
+<div>Lv2 Earnings<br><b class="red">UGX {{lv2}}</b></div>
+<div>Lv3 Earnings<br><b class="red">UGX {{lv3}}</b></div>
+<div style="background:#c40000;padding:10px;border-radius:8px">Total Earnings<br><b>UGX {{earnings}}</b></div>
+</div></div>
 
-<div id="modal"><div><h3>邀请您的朋友，共同成长</h3><p>invite Ur friends and grow together</p><button class="redbtn" onclick="hideModal()">Close</button></div></div>
+<div class="modal" id="howModal"><div>
+<h3 class="red">How it Works</h3>
+<p>Invite Ur friends and grow together</p>
+<p style="font-size:20px">邀请您的朋友一起成长</p>
+<button class="btn-red" onclick="hideHow()">Close</button>
+</div></div>
+
+<div class="nav">
+<a href="/">Home</a><a href="#">Invest</a><a href="#">Transactions</a><a class="active" href="/referrals">Referrals</a><a href="#">Account</a>
+</div>
+
 <script>
-function showModal(){document.getElementById('modal').style.display='flex'}
-function hideModal(){document.getElementById('modal').style.display='none'}
-function copyCode(){navigator.clipboard.writeText("{{code}}");alert("Code copied: {{code}}")}
-function copyLink(){let i=document.getElementById('link');i.select();navigator.clipboard.writeText(i.value);alert("Link copied")}
+function copyCode(){navigator.clipboard.writeText(document.getElementById('rcode').innerText);alert('Code copied: '+document.getElementById('rcode').innerText)}
+function copyLink(){navigator.clipboard.writeText(document.getElementById('rlink').value);alert('Link copied')}
+function showHow(){document.getElementById('howModal').style.display='flex'}
+function hideHow(){document.getElementById('howModal').style.display='none'}
+function viewAll(){alert('Total referrals: {{total}}');}
 </script>
 </body></html>
