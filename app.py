@@ -318,7 +318,8 @@ def referrals_page():
 
 @app.route("/about")
 def about():
-    return render_template("about.html")
+    h="<div class=card><h3>About Us</h3><p><b>Codex Company Kampala, Uganda</b> helps you attain <b>financial power and vision</b>.</p><p>Led by <b>CEO Tamale Imran</b> and the Codex Management Team.</p><p><b>Mission:</b> Make wealth simple for Ugandans.<br><b>Vision:</b> Financial freedom for every family.</p><p>📍 Kampala, Uganda<br>✅ Secure investments<br>✅ Fast payments<br>✅ 24/7 Support</p><p><a href='/menu'>Back to Menu</a></p></div>"
+    return S+hdr()+h+N
 @app.route("/support")
 def support_page():
  from flask import render_template
