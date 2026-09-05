@@ -251,6 +251,14 @@ def confirm_buy(pid):
     price=prices.get(pid,0)
     con=sqlite3.connect("codex700.db")
     con.execute("CREATE TABLE IF NOT EXISTS investments (user_id TEXT, plan TEXT, amount INTEGER, ts DATETIME DEFAULT CURRENT_TIMESTAMP)")
+ # A-series max 2 enforcement
+ cur_cnt=con.execute("SELECT COUNT(*) FROM investments WHERE user_id=? AND plan=?",(uid,pid)).fetchone()[0]
+ print("count",cur_cnt)
+ is_a = pid.startswith("A")
+ print("is_a",is_a)
+ if is_a and cur_cnt>=2:
+ con.close()
+ return "<h3 style='font-family:sans-serif;padding:40px;text-align:center'>Limit reached: A-series max 2 per user<br><br><a href='/invest'>Back</a></h3>"
     # get balance - try users table
     try:
         bal=con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()
@@ -305,7 +313,7 @@ if(found){{
  `<div class="row"><span>Daily income</span><b>UGX ${{daily.toLocaleString()}}</b></div>`+
  `<div class="row"><span>Total income</span><b>UGX ${{total.toLocaleString()}}</b></div>`+
  `<div class="row"><span>Min quantity</span><b>1</b></div>`+
- `<div class="row"><span>Max quantity</span><b>10</b></div>`+
+ `<div class="row"><span>Max quantity</span><b>2</b></div>`+
  `<div class="row"><span>Raffle tickets</span><b>1</b></div>`+
  `<div class="row"><span>Category</span><b>CODEX ${{cat}} SERIES</b></div>`+
  `<div class="row"><span>Sale</span><b>On sale</b></div>`+
