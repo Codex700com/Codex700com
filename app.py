@@ -311,5 +311,5 @@ def transactions_page_auto():
 @app.route("/withdraw")
 def withdraw_fixed():
     from flask import render_template, session
-    bal = session.get("balance", 3068000)
+    bal = session.get("balance", 0)
     return render_template("withdraw.html", balance=bal)
