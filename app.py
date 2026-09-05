@@ -105,7 +105,7 @@ def home():
  h+="<a href='/wallet'><div class=gbox>Wallet<br><b class=red>UGX "+str(u["balance"])+"</b></div></a>"
  h+="<a href='/investments'><div class=gbox>Invested<br><b class=red>UGX "+str(ti)+"</b></div></a>"
  h+="<a href='/transactions'><div class=gbox>Income<br><b class=red>UGX 0</b></div></a>"
- h+="<a href='/investments'><div class=card>Active<br><b class=red>"+str(ac)+"</b></div></a></div>"
+ h+="<a href='/investments'><div class=gbox>Active<br><b>"+str(ac)+"</b></div></a></div>"
  h+="<div class=card>🎁 Daily Check-In <a class=btn href='/checkin'>Check In →</a></div>"
  h+="<div class=grid4>"
  acts=[("Invest","/invest","📈"),("Deposit","/deposit","💰"),("Withdrawal","/withdraw","💸"),("Referrals","/referrals","👥"),("Transactions","/transactions","📄"),("Raffle","/raffle","🎁"),("Support","/support","🎧"),("Chat","/chat","💬")]
