@@ -239,6 +239,82 @@ def raffle_page_auto():
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "raffle".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
 
 
+
+
+@app.route("/confirm_buy/<pid>")
+def confirm_buy(pid):
+    from flask import session, redirect
+    import sqlite3
+    uid=str(session.get("user_id") or session.get("uid") or "guest")
+    # price map
+    prices={"A1":20000,"A2":100000,"M1":50000,"M2":100000,"M3":250000,"M4":500000,"M5":1000000,"M6":2000000,"M7":5000000,"L1":500000,"L2":1000000,"L3":2000000,"GS1":600000,"GS2":1200000,"GS3":2500000,"J1":800000,"J2":1500000,"J3":3000000}
+    price=prices.get(pid,0)
+    con=sqlite3.connect("codex700.db")
+    con.execute("CREATE TABLE IF NOT EXISTS investments (user_id TEXT, plan TEXT, amount INTEGER, ts DATETIME DEFAULT CURRENT_TIMESTAMP)")
+    # get balance - try users table
+    try:
+        bal=con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()
+        bal=bal[0] if bal else 0
+        if bal < price:
+            con.close()
+            return f"<h3>Insufficient balance for {pid}. Need UGX {price:,}. <a href='/deposit'>Deposit</a></h3>"
+        con.execute("UPDATE users SET balance=balance-? WHERE id=?",(price,uid))
+    except Exception as e:
+        # fallback if no users table, just allow
+        pass
+    con.execute("INSERT INTO investments (user_id, plan, amount) VALUES (?,?,?)",(uid,pid,price))
+    con.commit(); con.close()
+    return f"<h2 style='font-family:sans-serif;padding:20px'>Successfully invested in {pid} for UGX {price:,}</h2><a href='/home' style='padding:10px 20px;background:#e11d48;color:#fff;text-decoration:none;border-radius:8px;margin:20px'>Back Home</a>"
+
+@app.route("/buy/<pid>")
+def buy_detail(pid):
+    return f"""
+<html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{{font-family:sans-serif;margin:0;background:#fff;padding-bottom:80px}}
+.top img{{width:100%;height:280px;object-fit:cover}}
+.card{{padding:15px}}
+.price{{color:#e11d48;font-size:22px;font-weight:bold}}
+.name{{font-size:18px;font-weight:bold;margin:5px 0}}
+.meta{{display:flex;justify-content:space-between;color:#666;font-size:13px;margin:10px 0}}
+.box{{background:#f8f8f8;border-radius:10px;padding:12px;margin-top:10px}}
+.row{{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:14px}}
+.row span{{color:#333}}.row b{{color:#111}}
+.btn{{position:fixed;bottom:0;left:0;right:0;background:#e11d48;color:#fff;text-align:center;padding:16px;font-weight:bold;font-size:16px;text-decoration:none}}
+</style></head><body>
+<div class="top"><img src="/static/miner.jpg"></div>
+<div class="card">
+<div class="name">{pid} Plan</div>
+<div class="price" id="price">UGX...</div>
+<div class="meta"><span>ROI <b id="roi" style="color:#e11d48"></b></span><span>Sold <b>78%</b></span></div>
+<div class="box" id="details"></div>
+</div>
+<a class="btn" id="buybtn" href="#">Invest Now</a>
+<script>
+const D={{"A":[["A1",20000,3000,16],["A2",100000,9000,15]],"M":[["M1",50000,10000],["M2",100000,20000],["M3",250000,50000],["M4",500000,100000],["M5",1000000,200000],["M6",2000000,400000],["M7",5000000,1000000]],"L":[["L1",500000,110000],["L2",1000000,220000],["L3",2000000,440000]],"GS":[["GS1",600000,132000],["GS2",1200000,264000],["GS3",2500000,550000]],"J":[["J1",800000,176000],["J2",1500000,330000],["J3",3000000,660000]]}};
+let pid="{pid}";
+let found=null,cat="";
+for(let k in D){{ D[k].forEach(x=>{{ if(x[0]==pid){{found=x;cat=k}} }}) }}
+if(found){{
+ let price=found[1],daily=found[2],dur=found[3]||30,total=daily*dur;
+ let roi=Math.round(total/price*100);
+ document.getElementById('price').innerText='UGX '+price.toLocaleString();
+ document.getElementById('roi').innerText=roi+'%';
+ document.getElementById('details').innerHTML=
+ `<div class="row"><span>Lock-up period</span><b>${{dur}} day</b></div>`+
+ `<div class="row"><span>Daily income</span><b>UGX ${{daily.toLocaleString()}}</b></div>`+
+ `<div class="row"><span>Total income</span><b>UGX ${{total.toLocaleString()}}</b></div>`+
+ `<div class="row"><span>Min quantity</span><b>1</b></div>`+
+ `<div class="row"><span>Max quantity</span><b>10</b></div>`+
+ `<div class="row"><span>Raffle tickets</span><b>1</b></div>`+
+ `<div class="row"><span>Category</span><b>CODEX ${{cat}} SERIES</b></div>`+
+ `<div class="row"><span>Sale</span><b>On sale</b></div>`+
+ `<div class="row"><span>VIP required</span><b>VIP0</b></div>`;
+ document.getElementById('buybtn').href='/confirm_buy/'+pid;
+}}
+</script></body></html>
+"""
+
 @app.route("/invest")
 def invest_page_auto():
     import pathlib
