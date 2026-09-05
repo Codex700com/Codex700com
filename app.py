@@ -613,6 +613,27 @@ def investments_page():
     h+="</div>"
     return S+hdr()+h+N
 
+
+@app.route("/admin")
+def admin():
+    import sqlite3
+    uid=session.get("user_id") or session.get("uid")
+    if not uid: return "Login first",403
+    con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
+    me=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone()
+    if not me or not me["is_admin"]:
+        con.close(); return "Not admin",403
+    users=list(con.execute("SELECT id,name,phone,balance,refcode,is_admin FROM users ORDER BY id DESC LIMIT 100"))
+    con.close()
+    rows="".join([f"<tr><td>{u['id']}</td><td>{u['name']}</td><td>{u['phone']}</td><td>{u['balance']}</td><td>{u['refcode']}</td><td>{'ADMIN' if u['is_admin'] else ''}</td></tr>" for u in users])
+    return f"""
+    <head><meta name=viewport content="width=device-width,initial-scale=1">
+    <style>body{{background:#000;color:#fde68a;font-family:sans-serif;padding:15px}}table{{width:100%;border-collapse:collapse}}td,th{{border:1px solid #fbbf24;padding:8px;font-size:13px}}th{{background:#fbbf24;color:#000}}</style></head>
+    <h2>👑 Codex700 Admin - {len(users)} users</h2>
+    <table><tr><th>ID</th><th>Name</th><th>Phone</th><th>Bal</th><th>Ref</th><th>Role</th></tr>{rows}</table>
+    <p><a href="/" style="color:#fbbf24">← Back to app</a></p>
+    """
+
 if __name__=="__main__":
     print("Starting on http://127.0.0.1:5000/")
     app.run(host="127.0.0.1", port=5000, debug=True)
