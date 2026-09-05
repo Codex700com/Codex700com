@@ -305,3 +305,7 @@ def withdraw_fixed():
     from flask import render_template, session
     bal = session.get("balance", 0)
     return render_template("withdraw.html", balance=bal)
+
+if __name__ == "__main__":
+    print("Starting on http://127.0.0.1:5000/")
+    app.run(host="127.0.0.1", port=5000, debug=True)
