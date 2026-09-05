@@ -274,7 +274,7 @@ def confirm_buy(pid):
         con.execute("UPDATE users SET balance=balance-? WHERE id=?",(price,uid))
     except:
         pass
-    con.execute("INSERT INTO investments (user_id, plan, amount) VALUES (?,?,?)",(uid,pid,price))
+    from datetime import datetime; _pr,_da,_du=DETAILS.get(pid,(price,0,30)); con.execute("INSERT INTO investments (user_id, plan, amount, daily, duration, created_at, credited) VALUES (?,?,?,?,?,?,0)",(uid,pid,price,_da,_du,datetime.utcnow().isoformat()))
     con.commit(); con.close()
     # plan details for confirmation
     details={"A1":(20000,3000,16,"CODEX A1 PLAN"),"A2":(100000,9000,15,"CODEX A2 PLAN"),
