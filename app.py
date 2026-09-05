@@ -502,6 +502,23 @@ def checkin_page():
     con.close()
     return f"""<html><head><meta name='viewport' content='width=device-width,initial-scale=1'></head><body style='margin:0;background:#000;color:#fff;font-family:sans-serif;text-align:center'><div style='padding:14px;font-weight:800'>DAILY CHECK-IN</div>{msg}<div style='margin:20px;border:1px solid #222;border-radius:16px;padding:30px;background:#0a0a0a'><div style='font-size:60px'>📅</div><div>Reward: <b style='color:#e11d48'>UGX {CHECKIN_REWARD:,}</b></div><div id='tm' style='color:#f59e0b;font-weight:800;margin:12px;font-size:20px'></div><form method='POST'><button {"disabled" if not can else ""} style='background:{'#e11d48' if can else '#333'};color:#fff;border:0;padding:14px 40px;border-radius:10px;font-weight:800'>{"Check In Now" if can else "Checked In"}</button></form><div style='color:#666;font-size:13px'>No check-in = no reward.<br>Timer resets each check-in.</div></div><a href='/home' style='color:#e11d48'>Back</a><script>let end={rem};function tick(){{let e=document.getElementById('tm');if(!end){{e.innerText='Ready!';return;}}let d=end-new Date();if(d<=0){{e.innerText='Ready! Refresh.';return;}}let h=Math.floor(d/3600000),m=Math.floor(d%3600000/60000),s=Math.floor(d%60000/1000);e.innerText=h+'h '+m+'m '+s+'s';}}setInterval(tick,1000);tick();</script></body></html>"""
 
+
+@app.route("/investments")
+def investments_page():
+    from flask import session, redirect
+    if "uid" not in session: return redirect("/login")
+    con=db()
+    rows=con.execute("SELECT plan,amount,date FROM investments WHERE user_id=? ORDER BY rowid DESC",(session["uid"],)).fetchall()
+    con.close()
+    h="<div class=card><h3>My Investments</h3>"
+    if not rows:
+        h+="<p>No active investments yet.<br><a class=btn href='/invest'>Invest Now →</a></p>"
+    else:
+        for pl,amt,dt in rows:
+            h+=f"<div class=card>📈 <b>{pl}</b><br>UGX {amt:,}<br><small>{dt}</small></div>"
+    h+="</div>"
+    return S+hdr()+h+N
+
 if __name__=="__main__":
     print("Starting on http://127.0.0.1:5000/")
     app.run(host="127.0.0.1", port=5000, debug=True)
