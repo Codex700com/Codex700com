@@ -234,7 +234,7 @@ def raffle_page_auto():
     # try template, else simple placeholder so no more 404
     fp = pathlib.Path("templates/raffle.html")
     if fp.exists():
-        return fp.read_text()
+        from flask import render_template; return render_template(fp.name)
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "raffle".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
 
 @app.route("/referrals")
@@ -243,7 +243,7 @@ def referrals_page_auto():
     # try template, else simple placeholder so no more 404
     fp = pathlib.Path("templates/referrals.html")
     if fp.exists():
-        return fp.read_text()
+        from flask import render_template; return render_template(fp.name)
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "referrals".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
 
 @app.route("/invest")
@@ -252,7 +252,7 @@ def invest_page_auto():
     # try template, else simple placeholder so no more 404
     fp = pathlib.Path("templates/invest.html")
     if fp.exists():
-        return fp.read_text()
+        from flask import render_template; return render_template(fp.name)
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "invest".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
 
 @app.route("/deposit")
@@ -261,16 +261,9 @@ def deposit_page_auto():
     # try template, else simple placeholder so no more 404
     fp = pathlib.Path("templates/deposit.html")
     if fp.exists():
-        return fp.read_text()
+        from flask import render_template; return render_template(fp.name)
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "deposit".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
 
-@app.route("/withdraw")
-def withdraw_page_auto():
-    import pathlib
-    # try template, else simple placeholder so no more 404
-    fp = pathlib.Path("templates/withdraw.html")
-    if fp.exists():
-        return fp.read_text()
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "withdraw".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
 
 @app.route("/daily-check")
@@ -279,7 +272,7 @@ def daily_check_page_auto():
     # try template, else simple placeholder so no more 404
     fp = pathlib.Path("templates/daily_check.html")
     if fp.exists():
-        return fp.read_text()
+        from flask import render_template; return render_template(fp.name)
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "daily-check".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
 
 @app.route("/daily_check")
@@ -288,7 +281,7 @@ def daily_check_page2_auto():
     # try template, else simple placeholder so no more 404
     fp = pathlib.Path("templates/daily_check.html")
     if fp.exists():
-        return fp.read_text()
+        from flask import render_template; return render_template(fp.name)
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "daily_check".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
 
 @app.route("/logout")
@@ -303,7 +296,7 @@ def register_page_auto():
     # try template, else simple placeholder so no more 404
     fp = pathlib.Path("templates/register.html")
     if fp.exists():
-        return fp.read_text()
+        from flask import render_template; return render_template(fp.name)
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "register".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
 
 @app.route("/transactions")
@@ -312,5 +305,11 @@ def transactions_page_auto():
     # try template, else simple placeholder so no more 404
     fp = pathlib.Path("templates/transactions.html")
     if fp.exists():
-        return fp.read_text()
+        from flask import render_template; return render_template(fp.name)
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "transactions".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
+
+@app.route("/withdraw")
+def withdraw_fixed():
+    from flask import render_template, session
+    bal = session.get("balance", 3068000)
+    return render_template("withdraw.html", balance=bal)
