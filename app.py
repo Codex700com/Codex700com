@@ -194,3 +194,36 @@ def api_statement():
     for r in rows:
         w.writerow([datetime.datetime.fromtimestamp(r[0]).isoformat(),r[1],r[2],r[3],r[4],r[5]])
     return Response(out.getvalue(), mimetype="text/csv", headers={"Content-Disposition":"attachment;filename=statement.csv"})
+
+@app.route("/api/account/can-statement")
+def can_statement():
+    import sqlite3
+    from flask import session, jsonify
+    uid=str(session.get("user_id") or session.get("uid") or "guest")
+    con=sqlite3.connect("codex700.db")
+    c=con.execute("SELECT COUNT(*) FROM transactions WHERE user_id=? AND type='deposit'",(uid,)).fetchone()[0]
+    con.close()
+    if c==0:
+        return jsonify({"ok":False,"msg":"You must deposit first to download statement"})
+    return jsonify({"ok":True})
+
+@app.route("/api/account/statement")
+def api_statement_guard():
+    import sqlite3
+    from flask import session, jsonify
+    uid=str(session.get("user_id") or session.get("uid") or "guest")
+    con=sqlite3.connect("codex700.db")
+    c=con.execute("SELECT COUNT(*) FROM transactions WHERE user_id=? AND type='deposit'",(uid,)).fetchone()[0]
+    con.close()
+    if c==0:
+        return jsonify({"ok":False,"msg":"You must deposit first to download statement"}),403
+    # call original statement logic inline
+    import io, datetime
+    con=sqlite3.connect("codex700.db")
+    rows=con.execute("SELECT created_at,type,title,amount,status,ref FROM transactions WHERE user_id=? ORDER BY id DESC",(uid,)).fetchall()
+    con.close()
+    out=io.StringIO(); import csv; w=csv.writer(out); w.writerow(["date","type","title","amount","status","ref"])
+    for r in rows:
+        w.writerow([datetime.datetime.fromtimestamp(r[0]).isoformat(),r[1],r[2],r[3],r[4],r[5]])
+    from flask import Response
+    return Response(out.getvalue(), mimetype="text/csv", headers={"Content-Disposition":"attachment;filename=statement.csv"})

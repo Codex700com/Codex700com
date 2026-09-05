@@ -52,7 +52,12 @@ async function chpwd(){let v=document.getElementById('np').value;let r=await fet
 async function rst(){let r=await fetch('/api/account/reset',{method:'POST'});let j=await r.json();document.getElementById('sm').innerText=j.msg;}
 async function saveNotif(){let m=document.getElementById('mute').checked;await fetch('/api/account/notif',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({muted:m})});U.notif_muted=m;closeM();load();}
 async function saveLang(){let l=document.getElementById('ls').value;await fetch('/api/account/lang',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lang:l})});closeM();load();}
-function dl(){location.href='/api/account/statement';}
-document.getElementById('hide').onclick=e=>{e.preventDefault();let b=document.getElementById('bal');b.innerText=b.innerText.includes('*')?'UGX '+(U.balance||0).toLocaleString():'****';};
+async function dl(){let r=await fetch('/api/account/can-statement');let j=await r.json();if(!j.ok){alert(j.msg);return;}location.href='/api/account/statement';}
+let hidden=false;
+document.getElementById('hide').onclick=e=>{e.preventDefault();hidden=!hidden;
+ document.getElementById('bal').innerText=hidden?'****':'UGX '+(U.balance||0).toLocaleString();
+ document.getElementById('inv').innerText=hidden?'****':'UGX '+(U.total_invested||0).toLocaleString();
+ document.getElementById('inc').innerText=hidden?'****':'UGX '+(U.total_income||0).toLocaleString();
+ e.target.innerText=hidden?'Show Balance 👁️':'Hide Balance 👁️';};
 load();
 </script></body></html>
