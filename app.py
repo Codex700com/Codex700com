@@ -282,7 +282,7 @@ body{{font-family:sans-serif;margin:0;background:#fff;padding-bottom:80px}}
 .row span{{color:#333}}.row b{{color:#111}}
 .btn{{position:fixed;bottom:0;left:0;right:0;background:#e11d48;color:#fff;text-align:center;padding:16px;font-weight:bold;font-size:16px;text-decoration:none}}
 </style></head><body>
-<div class="top" style="height:230px;overflow:hidden;position:relative"><img id="pimg" src="/static/miner.jpg" style="width:100%;height:280px;object-fit:cover;object-position:bottom;margin-top:-35px;display:block"></div>
+
 <div class="card">
 <div class="name">{pid} Plan</div>
 <div class="price" id="price">UGX...</div>
