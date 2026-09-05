@@ -306,6 +306,15 @@ def withdraw_fixed():
     bal = session.get("balance", 0)
     return render_template("withdraw.html", balance=bal)
 
+@app.route("/referrals")
+def referrals_page():
+ from flask import render_template, request
+ import hashlib
+ uid=request.args.get("user") or "guest"
+ code=hashlib.md5(uid.encode()).hexdigest()[:6].upper()
+ link="https://codex700com.onrender.com/register?ref="+code
+ return render_template("referrals.html",code=code,link=link,total=0,active=0,earnings=0,month_earnings=0,referrals=[],lv1=0,lv2=0,lv3=0)
+
 if __name__ == "__main__":
     print("Starting on http://127.0.0.1:5000/")
     app.run(host="127.0.0.1", port=5000, debug=True)
