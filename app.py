@@ -101,15 +101,15 @@ def home():
  c.close()
  h=S+hdr()
  h+="<div class=card><div>WELCOME BACK,</div><div class=red style='font-weight:900;font-size:20px'>"+u["name"].upper()+"</div><br><a class=btn href='/invest'>Invest Now →</a></div>"
- h+="<div style='display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px'>"
- h+="<a href='/wallet'><div class=card>Wallet<br><b class=red>UGX "+str(u["balance"])+"</b></div></a>"
- h+="<a href='/investments'><div class=card>Invested<br><b class=red>UGX "+str(ti)+"</b></div></a>"
- h+="<a href='/transactions'><div class=card>Income<br><b class=red>UGX 0</b></div></a>"
+ h+="<div class=grid4>"
+ h+="<a href='/wallet'><div class=gbox>Wallet<br><b class=red>UGX "+str(u["balance"])+"</b></div></a>"
+ h+="<a href='/investments'><div class=gbox>Invested<br><b class=red>UGX "+str(ti)+"</b></div></a>"
+ h+="<a href='/transactions'><div class=gbox>Income<br><b class=red>UGX 0</b></div></a>"
  h+="<a href='/investments'><div class=card>Active<br><b class=red>"+str(ac)+"</b></div></a></div>"
  h+="<div class=card>🎁 Daily Check-In <a class=btn href='/checkin'>Check In →</a></div>"
- h+="<div style='display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px'>"
- acts=[("Invest","/invest","📈"),("Deposit","/deposit","💰"),("Withdraw","/withdraw","💸"),("Referrals","/referrals","👥"),("Transactions","/transactions","📄"),("Raffle","/raffle","🎁"),("Support","/support","🎧"),("Chat","/chat","💬")]
- for nm,lk,ic in acts: h+="<a href='"+lk+"'><div class=card>"+ic+"<br>"+nm+"</div></a>"
+ h+="<div class=grid4>"
+ acts=[("Invest","/invest","📈"),("Deposit","/deposit","💰"),("Withdrawal","/withdraw","💸"),("Referrals","/referrals","👥"),("Transactions","/transactions","📄"),("Raffle","/raffle","🎁"),("Support","/support","🎧"),("Chat","/chat","💬")]
+ for nm,lk,ic in acts: h+="<a href='"+lk+"'><div class=gbox>"+ic+"<br>"+nm+"</div></a>"
  h+="</div><a href='/raffle'><div class=card>🏆 <b class=red>RAFFLE DRAW</b><br><span class=btn>View Prizes →</span></div></a>"
  h+="<div class=card><b class=red>INVESTMENT PLANS</b> <a href='/invest' style='float:right'>View All ></a></div><div style='display:flex;gap:8px;overflow:auto;margin:10px'>"
  for pl,amt in [("L1 Plan Lock",500000),("L2 Plan Lock",1000000),("L3 Plan Lock",2000000)]: h+="<a href='/invest'><div class=card style='min-width:140px'><b>"+pl+"</b><br>UGX "+f"{amt:,}"+"</div></a>"
@@ -119,7 +119,7 @@ def home():
 @app.route("/menu")
 @need
 def menu():
- ls=[("Home","/home"),("Invest","/invest"),("Deposit","/deposit"),("Withdraw","/withdraw"),("Transactions","/transactions"),("Referrals","/referrals"),("Raffle","/raffle"),("About Us","/about"),("Support","/support"),("Chat Manager","/chat"),("Account","/account"),("Logout","/logout")]
+ ls=[("Home","/home"),("Invest","/invest"),("Deposit","/deposit"),("Withdrawal","/withdraw"),("Transactions","/transactions"),("Referrals","/referrals"),("Raffle","/raffle"),("About Us","/about"),("Support","/support"),("Chat Manager","/chat"),("Account","/account"),("Logout","/logout")]
  h=S+hdr()+"<div class=card><h3>Menu</h3>"
  for nm,lk in ls: h+="<p><a href='"+lk+"'>"+nm+"</a></p>"
  return h+"</div>"+N
