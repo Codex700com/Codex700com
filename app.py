@@ -251,14 +251,14 @@ def confirm_buy(pid):
     price=prices.get(pid,0)
     con=sqlite3.connect("codex700.db")
     con.execute("CREATE TABLE IF NOT EXISTS investments (user_id TEXT, plan TEXT, amount INTEGER, ts DATETIME DEFAULT CURRENT_TIMESTAMP)")
- # A-series max 2 enforcement
- cur_cnt=con.execute("SELECT COUNT(*) FROM investments WHERE user_id=? AND plan=?",(uid,pid)).fetchone()[0]
- print("count",cur_cnt)
- is_a = pid.startswith("A")
- print("is_a",is_a)
- if is_a and cur_cnt>=2:
- con.close()
- return "<h3 style='font-family:sans-serif;padding:40px;text-align:center'>Limit reached: A-series max 2 per user<br><br><a href='/invest'>Back</a></h3>"
+    # A-series max 2 enforcement
+    cur_cnt=con.execute("SELECT COUNT(*) FROM investments WHERE user_id=? AND plan=?",(uid,pid)).fetchone()[0]
+    print("count",cur_cnt)
+    is_a = pid.startswith("A")
+    print("is_a",is_a)
+    if is_a and cur_cnt>=2:
+        con.close()
+        return "<h3>Limit reached: A-series max 2 per user</h3>"
     # get balance - try users table
     try:
         bal=con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()
