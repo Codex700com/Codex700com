@@ -1,0 +1,40 @@
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+body{background:#0a0a0a;color:#fff;font-family:sans-serif;margin:0;padding:12px;padding-bottom:80px}
+.card{border:1px solid #c9a400;border-radius:12px;padding:14px;margin:10px 0;background:#111}
+.redbtn{background:#d00;color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px 0}
+.box{border:1px solid #333;border-radius:10px;padding:10px;text-align:center;background:#111}
+.gold{color:#ffcc00}.red{color:red}
+#modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);justify-content:center;align-items:center}
+#modal div{background:#111;padding:20px;border-radius:12px;border:1px solid gold;text-align:center}
+</style></head><body>
+<h3 style="text-align:center">Referrals</h3>
+<div class="card"><div class="red">Invite Friends & Earn</div><p>Earn unlimited commissions from your referrals.</p>
+<button class="redbtn" onclick="showModal()">How it Works →</button>
+<div style="float:right;text-align:right"><div>Your Referral Code</div><div class="gold" style="font-size:22px">{{code}} <button onclick="copyCode()">📋</button></div></div><div style="clear:both"></div></div>
+
+<div class="card"><div>Your Referral Link</div><div style="display:flex;gap:8px;margin-top:6px"><input id="link" value="{{link}}" readonly style="flex:1;background:#222;color:#ffcc00;border:1px solid #333;border-radius:8px;padding:10px"><button class="redbtn" onclick="copyLink()">Copy Link</button></div></div>
+
+<div class="grid">
+<div class="box">Total Referrals<br><b class="red">{{total}}</b><br><small>All Time</small></div>
+<div class="box">Active Referrals<br><b class="red">{{active}}</b><br><small>Active Now</small></div>
+<div class="box">Total Earnings<br><b class="red">UGX {{ "{:,}".format(earnings) }}</b><br><small>All Time</small></div>
+<div class="box">This Month<br><b class="red">UGX {{ "{:,}".format(month_earnings) }}</b><br><small>Earnings</small></div>
+</div>
+
+<div class="card"><b>Referral Commission Structure</b><div style="display:flex;justify-content:space-around;text-align:center;margin-top:10px"><div><div class="red">Lv1<br>32%</div><small>First Level</small></div><div><div class="red">Lv2<br>5%</div><small>Second Level</small></div><div><div class="red">Lv3<br>1%</div><small>Third Level</small></div></div></div>
+
+<div class="card"><b>Your Referrals</b> <a href="#" style="float:right;color:red" onclick="alert('No more referrals');return false">View All ></a>
+{% if referrals %}{% for r in referrals %}<div>{{r}}</div>{% endfor %}{% else %}<p style="color:#888;text-align:center;padding:20px">No referrals yet. Share your link to invite friends.</p>{% endif %}
+</div>
+
+<div class="card"><b>Earnings Summary</b><div style="display:flex;justify-content:space-between"><div>Lv1<br><span class="red">UGX {{ "{:,}".format(lv1) }}</span></div><div>Lv2<br><span class="red">UGX {{ "{:,}".format(lv2) }}</span></div><div>Lv3<br><span class="red">UGX {{ "{:,}".format(lv3) }}</span></div><div style="background:#d00;padding:10px;border-radius:8px">Total<br>UGX {{ "{:,}".format(earnings) }}</div></div></div>
+
+<div id="modal"><div><h3>邀请您的朋友，共同成长</h3><p>invite Ur friends and grow together</p><button class="redbtn" onclick="hideModal()">Close</button></div></div>
+<script>
+function showModal(){document.getElementById('modal').style.display='flex'}
+function hideModal(){document.getElementById('modal').style.display='none'}
+function copyCode(){navigator.clipboard.writeText("{{code}}");alert("Code copied: {{code}}")}
+function copyLink(){let i=document.getElementById('link');i.select();navigator.clipboard.writeText(i.value);alert("Link copied")}
+</script>
+</body></html>

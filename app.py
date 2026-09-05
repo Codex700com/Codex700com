@@ -237,14 +237,6 @@ def raffle_page_auto():
         from flask import render_template; return render_template(fp.name)
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "raffle".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
 
-@app.route("/referrals")
-def referrals_page_auto():
-    import pathlib
-    # try template, else simple placeholder so no more 404
-    fp = pathlib.Path("templates/referrals.html")
-    if fp.exists():
-        from flask import render_template; return render_template(fp.name)
-    return "<h2 style='font-family:sans-serif;padding:20px'>"+ "referrals".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
 
 @app.route("/invest")
 def invest_page_auto():
