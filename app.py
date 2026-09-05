@@ -16,7 +16,7 @@ def need(f):
  w.__name__=f.__name__;return w
 def cu():
  c=db();u=c.execute("SELECT * FROM users WHERE id=?",(session.get("uid"),)).fetchone();c.close();return u
-S="<meta name='viewport' content='width=device-width,initial-scale=1'><style>*{box-sizing:border-box}body{background:#000;color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;padding-bottom:80px;-webkit-font-smoothing:antialiased;letter-spacing:.2px}a{color:inherit;text-decoration:none}.card{background:#0a0a0a;border:1px solid #8a6a00;border-radius:10px;padding:12px;margin:12px;font-size:14px;line-height:1.5;word-break:break-word;text-align:center}.card h2,.card h3{font-weight:800;letter-spacing:.8px;text-transform:uppercase;font-size:15px}.btn{background:#c00;color:#fff;border:none;padding:12px 20px;border-radius:8px;display:inline-block;font-weight:700;letter-spacing:.6px;text-transform:uppercase;font-size:14px}.logo{color:#c00;font-weight:900;font-size:22px;letter-spacing:2px;text-transform:uppercase;font-family:Inter,Arial,sans-serif}input{width:100%;padding:12px;margin:8px 0;background:#111;border:1px solid #d4a017;border-radius:8px;color:#fff;font-size:15px;font-family:Inter,Arial,sans-serif;letter-spacing:.3px}.nav{position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;display:flex;justify-content:space-around;padding:10px;border-top:1px solid #333;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}.red{color:#c00}.gold{color:#d4a017}</style>"+"<style>.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px}.gbox{background:linear-gradient(180deg,#fbbf24,#d4a017);border:1px solid #d4a017;border-radius:12px;height:84px;min-height:84px;max-height:84px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6px 2px;font-size:12px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#c00}.gbox b{font-size:13px}</style>"""
+S="<meta name='viewport' content='width=device-width,initial-scale=1'><style>*{box-sizing:border-box}body{background:#000;color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;padding-bottom:80px;-webkit-font-smoothing:antialiased;letter-spacing:.2px}a{color:inherit;text-decoration:none}.card{background:#0a0a0a;border:1px solid #8a6a00;border-radius:10px;padding:12px;margin:12px;font-size:14px;line-height:1.5;word-break:break-word;text-align:center}.card h2,.card h3{font-weight:800;letter-spacing:.8px;text-transform:uppercase;font-size:15px}.btn{background:#c00;color:#fff;border:none;padding:12px 20px;border-radius:8px;display:inline-block;font-weight:700;letter-spacing:.6px;text-transform:uppercase;font-size:14px}.logo{color:#fbbf24;font-weight:900;font-size:22px;letter-spacing:2px;text-transform:uppercase;font-family:Inter,Arial,sans-serif}input{width:100%;padding:12px;margin:8px 0;background:#111;border:1px solid #d4a017;border-radius:8px;color:#fff;font-size:15px;font-family:Inter,Arial,sans-serif;letter-spacing:.3px}.nav{position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;display:flex;justify-content:space-around;padding:10px;border-top:1px solid #333;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}.red{color:#fbbf24}.gold{color:#d4a017}</style>"+"<style>.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px}.gbox{background:linear-gradient(180deg,#fbbf24,#d4a017);border:1px solid #d4a017;border-radius:12px;height:84px;min-height:84px;max-height:84px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6px 2px;font-size:12px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fbbf24}.gbox b{font-size:13px}</style>"""
 N="<div class=nav><a href='/home'><div>🏠<br>Home</div></a><a href='/invest'><div>📈<br>Invest</div></a><a href='/transactions'><div>⇄<br>Transactions</div></a><a href='/referrals'><div>👥<br>Referrals</div></a><a href='/account'><div>👤<br>Account</div></a></div>"
 def hdr(): return "<div style='display:flex;justify-content:space-between;padding:12px;'><a href='/menu'>☰</a><div class=logo>⬣ CODEX</div><div><a href='/notifications'>🔔</a> <a href='/account'>👤</a></div></div>"
 
@@ -297,7 +297,35 @@ def confirm_buy(pid):
     "J1":(800000,176000,30,"CODEX J1 PLAN"),"J2":(1500000,330000,30,"CODEX J2 PLAN"),"J3":(3000000,660000,30,"CODEX J3 PLAN")}
     p_price,p_daily,p_dur,p_name=details.get(pid,(price,0,30,pid))
     p_total=p_daily*p_dur
-    return f"""<html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+    return f"""<html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+/* SHINING GOLD THEME */
+body{background:#000!important;color:#f5d67b!important}
+.card,.gbox{
+  background:#0a0a0a!important;
+  border:1px solid #fbbf24!important;
+  border-radius:14px!important;
+  box-shadow:0 0 12px rgba(251,191,36,0.55),0 0 28px rgba(251,191,36,0.18),inset 0 0 8px rgba(251,191,36,0.12)!important;
+  color:#fde68a!important;
+}
+.gbox b,.card b{
+  color:#fbbf24!important;
+  text-shadow:0 0 8px rgba(251,191,36,0.9)!important;
+  font-weight:800!important;
+}
+a{color:#fbbf24!important}
+button,.btn{
+  background:linear-gradient(180deg,#fde68a,#f59e0b)!important;
+  color:#000!important;
+  border:none!important;
+  box-shadow:0 0 15px rgba(251,191,36,0.7)!important;
+  font-weight:800!important;
+  border-radius:10px!important;
+}
+h1,h2,h3{color:#fde68a!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!important}
+.grid4 .gbox{height:88px;min-height:88px}
+</style>
+</head>
     <body style="margin:0;background:#000;color:#fff;font-family:sans-serif">
     <div style="padding:12px;display:flex;align-items:center;gap:12px"><a href="/home" style="color:#fff;text-decoration:none;font-size:22px">‹</a><div style="flex:1;text-align:center;font-weight:700;letter-spacing:1px">INVESTMENT CONFIRMATION</div><div style="width:22px"></div></div>
     <div style="margin:12px;border:1px solid #333;border-radius:16px;padding:24px;text-align:center;background:#0a0a0a">
@@ -332,7 +360,35 @@ body{{font-family:sans-serif;margin:0;background:#fff;padding-bottom:80px}}
 .row{{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:14px}}
 .row span{{color:#333}}.row b{{color:#111}}
 .btn{{position:fixed;bottom:0;left:0;right:0;background:#e11d48;color:#fff;text-align:center;padding:16px;font-weight:bold;font-size:16px;text-decoration:none}}
-</style></head><body>
+</style>
+<style>
+/* SHINING GOLD THEME */
+body{background:#000!important;color:#f5d67b!important}
+.card,.gbox{
+  background:#0a0a0a!important;
+  border:1px solid #fbbf24!important;
+  border-radius:14px!important;
+  box-shadow:0 0 12px rgba(251,191,36,0.55),0 0 28px rgba(251,191,36,0.18),inset 0 0 8px rgba(251,191,36,0.12)!important;
+  color:#fde68a!important;
+}
+.gbox b,.card b{
+  color:#fbbf24!important;
+  text-shadow:0 0 8px rgba(251,191,36,0.9)!important;
+  font-weight:800!important;
+}
+a{color:#fbbf24!important}
+button,.btn{
+  background:linear-gradient(180deg,#fde68a,#f59e0b)!important;
+  color:#000!important;
+  border:none!important;
+  box-shadow:0 0 15px rgba(251,191,36,0.7)!important;
+  font-weight:800!important;
+  border-radius:10px!important;
+}
+h1,h2,h3{color:#fde68a!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!important}
+.grid4 .gbox{height:88px;min-height:88px}
+</style>
+</head><body>
 <div class="top" style="height:210px;overflow:hidden;background:#111"><img src="/static/miner.jpg" style="width:100%;height:300px;object-fit:cover;object-position:bottom;margin-top:-80px;display:block"></div>
 <div class="card">
 <div class="name">{pid} Plan</div>
@@ -510,7 +566,35 @@ def checkin_page():
             msg="<div style='margin:12px;text-align:center;color:#f59e0b'>Already checked in.</div>"
     rem = f"new Date(new Date('{last.isoformat()}').getTime()+24*3600000)" if (last and not can) else "null"
     con.close()
-    return f"""<html><head><meta name='viewport' content='width=device-width,initial-scale=1'></head><body style='margin:0;background:#000;color:#fff;font-family:sans-serif;text-align:center'><div style='padding:14px;font-weight:800'>DAILY CHECK-IN</div>{msg}<div style='margin:20px;border:1px solid #222;border-radius:16px;padding:30px;background:#0a0a0a'><div style='font-size:60px'>📅</div><div>Reward: <b style='color:#e11d48'>UGX {CHECKIN_REWARD:,}</b></div><div id='tm' style='color:#f59e0b;font-weight:800;margin:12px;font-size:20px'></div><form method='POST'><button {"disabled" if not can else ""} style='background:{'#e11d48' if can else '#333'};color:#fff;border:0;padding:14px 40px;border-radius:10px;font-weight:800'>{"Check In Now" if can else "Checked In"}</button></form><div style='color:#666;font-size:13px'>No check-in = no reward.<br>Timer resets each check-in.</div></div><a href='/home' style='color:#e11d48'>Back</a><script>let end={rem};function tick(){{let e=document.getElementById('tm');if(!end){{e.innerText='Ready!';return;}}let d=end-new Date();if(d<=0){{e.innerText='Ready! Refresh.';return;}}let h=Math.floor(d/3600000),m=Math.floor(d%3600000/60000),s=Math.floor(d%60000/1000);e.innerText=h+'h '+m+'m '+s+'s';}}setInterval(tick,1000);tick();</script></body></html>"""
+    return f"""<html><head><meta name='viewport' content='width=device-width,initial-scale=1'>
+<style>
+/* SHINING GOLD THEME */
+body{background:#000!important;color:#f5d67b!important}
+.card,.gbox{
+  background:#0a0a0a!important;
+  border:1px solid #fbbf24!important;
+  border-radius:14px!important;
+  box-shadow:0 0 12px rgba(251,191,36,0.55),0 0 28px rgba(251,191,36,0.18),inset 0 0 8px rgba(251,191,36,0.12)!important;
+  color:#fde68a!important;
+}
+.gbox b,.card b{
+  color:#fbbf24!important;
+  text-shadow:0 0 8px rgba(251,191,36,0.9)!important;
+  font-weight:800!important;
+}
+a{color:#fbbf24!important}
+button,.btn{
+  background:linear-gradient(180deg,#fde68a,#f59e0b)!important;
+  color:#000!important;
+  border:none!important;
+  box-shadow:0 0 15px rgba(251,191,36,0.7)!important;
+  font-weight:800!important;
+  border-radius:10px!important;
+}
+h1,h2,h3{color:#fde68a!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!important}
+.grid4 .gbox{height:88px;min-height:88px}
+</style>
+</head><body style='margin:0;background:#000;color:#fff;font-family:sans-serif;text-align:center'><div style='padding:14px;font-weight:800'>DAILY CHECK-IN</div>{msg}<div style='margin:20px;border:1px solid #222;border-radius:16px;padding:30px;background:#0a0a0a'><div style='font-size:60px'>📅</div><div>Reward: <b style='color:#e11d48'>UGX {CHECKIN_REWARD:,}</b></div><div id='tm' style='color:#f59e0b;font-weight:800;margin:12px;font-size:20px'></div><form method='POST'><button {"disabled" if not can else ""} style='background:{'#e11d48' if can else '#333'};color:#fff;border:0;padding:14px 40px;border-radius:10px;font-weight:800'>{"Check In Now" if can else "Checked In"}</button></form><div style='color:#666;font-size:13px'>No check-in = no reward.<br>Timer resets each check-in.</div></div><a href='/home' style='color:#e11d48'>Back</a><script>let end={rem};function tick(){{let e=document.getElementById('tm');if(!end){{e.innerText='Ready!';return;}}let d=end-new Date();if(d<=0){{e.innerText='Ready! Refresh.';return;}}let h=Math.floor(d/3600000),m=Math.floor(d%3600000/60000),s=Math.floor(d%60000/1000);e.innerText=h+'h '+m+'m '+s+'s';}}setInterval(tick,1000);tick();</script></body></html>"""
 
 
 @app.route("/investments")
