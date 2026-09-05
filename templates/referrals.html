@@ -70,16 +70,16 @@ input{width:100%;background:#000;border:1px solid #333;color:#ffb700;padding:10p
 </div>
 
 <script>
-function copyCode(){var el=document.getElementById('rcode'); el.select(); try{document.execCommand('copy'); alert('Code copied!');}catch(e){prompt('Copy:',el.value)}}
+function copyCode(){var el=document.getElementById('rcode'); el.select(); try{document.execCommand('copy'); alert('link successfully copied');}catch(e){prompt('Copy:',el.value)}}
 function copyLink(){
   var el=document.getElementById('rlink');
   el.select(); el.setSelectionRange(0,99999);
   try{
     document.execCommand('copy');
-    alert('Copied! Open WhatsApp and paste.');
+    alert('link successfully copied');
   }catch(e){
     // fallback for mobile
-    if(navigator.clipboard){ navigator.clipboard.writeText(el.value).then(()=>alert('Copied! Open WhatsApp and paste.')); }
+    if(navigator.clipboard){ navigator.clipboard.writeText(el.value).then(()=>alert('link successfully copied')); }
     else{ prompt('Long-press to copy:', el.value); }
   }
 }
