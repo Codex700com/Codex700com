@@ -65,11 +65,17 @@ def reg():
  m=""
  if request.method=="POST":
   n=request.form["name"];p=request.form["phone"];pw=request.form["password"];cf=request.form["confirm"];inv=request.form.get("invite","")
-  if pw!=cf: m="Dear customer,ur password is invalid"
+  if pw!=cf: m="Wrong information due to passwords do not match"
   else:
    try:
-    c=db();rc=uuid.uuid4().hex[:6].upper();c.execute("INSERT INTO users(name,phone,password,invite,balance,refcode) VALUES(?,?,?,?,0,?)",(n,p,pw,inv,rc));c.commit();c.close();return redirect("/login")
-   except: m="Phone already registered"
+    c=db()
+    _ex=c.execute("SELECT id FROM users WHERE name=?",(n,)).fetchone()
+    _ex2=c.execute("SELECT id FROM users WHERE phone=?",(p,)).fetchone()
+    if _ex: c.close();m="Username already in use. Please choose another name."
+    elif _ex2: c.close();m="Wrong information due to phone already registered. Please login."
+    else:
+     rc=uuid.uuid4().hex[:6].upper();c.execute("INSERT INTO users(name,phone,password,invite,balance,refcode) VALUES(?,?,?,?,0,?)",(n,p,pw,inv,rc));c.commit();c.close();return redirect("/login")
+   except: m="Wrong information due to phone already registered"
  return S+"<div class=logo style='text-align:center;margin:20px'>👑 CODEX700</div><div class=card><h2 class=gold style='text-align:center'>REGISTER</h2>"+(f"<p>{m}</p>" if m else "")+"<form method=POST><input name=name placeholder='Enter Name' required><input name=phone placeholder='Enter Phone' required><input name=password type=password placeholder='Enter Password' required><input name=confirm type=password placeholder='Confirm Password' required><input name=invite placeholder='Invitation code'><button class=btn style='width:100%'>REGISTER</button></form><p style='text-align:center'>Have account? <a href='/login' class=gold>Login</a></p></div>"
 
 @app.route("/login",methods=["GET","POST"])
