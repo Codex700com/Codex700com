@@ -1,0 +1,53 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Support</title><style>
+body{background:#000;color:#fff;font-family:Arial;margin:0;display:flex;flex-direction:column;height:100vh}
+.top{background:#0f0f0f;padding:8px 12px;color:#ffcc00;font-weight:bold;display:flex;justify-content:space-between;align-items:center}
+.header{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #222}
+.avatar{width:48px;height:48px;background:#1e90ff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px}
+.online{color:#00ff00;font-size:12px}
+#chat{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:10px}
+.empty{color:#888;text-align:center;margin-top:40px}
+.msg{max-width:75%;padding:10px 14px;border-radius:15px;word-wrap:break-word}
+.me{align-self:flex-end;background:#1e90ff;color:#fff;border-bottom-right-radius:5px}
+.bot{align-self:flex-start;background:#1a1a1a;border:1px solid #333;border-bottom-left-radius:5px}
+.inputbar{display:flex;align-items:center;gap:8px;padding:10px;background:#000;border-top:1px solid #222}
+.icon{width:42px;height:42px;background:#1a1a1a;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid #333}
+#tin{flex:1;background:#1a1a1a;border:1px solid #333;color:#fff;padding:12px;border-radius:25px;outline:none}
+#send{width:45px;height:45px;background:#1e6fb8;border:none;border-radius:50%;color:#fff;font-size:18px;cursor:pointer}
+</style></head><body>
+<div class="top"><span>📌 How to Deposit & Withdraw</span><span>▼</span></div>
+<div class="header"><a href="/" style="color:#1e90ff;text-decoration:none;font-size:20px">←</a><div class="avatar">🎧</div><div><div style="font-weight:bold">Support</div><div class="online">Online</div></div></div>
+<div id="chat"><div class="empty" id="empty">No messages yet. Start a conversation!</div></div>
+<div class="inputbar">
+<div class="icon" onclick="alert('Attach file coming soon')">📎</div>
+<div class="icon" onclick="document.getElementById('imgIn').click()">🖼️</div>
+<div class="icon" onclick="alert('Camera coming soon')">📷</div>
+<input type="file" id="imgIn" accept="image/*" style="display:none">
+<input id="tin" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMsg()">
+<button id="send" onclick="sendMsg()">➤</button>
+</div>
+<script>
+let msgs=JSON.parse(localStorage.getItem('support_msgs')||'[]');
+function render(){
+ let c=document.getElementById('chat');c.innerHTML='';
+ if(msgs.length===0){c.innerHTML='<div class="empty">No messages yet. Start a conversation!</div>';return;}
+ msgs.forEach(m=>{
+  let d=document.createElement('div');d.className='msg '+(m.me?'me':'bot');
+  if(m.img){let im=document.createElement('img');im.src=m.img;im.style.maxWidth='200px';im.style.borderRadius='10px';d.appendChild(im);}else{d.textContent=m.text;}
+  c.appendChild(d);
+ });
+ c.scrollTop=c.scrollHeight;
+}
+function sendMsg(){
+ let inp=document.getElementById('tin');let txt=inp.value.trim();if(!txt)return;
+ msgs.push({text:txt,me:true});localStorage.setItem('support_msgs',JSON.stringify(msgs));inp.value='';render();
+ setTimeout(()=>{msgs.push({text:'Thanks for contacting support! We will reply soon. 🙏',me:false});localStorage.setItem('support_msgs',JSON.stringify(msgs));render();},800);
+}
+document.getElementById('imgIn').onchange=function(e){
+ let f=e.target.files[0];if(!f)return;let r=new FileReader();
+ r.onload=function(){msgs.push({img:r.result,me:true});localStorage.setItem('support_msgs',JSON.stringify(msgs));render();};
+ r.readAsDataURL(f);
+};
+render();
+</script>
+</body></html>

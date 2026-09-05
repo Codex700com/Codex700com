@@ -315,6 +315,11 @@ def referrals_page():
  link="https://codex700com.onrender.com/register?ref="+code
  return render_template("referrals.html",code=code,link=link,total=0,active=0,earnings=0,month_earnings=0,referrals=[],lv1=0,lv2=0,lv3=0)
 
+@app.route("/support")
+def support_page():
+ from flask import render_template
+ return render_template("support.html")
+
 if __name__ == "__main__":
     print("Starting on http://127.0.0.1:5000/")
     app.run(host="127.0.0.1", port=5000, debug=True)
