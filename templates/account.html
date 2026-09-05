@@ -60,4 +60,22 @@ document.getElementById('hide').onclick=e=>{e.preventDefault();hidden=!hidden;
  document.getElementById('inc').innerText=hidden?'****':'UGX '+(U.total_income||0).toLocaleString();
  e.target.innerText=hidden?'Show Balance 👁️':'Hide Balance 👁️';};
 load();
-</script></body></html>
+</script>
+<!-- Imran Welcome Popup -->
+<div id="imranPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;max-width:420px;width:100%;border-radius:16px;padding:24px;text-align:center;position:relative;">
+    <button onclick="document.getElementById('imranPopup').style.display='none'" style="position:absolute;top:10px;right:12px;border:none;background:none;font-size:22px;cursor:pointer;">×</button>
+    <h3 style="margin:0 0 10px;">👋 Hello, I'm Manager Imran</h3>
+    <p style="font-size:15px;line-height:1.5;">Your platform supporter. I highly welcome you to <b>Codex Company Kampala-Uganda</b>.<br><br>Codex is here to help you attain financial power and vision.<br><br><small>By Codex Management Team 3</small></p>
+    <button onclick="document.getElementById('imranPopup').style.display='none'" style="margin-top:12px;background:#16a34a;padding:10px 20px;color:#fff;border:none;border-radius:8px;cursor:pointer;">Welcome ✅</button>
+  </div>
+</div>
+<script>
+if(!sessionStorage.getItem('imranShown')){
+  setTimeout(()=>{
+    var el=document.getElementById('imranPopup');
+    if(el){ el.style.display='flex'; sessionStorage.setItem('imranShown','1'); }
+  }, 1200);
+}
+</script>
+</body></html>
