@@ -276,7 +276,36 @@ def confirm_buy(pid):
         pass
     con.execute("INSERT INTO investments (user_id, plan, amount) VALUES (?,?,?)",(uid,pid,price))
     con.commit(); con.close()
-    return f"<h2 style='font-family:sans-serif;padding:20px'>Successfully invested in {pid} for UGX {price:,}</h2><a href='/home' style='padding:10px 20px;background:#e11d48;color:#fff;text-decoration:none;border-radius:8px;margin:20px'>Back Home</a>"
+    # plan details for confirmation
+    details={"A1":(20000,3000,16,"CODEX A1 PLAN"),"A2":(100000,9000,15,"CODEX A2 PLAN"),
+    "M1":(50000,10000,30,"CODEX M1 PLAN"),"M2":(100000,20000,30,"CODEX M2 PLAN"),
+    "M3":(250000,50000,30,"CODEX M3 PLAN"),"M4":(500000,100000,30,"CODEX M4 PLAN"),
+    "M5":(1000000,200000,30,"CODEX M5 PLAN"),"M6":(2000000,400000,30,"CODEX M6 PLAN"),
+    "M7":(5000000,1000000,30,"CODEX M7 PLAN"),
+    "L1":(500000,110000,30,"CODEX L1 PLAN LOCK"),"L2":(1000000,220000,30,"CODEX L2 PLAN LOCK"),"L3":(2000000,440000,30,"CODEX L3 PLAN LOCK"),
+    "GS1":(600000,132000,30,"CODEX GS1 PLAN"),"GS2":(1200000,264000,30,"CODEX GS2 PLAN"),"GS3":(2500000,550000,30,"CODEX GS3 PLAN"),
+    "J1":(800000,176000,30,"CODEX J1 PLAN"),"J2":(1500000,330000,30,"CODEX J2 PLAN"),"J3":(3000000,660000,30,"CODEX J3 PLAN")}
+    p_price,p_daily,p_dur,p_name=details.get(pid,(price,0,30,pid))
+    p_total=p_daily*p_dur
+    return f"""<html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+    <body style="margin:0;background:#000;color:#fff;font-family:sans-serif">
+    <div style="padding:12px;display:flex;align-items:center;gap:12px"><a href="/home" style="color:#fff;text-decoration:none;font-size:22px">‹</a><div style="flex:1;text-align:center;font-weight:700;letter-spacing:1px">INVESTMENT CONFIRMATION</div><div style="width:22px"></div></div>
+    <div style="margin:12px;border:1px solid #333;border-radius:16px;padding:24px;text-align:center;background:#0a0a0a">
+    <div style="font-size:80px;color:#22c55e;border:4px solid #22c55e;width:110px;height:110px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto">✓</div>
+    <div style="color:#22c55e;font-weight:800;font-size:22px;margin-top:16px">INVESTMENT SUBMITTED!</div>
+    <div style="color:#ccc;margin-top:8px">Your investment has been successfully submitted.</div>
+    <div style="margin-top:20px;background:#111;border:1px solid #222;border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center;text-align:left">
+    <div style="width:90px;height:70px;background:#222;border-radius:8px;display:flex;align-items:center;justify-content:center">⛏️</div>
+    <div><div style="color:#e11d48;font-weight:800">{p_name} 🔒</div><div style="color:#aaa;font-size:13px">High Performance Mining Machine</div></div>
+    </div>
+    <div style="margin-top:16px;background:#111;border:1px solid #222;border-radius:12px;padding:6px 16px;text-align:left">
+    <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #222"><span>💰 Investment Amount</span><b style="color:#e11d48">UGX {p_price:,}</b></div>
+    <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #222"><span>📈 Daily Return</span><b style="color:#e11d48">UGX {p_daily:,}</b></div>
+    <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #222"><span>📅 Duration</span><b style="color:#e11d48">{p_dur} Days</b></div>
+    <div style="display:flex;justify-content:space-between;padding:12px 0"><span>◑ Total Return</span><b style="color:#e11d48">UGX {p_total:,}</b></div>
+    </div>
+    <a href="/home" style="display:block;margin-top:20px;background:#e11d48;color:#fff;padding:14px;border-radius:10px;text-decoration:none;font-weight:700">Back Home</a>
+    </div></body></html>"""
 
 @app.route("/buy/<pid>")
 def buy_detail(pid):
