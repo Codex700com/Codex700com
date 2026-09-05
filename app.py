@@ -470,6 +470,38 @@ def api_chat():
         return jsonify({"ok":True})
     return json.load(open(CHAT_FILE))
 
-if __name__ == "__main__":
+
+CHECKIN_REWARD=500
+def ensure_daily_checkin(con):
+    con.execute("CREATE TABLE IF NOT EXISTS daily_checkin (user_id INTEGER PRIMARY KEY, last_check TEXT)")
+    con.commit()
+
+@app.route("/checkin", methods=["GET","POST"])
+def checkin_page():
+    from datetime import datetime, timedelta
+    uid=session.get("uid")
+    if not uid: return redirect("/login")
+    con=db(); ensure_daily_checkin(con)
+    row=con.execute("SELECT last_check FROM daily_checkin WHERE user_id=?",(uid,)).fetchone()
+    now=datetime.utcnow()
+    last=None
+    if row and row[0]:
+        try: last=datetime.fromisoformat(row[0])
+        except: pass
+    can = (last is None) or (now-last>=timedelta(hours=24))
+    msg=""
+    if request.method=="POST":
+        if can:
+            con.execute("INSERT OR REPLACE INTO daily_checkin (user_id,last_check) VALUES (?,?)",(uid,now.isoformat()))
+            con.execute("UPDATE users SET balance=balance+? WHERE id=?",(CHECKIN_REWARD,uid))
+            con.commit(); last=now; can=False
+            msg=f"<div style='background:#052e16;border:1px solid #16a34a;color:#22c55e;padding:12px;border-radius:10px;margin:12px;text-align:center;font-weight:700'>Successfully checked in! UGX {CHECKIN_REWARD:,} added.</div>"
+        else:
+            msg="<div style='margin:12px;text-align:center;color:#f59e0b'>Already checked in.</div>"
+    rem = f"new Date(new Date('{last.isoformat()}').getTime()+24*3600000)" if (last and not can) else "null"
+    con.close()
+    return f"""<html><head><meta name='viewport' content='width=device-width,initial-scale=1'></head><body style='margin:0;background:#000;color:#fff;font-family:sans-serif;text-align:center'><div style='padding:14px;font-weight:800'>DAILY CHECK-IN</div>{msg}<div style='margin:20px;border:1px solid #222;border-radius:16px;padding:30px;background:#0a0a0a'><div style='font-size:60px'>📅</div><div>Reward: <b style='color:#e11d48'>UGX {CHECKIN_REWARD:,}</b></div><div id='tm' style='color:#f59e0b;font-weight:800;margin:12px;font-size:20px'></div><form method='POST'><button {"disabled" if not can else ""} style='background:{'#e11d48' if can else '#333'};color:#fff;border:0;padding:14px 40px;border-radius:10px;font-weight:800'>{"Check In Now" if can else "Checked In"}</button></form><div style='color:#666;font-size:13px'>No check-in = no reward.<br>Timer resets each check-in.</div></div><a href='/home' style='color:#e11d48'>Back</a><script>let end={rem};function tick(){{let e=document.getElementById('tm');if(!end){{e.innerText='Ready!';return;}}let d=end-new Date();if(d<=0){{e.innerText='Ready! Refresh.';return;}}let h=Math.floor(d/3600000),m=Math.floor(d%3600000/60000),s=Math.floor(d%60000/1000);e.innerText=h+'h '+m+'m '+s+'s';}}setInterval(tick,1000);tick();</script></body></html>"""
+
+if __name__=="__main__":
     print("Starting on http://127.0.0.1:5000/")
     app.run(host="127.0.0.1", port=5000, debug=True)
