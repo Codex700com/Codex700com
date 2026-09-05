@@ -1,24 +1,61 @@
-<!DOCTYPE html>
-<html><head><meta name="viewport" content="width=device-width, initial-scale=1">
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-body{background:#0a0a0a;color:#fff;font-family:Arial;margin:0;padding:10px}
-.balance-box{border:1px solid #ffcc00;border-radius:12px;padding:12px;display:flex;justify-content:space-between}
-.balance-amt{color:red;font-size:22px;font-weight:bold}
-.section-title{color:#ffcc00;font-weight:bold;margin:15px 0 8px}
-input{width:95%;background:#1a1a1a;border:1px solid #333;color:#fff;padding:12px;border-radius:8px;margin:5px 0}
-.pay-methods{display:flex;gap:10px}
-.pay{flex:1;border:1px solid #ffcc00;border-radius:8px;padding:10px;text-align:center;background:#1a1a1a}
-.summary{background:#111;border-radius:8px;padding:12px}
-.row{display:flex;justify-content:space-between;padding:4px 0}
-.confirm{background:red;color:#fff;border:0;width:100%;padding:14px;border-radius:8px;font-weight:bold;margin-top:12px}
-.important{border:1px solid red;border-radius:8px;padding:10px;margin-top:12px;font-size:13px}
+body{background:#0a0a0a;color:#fff;font-family:sans-serif;margin:0;padding:12px;padding-bottom:80px}
+.card{border:1px solid #c9a400;border-radius:12px;padding:12px;margin:10px 0;background:#111}
+.gold{color:#ffcc00;font-weight:bold}.red{color:red;font-weight:bold}
+input{width:100%;padding:12px;border-radius:8px;border:1px solid #333;background:#1a1a1a;color:#fff;margin:6px 0}
+.pay{display:flex;gap:10px}.pay div{flex:1;border:1px solid #333;border-radius:10px;padding:10px;text-align:center;cursor:pointer}
+.pay .active{border-color:#ffcc00}
+button{background:#e60000;color:#fff;width:100%;padding:14px;border:none;border-radius:10px;font-weight:bold;margin-top:12px}
+.summary{background:#151515;border-radius:10px;padding:12px}
+.row{display:flex;justify-content:space-between;margin:6px 0}
+#important{border:1px solid red;border-radius:10px;padding:10px;margin:10px 0}
 </style></head><body>
-<div style="text-align:center;font-weight:bold">WITHDRAW</div>
-<div class="balance-box"><div><div style="font-size:13px">Available Balance</div><div class="balance-amt">UGX 3,068,000</div></div><div>👁️</div></div>
-<div class="section-title">WITHDRAWAL DETAILS</div>
-<input id="amt" placeholder="Enter amount to withdraw" oninput="document.getElementById('s_amt').innerText='UGX '+Number(this.value||0).toLocaleString();document.getElementById('s_rec').innerText='UGX '+Number(this.value||0).toLocaleString()">
-<div class="section-title">WITHDRAWAL SUMMARY</div>
-<div class="summary"><div class="row"><span>Withdrawal Amount</span><span id="s_amt">UGX 0</span></div><div class="row"><b>You Will Receive</b><b id="s_rec" style="color:red">UGX 0</b></div></div>
-<div class="important"><b style="color:red">IMPORTANT</b><br>• Make sure your mobile money number is correct.<br>• Withdrawals are processed within 1-24 hours.</div>
-<button class="confirm">CONFIRM WITHDRAWAL</button>
+<h3 style="text-align:center">WITHDRAW</h3>
+<div class="card"><div>Available Balance</div><div class="red" style="font-size:22px">UGX {{ "{:,}".format(balance|default(0)) }}</div></div>
+
+<div class="gold">WITHDRAWAL DETAILS</div>
+<label>Withdrawal Amount (UGX)</label>
+<input id="amt" type="number" placeholder="Enter amount to withdraw" oninput="calc()">
+<div style="font-size:12px">Minimum: <span class="red">UGX 10,000</span> | Maximum: <span class="red">UGX 10,000,000</span></div>
+
+<label>Payment Method</label>
+<div class="pay"><div class="active" id="airtel">Airtel Money</div><div id="mtn">MTN Mobile Money</div></div>
+
+<label>Mobile Number</label><input id="phone" placeholder="Enter mobile number (07xxxxxxx)">
+<label>Account Name</label><input id="name" placeholder="Enter account name">
+
+<div class="gold" style="margin-top:12px">WITHDRAWAL SUMMARY</div>
+<div class="summary">
+<div class="row"><span>Withdrawal Amount</span><span id="s_amt">UGX 0</span></div>
+<div class="row"><span>Withdrawal Fee (9.7%)</span><span id="s_fee">UGX 0</span></div>
+<div class="row"><b>You Will Receive</b><b class="red" id="s_net">UGX 0</b></div>
+</div>
+
+<div id="important"><b class="red">IMPORTANT</b><br>• Make sure your mobile money number is correct.<br>• Withdrawals are processed within 1-24 hours.<br>• You will be notified once your withdrawal is approved.</div>
+
+<button onclick="submitW()">CONFIRM WITHDRAWAL</button>
+<div id="msg" style="margin-top:10px;text-align:center"></div>
+
+<script>
+let bal = {{ balance|default(0) }};
+function calc(){
+ let a = parseInt(document.getElementById('amt').value||0);
+ let fee = Math.round(a*0.097);
+ let net = a-fee;
+ document.getElementById('s_amt').innerText='UGX '+a.toLocaleString();
+ document.getElementById('s_fee').innerText='UGX '+fee.toLocaleString();
+ document.getElementById('s_net').innerText='UGX '+net.toLocaleString();
+}
+function submitW(){
+ let a = parseInt(document.getElementById('amt').value||0);
+ let m = document.getElementById('msg');
+ if(a < 10000){ m.innerHTML='<span class="red">Please WITHDRAWAL the minimum required amount</span>'; return; }
+ if(a > bal){ m.innerHTML='<span class="red">Insufficient balance</span>'; return; }
+ m.innerHTML='<span class="gold">withdrawal submit successful, please wait for review</span>';
+ fetch('/api/withdraw',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:a,phone:document.getElementById("phone").value,name:document.getElementById("name").value})});
+}
+document.getElementById('airtel').onclick=e=>{document.getElementById('airtel').classList.add('active');document.getElementById('mtn').classList.remove('active')};
+document.getElementById('mtn').onclick=e=>{document.getElementById('mtn').classList.add('active');document.getElementById('airtel').classList.remove('active')};
+</script>
 </body></html>
