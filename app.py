@@ -967,6 +967,59 @@ def admin2():
  <a href='/admin/activity'>Activity Log</a> | <a href='/admin'>Old Admin</a>
  <style>body{{font-family:sans-serif;background:#0d1117;color:#fff;padding:20px}} a{{color:#58a6ff}}</style>
  """
+\n
+# --- PUSH2 ---
+@app.route("/admin/plans", methods=["GET","POST"])
+def adm_plans():
+ from flask import session, request, redirect; import sqlite3
+ if str(session.get("uid"))!="1": return "Not admin",403
+ con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
+ con.execute("CREATE TABLE IF NOT EXISTS plans (id INTEGER PRIMARY KEY, name TEXT, min_amt INT, max_amt INT, duration INT, rate REAL, active INT DEFAULT 1)")
+ if request.method=="POST":
+  con.execute("INSERT INTO plans (name,min_amt,max_amt,duration,rate) VALUES (?,?,?,?,?)",
+   (request.form.get("name"),request.form.get("min"),request.form.get("max"),request.form.get("dur"),request.form.get("rate")))
+  con.commit()
+ plans=list(con.execute("SELECT * FROM plans ORDER BY id DESC")); con.close()
+ rows="".join([f"<tr><td>{x['id']}</td><td>{x['name']}</td><td>{x['min_amt']}-{x['max_amt']}</td><td>{x['duration']}d {x['rate']}%</td><td>{'ON' if x['active'] else 'OFF'}</td><td><a href='/admin/plan_toggle/{x['id']}'>Toggle</a> | <a href='/admin/plan_del/{x['id']}'>Del</a></td></tr>" for x in plans])
+ return f"<h2>Investment Plans</h2><form method=post><input name=name placeholder='Name' required> <input name=min placeholder='Min' type=number required> <input name=max placeholder='Max' type=number required> <input name=dur placeholder='Days' type=number required> <input name=rate placeholder='Rate%' type=number step=0.1 required> <button>Create</button></form><table border=1><tr><th>ID</th><th>Name</th><th>Range</th><th>Term</th><th>Active</th><th>Act</th></tr>{rows}</table><a href='/admin2'>back</a><style>body{{font-family:sans-serif;padding:20px}}input{{padding:5px;margin:2px}}</style>"
+
+@app.route("/admin/plan_toggle/<int:pid>")
+def plan_toggle(pid):
+ from flask import session, redirect; import sqlite3
+ if str(session.get("uid"))!="1": return "Not admin",403
+ con=sqlite3.connect("codex700.db"); con.execute("UPDATE plans SET active = 1-active WHERE id=?",(pid,)); con.commit(); con.close()
+ return redirect("/admin/plans")
+
+@app.route("/admin/plan_del/<int:pid>")
+def plan_del(pid):
+ from flask import session, redirect; import sqlite3
+ if str(session.get("uid"))!="1": return "Not admin",403
+ con=sqlite3.connect("codex700.db"); con.execute("DELETE FROM plans WHERE id=?",(pid,)); con.commit(); con.close()
+ return redirect("/admin/plans")
+
+@app.route("/admin/bonus", methods=["GET","POST"])
+def adm_bonus():
+ from flask import session, request; import sqlite3
+ if str(session.get("uid"))!="1": return "Not admin",403
+ msg=""
+ if request.method=="POST":
+  uid=request.form.get("uid"); amt=request.form.get("amt","0")
+  con=sqlite3.connect("codex700.db")
+  con.execute("UPDATE users SET balance=balance+? WHERE id=?",(int(float(amt)),uid))
+  con.commit(); con.close(); msg=f"Credited {amt} to user {uid}"
+ return f"<h2>Manual Bonus / Rewards</h2><p>{msg}</p><form method=post><input name=uid placeholder='User ID' required> <input name=amt placeholder='Amount' type=number required> <input name=reason placeholder='Reason (daily check-in, referral, promo)'> <button>Credit</button></form><a href='/admin2'>back</a>"
+
+@app.route("/admin/referrals")
+def adm_ref():
+ from flask import session; import sqlite3
+ if str(session.get("uid"))!="1": return "Not admin",403
+ con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
+ try: rows=list(con.execute("SELECT id,name,phone,referred_by FROM users WHERE referred_by IS NOT NULL AND referred_by!='' ORDER BY id DESC LIMIT 100"))
+ except: rows=list(con.execute("SELECT id,name,phone FROM users LIMIT 20"))
+ con.close()
+ r="".join([f"<tr><td>{x['id']}</td><td>{x['name']}</td><td>{x['phone']}</td><td>{x['referred_by'] if 'referred_by' in x.keys() else '-'}</td></tr>" for x in rows])
+ return f"<h2>Referrals (L1)</h2><p>Top referrers query coming in Push3</p><table border=1><tr><th>User</th><th>Name</th><th>Phone</th><th>Referred By</th></tr>{r}</table><a href='/admin2'>back</a>"
+# --- END PUSH2 ---
 \nif __name__=="__main__":
     print("Starting on http://127.0.0.1:5000/")
     app.run(host="127.0.0.1", port=5000, debug=True)
