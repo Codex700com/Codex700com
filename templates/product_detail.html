@@ -1,28 +1,36 @@
 <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>body{background:#0a0a0a;color:#fff;font-family:Arial;margin:0;padding-bottom:80px}.top{padding:14px;text-align:center;font-weight:700;position:relative}.back{position:absolute;left:14px;color:#00aaff;text-decoration:none;font-size:20px}.hero{height:220px;background:#111}.hero img{width:100%;height:100%;object-fit:cover}.info{padding:16px}.box{background:#151515;border-radius:10px;margin:10px 0;padding:5px 14px}.line{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #222}.btn{position:fixed;bottom:0;left:0;right:0;padding:14px;background:#0a0a0a}.btn button{width:100%;padding:15px;background:#00aaff;border:none;border-radius:10px;color:#fff;font-weight:700;font-size:17px}</style></head><body>
+<style>
+body{background:#0a0a0a;color:#fff;font-family:Arial;margin:0;padding-bottom:80px;overflow-x:hidden}
+.top{padding:14px;text-align:center;font-weight:700;position:relative;background:#0a0a0a;z-index:2}
+.back{position:absolute;left:14px;color:#00aaff;text-decoration:none;font-size:20px}
+.hero{height:220px;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.hero img{width:100%;height:100%;object-fit:cover}
+.info{padding:16px}
+.box{background:#151515;border-radius:10px;margin:10px 0;padding:5px 14px}
+.line{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #222}
+.btn{position:fixed;bottom:0;left:0;right:0;padding:14px;background:#0a0a0a}
+.btn button{width:100%;padding:15px;background:#00aaff;border:none;border-radius:10px;color:#fff;font-weight:700;font-size:17px}
+/* hide any related / carousel */
+.related,.carousel,.slider,.others,.list{display:none!important}
+</style></head><body>
 <div class="top"><a class="back" href="/invest">←</a><span id="t1"></span></div>
 <div class="hero"><img src="/static/miner.jpg"></div>
 <div class="info"><div style="display:flex;justify-content:space-between"><h2 id="t2"></h2><div style="text-align:right"><div id="price" style="color:#00aaff;font-weight:800;font-size:20px"></div><div id="roi" style="color:#aaa;font-size:12px"></div></div></div>
 <p style="color:#aaa;font-size:14px;margin:10px 0">After the cycle is over, you can collect all the income from this machine.</p>
 <div class="box"><div class="line"><span style="color:#aaa">Lock period</span><b id="days"></b></div><div class="line"><span style="color:#aaa">Daily income</span><b id="daily"></b></div><div class="line"><span style="color:#aaa">Total income</span><b id="total"></b></div></div>
-<div class="box"><div class="line"><span style="color:#aaa">Min quantity</span><b>1</b></div><div class="line"><span style="color:#aaa">Max quantity</span><b>10</b></div><div class="line"><span style="color:#aaa">Raffle tickets</span><b>0</b></div></div>
-<div class="box"><div class="line"><span style="color:#aaa">Category</span><b id="cat"></b></div><div class="line"><span style="color:#aaa">Sale status</span><b>Open</b></div><div class="line"><span style="color:#aaa">VIP required</span><b>No</b></div></div>
+<div class="box"><div class="line"><span style="color:#aaa">Min quantity</span><b>1</b></div><div class="line"><span style="color:#aaa">Max quantity</span><b>10</b></div></div>
 </div><div class="btn"><button id="buyBtn">Invest Now</button></div>
 <script>
 const D={A:[["A1",20000,3000,16],["A2",100000,9000,15]],M:[["M1",50000,10000],["M2",100000,20000],["M3",250000,50000],["M4",500000,100000],["M5",1000000,200000],["M6",2000000,400000],["M7",5000000,1000000]],L:[["L1",500000,110000],["L2",1000000,220000],["L3",2000000,440000]],GS:[["GS1",600000,132000],["GS2",1200000,264000],["GS3",2500000,550000]],J:[["J1",800000,176000],["J2",1500000,330000],["J3",3000000,660000]]};
-let p=new URLSearchParams(location.search).get('p')||'M1';
-let found=null,cat='';
-for(let k in D){D[k].forEach(x=>{if(x[0]==p){found=x;cat=k+' series'}})}
-if(!found)document.body.innerHTML='Not found';
-else{
+let p=new URLSearchParams(location.search).get('p')||'A2';
+let found=null;
+for(let k in D){D[k].forEach(x=>{if(x[0]==p)found=x})}
 let dur=found[3]||30;
 document.getElementById('t1').textContent=p;document.getElementById('t2').textContent=p;
 document.getElementById('price').textContent='UGX '+found[1].toLocaleString();
-document.getElementById('roi').textContent='ROI: '+Math.round(found[2]*dur/found[1]*100)+'%',
+document.getElementById('roi').textContent='ROI: '+Math.round(found[2]*dur/found[1]*100)+'%';
 document.getElementById('days').textContent=dur+' Days';
 document.getElementById('daily').textContent='UGX '+found[2].toLocaleString();
 document.getElementById('total').textContent='UGX '+(found[2]*dur).toLocaleString();
-document.getElementById('cat').textContent=cat;
 document.getElementById('buyBtn').onclick=()=>location.href='/buy/'+p;
-}
 </script></body></html>
