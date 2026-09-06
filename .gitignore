@@ -1,1 +1,3 @@
 __pycache__/\n*.log\n*.bak\n*.bak2\ncookies.txt
+__pycache__/
+*.pyc
