@@ -488,8 +488,10 @@ if(found){{
 
 @app.route("/product")
 def product_page():
-    from flask import render_template
-    return render_template("product_detail.html")
+    from flask import render_template, request
+    plan=request.args.get("p","A2")
+    img="miner_k.jpg" if plan.startswith("K") else "miner.jpg"
+    return render_template("product_detail.html", plan=plan, img=img)
 
 @app.route("/invest")
 def invest_page_auto():
