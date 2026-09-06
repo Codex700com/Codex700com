@@ -908,7 +908,7 @@ def deposit_submit():
 
 
 @app.route("/deposit-submit", methods=["POST"])
-def deposit_submit():
+def deposit_submit_2():
  import sqlite3, os, time
  from flask import request, session, jsonify
  uid=session.get("uid")
