@@ -321,12 +321,12 @@ def confirm_buy(pid):
     import sqlite3
     uid=str(session.get("uid") or session.get("uid") or "guest")
     # price map
-    prices={"A1":20000,"A2":100000,"M1":50000,"M2":100000,"M3":250000,"M4":500000,"M5":1000000,"M6":2000000,"M7":5000000,"L1":500000,"L2":1000000,"L3":2000000,"GS1":600000,"GS2":1200000,"GS3":2500000,"J1":800000,"J2":1500000,"J3":3000000}
+    prices={"A1":20000,"A2":100000,"M1":50000,"M2":100000,"M3":250000,"M4":500000,"M5":1000000,"M6":2000000,"M7":5000000,"L1":500000,"L2":1000000,"L3":2000000,"GS1":600000,"GS2":1200000,"GS3":2500000,"J1":800000,"J2":1500000,"J3":3000000,"K1":1000000,"K2":5000000}
     price=prices.get(pid,0)
     con=sqlite3.connect("codex700.db")
     con.execute("CREATE TABLE IF NOT EXISTS investments (user_id TEXT, plan TEXT, amount INTEGER, ts DATETIME DEFAULT CURRENT_TIMESTAMP)")
     # plan purchase limits
-    limits={"A1":2,"A2":2,"M1":1,"M2":1,"M3":1,"M4":1,"M5":1,"M6":4,"M7":4}
+    limits={"A1":2,"A2":2,"M1":1,"M2":1,"M3":1,"M4":1,"M5":1,"M6":4,"M7":4,"K1":10,"K2":10}
     cur_cnt=con.execute("SELECT COUNT(*) FROM investments WHERE user_id=? AND plan=?",(uid,pid)).fetchone()[0]
     max_allowed=limits.get(pid, 999)
     if cur_cnt>=max_allowed:
@@ -358,7 +358,7 @@ def confirm_buy(pid):
     "M7":(5000000,1000000,30,"CODEX M7 PLAN"),
     "L1":(500000,110000,30,"CODEX L1 PLAN LOCK"),"L2":(1000000,220000,30,"CODEX L2 PLAN LOCK"),"L3":(2000000,440000,30,"CODEX L3 PLAN LOCK"),
     "GS1":(600000,132000,30,"CODEX GS1 PLAN"),"GS2":(1200000,264000,30,"CODEX GS2 PLAN"),"GS3":(2500000,550000,30,"CODEX GS3 PLAN"),
-    "J1":(800000,176000,30,"CODEX J1 PLAN"),"J2":(1500000,330000,30,"CODEX J2 PLAN"),"J3":(3000000,660000,30,"CODEX J3 PLAN")}
+    "J1":(800000,176000,30,"CODEX J1 PLAN"),"J2":(1500000,330000,30,"CODEX J2 PLAN"),"K1":(1000000,500000,3,"CODEX K1 PLAN"),"K2":(5000000,2500000,3,"CODEX K2 PLAN"),"J3":(3000000,660000,30,"CODEX J3 PLAN")}
     p_price,p_daily,p_dur,p_name=details.get(pid,(price,0,30,pid))
     p_total=p_daily*p_dur
     return f"""<html><head><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -462,7 +462,7 @@ h1,h2,h3{color:#ffffff!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!impor
 </div>
 <a class="btn" id="buybtn" href="#">Invest Now</a>
 <script>
-const D={{"A":[["A1",20000,3000,16],["A2",100000,9000,15]],"M":[["M1",50000,10000],["M2",100000,20000],["M3",250000,50000],["M4",500000,100000],["M5",1000000,200000],["M6",2000000,400000],["M7",5000000,1000000]],"L":[["L1",500000,110000],["L2",1000000,220000],["L3",2000000,440000]],"GS":[["GS1",600000,132000],["GS2",1200000,264000],["GS3",2500000,550000]],"J":[["J1",800000,176000],["J2",1500000,330000],["J3",3000000,660000]]}};
+const D={{"A":[["A1",20000,3000,16],["A2",100000,9000,15]],"M":[["M1",50000,10000],["M2",100000,20000],["M3",250000,50000],["M4",500000,100000],["M5",1000000,200000],["M6",2000000,400000],["M7",5000000,1000000]],"L":[["L1",500000,110000],["L2",1000000,220000],["L3",2000000,440000]],"GS":[["GS1",600000,132000],["GS2",1200000,264000],["GS3",2500000,550000]],"J":[["J1",800000,176000],["J2",1500000,330000],["J3",3000000,660000]],"K":[["K1",1000000,500000],["K2",5000000,2500000]]}};
 let pid="{pid}";
 let found=null,cat="";
 for(let k in D){{ D[k].forEach(x=>{{ if(x[0]==pid){{found=x;cat=k}} }}) }}
