@@ -651,12 +651,12 @@ def checkin_page():
     con.close()
     return f"""<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
     <style>
-    body{margin:0;background:#020a24;color:#fff;font-family:Inter,system-ui,Arial;padding-bottom:90px}
-    .top{display:flex;align-items:center;justify-content:space-between;padding:12px}
-    .banner{margin:10px;border-radius:18px;padding:20px;background:linear-gradient(135deg,#0a2a9a,#020a24);border:1px solid #1e90ff55;position:relative;overflow:hidden}
-    .card{margin:10px;border:1px solid #1e90ff44;border-radius:14px;padding:12px;background:#041338}
-    .bottom{position:fixed;bottom:0;left:0;right:0;display:flex;background:#020a24;border-top:1px solid #1e90ff33;padding:8px}
-    .bottom a{flex:1;text-align:center;color:#88aaff;text-decoration:none;font-size:12px}
+    body{{margin:0;background:#020a24;color:#fff;font-family:Inter,system-ui,Arial;padding-bottom:90px}}
+    .top{{display:flex;align-items:center;justify-content:space-between;padding:12px}}
+    .banner{{margin:10px;border-radius:18px;padding:20px;background:linear-gradient(135deg,#0a2a9a,#020a24);border:1px solid #1e90ff55;position:relative;overflow:hidden}}
+    .card{{margin:10px;border:1px solid #1e90ff44;border-radius:14px;padding:12px;background:#041338}}
+    .bottom{{position:fixed;bottom:0;left:0;right:0;display:flex;background:#020a24;border-top:1px solid #1e90ff33;padding:8px}}
+    .bottom a{{flex:1;text-align:center;color:#88aaff;text-decoration:none;font-size:12px}}
     </style></head><body>
     <div class="top"><a href="/home" style="color:#fff;font-size:26px;text-decoration:none">←</a>
     <div style="text-align:center"><b style="font-size:24px;color:#00cfff">👑 CODEX</b><div style="font-size:9px;letter-spacing:3px;color:#88aaff">INVEST • GROW • WIN</div></div><div>🔔 👤</div></div>
