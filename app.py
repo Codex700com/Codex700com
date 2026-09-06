@@ -765,3 +765,38 @@ def deposit_submit():
 # --- ADMIN PANEL Deep Blue / White ---
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
+@app.route("/raffle-buy", methods=["POST"])
+def raffle_buy():
+    from flask import request, jsonify, session
+    import sqlite3, datetime
+    data = request.get_json(force=True)
+    qty = max(1, int(data.get("qty",1)))
+    uid = str(session.get("uid") or session.get("user_id") or 1)
+    con = sqlite3.connect("codex.db")
+    con.execute("CREATE TABLE IF NOT EXISTS rtickets (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, qty INT, date TEXT)")
+    for _ in range(qty):
+        con.execute("INSERT INTO rtickets (user_id,qty,date) VALUES (?,?,?)", (uid,1,datetime.datetime.now().isoformat()))
+    con.commit()
+    total = con.execute("SELECT COUNT(*) FROM rtickets WHERE user_id=?", (uid,)).fetchone()[0]
+    con.close()
+    return jsonify(ok=True, msg=f"Purchased {qty} ticket(s)!", total=total)
+
+@app.route("/raffle-my")
+def raffle_my():
+    from flask import jsonify, session
+    import sqlite3
+    uid=str(session.get("uid") or session.get("user_id") or 1)
+    con=sqlite3.connect("codex.db")
+    con.execute("CREATE TABLE IF NOT EXISTS rtickets (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, qty INT, date TEXT)")
+    total=con.execute("SELECT COUNT(*) FROM rtickets WHERE user_id=?", (uid,)).fetchone()[0]
+    con.close()
+    return jsonify(total=total)
+
+@app.route("/raffle-winners")
+def raffle_winners():
+    from flask import jsonify
+    return jsonify([["Lucky256","iPhone 14","15 Aug 2026"],["Bright001","$500 Cash","01 Aug 2026"]])
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
