@@ -362,15 +362,15 @@ h1,h2,h3{color:#ffffff!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!impor
     <div style="color:#ccc;margin-top:8px">Your investment has been successfully submitted.</div>
     <div style="margin-top:20px;background:#111;border:1px solid #222;border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center;text-align:left">
     <div style="width:90px;height:70px;background:#222;border-radius:8px;display:flex;align-items:center;justify-content:center">⛏️</div>
-    <div><div style="color:#e11d48;font-weight:800">{p_name} 🔒</div><div style="color:#aaa;font-size:13px">High Performance Mining Machine</div></div>
+    <div><div style="color:#1da1f2;font-weight:800">{p_name} 🔒</div><div style="color:#aaa;font-size:13px">High Performance Mining Machine</div></div>
     </div>
     <div style="margin-top:16px;background:#111;border:1px solid #222;border-radius:12px;padding:6px 16px;text-align:left">
-    <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #222"><span>💰 Investment Amount</span><b style="color:#e11d48">UGX {p_price:,}</b></div>
-    <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #222"><span>📈 Daily Return</span><b style="color:#e11d48">UGX {p_daily:,}</b></div>
-    <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #222"><span>📅 Duration</span><b style="color:#e11d48">{p_dur} Days</b></div>
-    <div style="display:flex;justify-content:space-between;padding:12px 0"><span>◑ Total Return</span><b style="color:#e11d48">UGX {p_total:,}</b></div>
+    <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #222"><span>💰 Investment Amount</span><b style="color:#1da1f2">UGX {p_price:,}</b></div>
+    <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #222"><span>📈 Daily Return</span><b style="color:#1da1f2">UGX {p_daily:,}</b></div>
+    <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #222"><span>📅 Duration</span><b style="color:#1da1f2">{p_dur} Days</b></div>
+    <div style="display:flex;justify-content:space-between;padding:12px 0"><span>◑ Total Return</span><b style="color:#1da1f2">UGX {p_total:,}</b></div>
     </div>
-    <a href="/home" style="display:block;margin-top:20px;background:#e11d48;color:#fff;padding:14px;border-radius:10px;text-decoration:none;font-weight:700">Back Home</a>
+    <a href="/home" style="display:block;margin-top:20px;background:#1da1f2;color:#fff;padding:14px;border-radius:10px;text-decoration:none;font-weight:700">Back Home</a>
     </div></body></html>"""
 
 @app.route("/buy/<pid>")
@@ -381,13 +381,13 @@ def buy_detail(pid):
 body{{font-family:sans-serif;margin:0;background:#fff;padding-bottom:80px}}
 .top img{{width:100%;height:280px;object-fit:cover}}
 .card{{padding:15px}}
-.price{{color:#e11d48;font-size:22px;font-weight:bold}}
+.price{{color:#1da1f2;font-size:22px;font-weight:bold}}
 .name{{font-size:18px;font-weight:bold;margin:5px 0}}
 .meta{{display:flex;justify-content:space-between;color:#666;font-size:13px;margin:10px 0}}
 .box{{background:#f8f8f8;border-radius:10px;padding:12px;margin-top:10px}}
 .row{{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:14px}}
 .row span{{color:#333}}.row b{{color:#111}}
-.btn{{position:fixed;bottom:0;left:0;right:0;background:#e11d48;color:#fff;text-align:center;padding:16px;font-weight:bold;font-size:16px;text-decoration:none}}
+.btn{{position:fixed;bottom:0;left:0;right:0;background:#1da1f2;color:#fff;text-align:center;padding:16px;font-weight:bold;font-size:16px;text-decoration:none}}
 </style>
 <style>
 /* SHINING GOLD THEME */
@@ -421,7 +421,7 @@ h1,h2,h3{color:#ffffff!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!impor
 <div class="card">
 <div class="name">{pid} Plan</div>
 <div class="price" id="price">UGX...</div>
-<div class="meta"><span>ROI <b id="roi" style="color:#e11d48"></b></span><span>Sold <b>78%</b></span></div>
+<div class="meta"><span>ROI <b id="roi" style="color:#1da1f2"></b></span><span>Sold <b>78%</b></span></div>
 <div class="box" id="details"></div>
 </div>
 <a class="btn" id="buybtn" href="#">Invest Now</a>
@@ -622,7 +622,7 @@ button,.btn{
 h1,h2,h3{color:#ffffff!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!important}
 .grid4 .gbox{height:88px;min-height:88px}
 </style>
-</head><body style='margin:0;background:#000;color:#fff;font-family:sans-serif;text-align:center'><div style='padding:14px;font-weight:800'>DAILY CHECK-IN</div>{msg}<div style='margin:20px;border:1px solid #222;border-radius:16px;padding:30px;background:#0a0a0a'><div style='font-size:60px'>📅</div><div>Reward: <b style='color:#e11d48'>UGX {CHECKIN_REWARD:,}</b></div><div id='tm' style='color:#1da1f2;font-weight:800;margin:12px;font-size:20px'></div><form method='POST'><button {"disabled" if not can else ""} style='background:{'#e11d48' if can else '#333'};color:#fff;border:0;padding:14px 40px;border-radius:10px;font-weight:800'>{"Check In Now" if can else "Checked In"}</button></form><div style='color:#666;font-size:13px'>No check-in = no reward.<br>Timer resets each check-in.</div></div><a href='/home' style='color:#e11d48'>Back</a><script>let end={rem};function tick(){{let e=document.getElementById('tm');if(!end){{e.innerText='Ready!';return;}}let d=end-new Date();if(d<=0){{e.innerText='Ready! Refresh.';return;}}let h=Math.floor(d/3600000),m=Math.floor(d%3600000/60000),s=Math.floor(d%60000/1000);e.innerText=h+'h '+m+'m '+s+'s';}}setInterval(tick,1000);tick();</script></body></html>"""
+</head><body style='margin:0;background:#000;color:#fff;font-family:sans-serif;text-align:center'><div style='padding:14px;font-weight:800'>DAILY CHECK-IN</div>{msg}<div style='margin:20px;border:1px solid #222;border-radius:16px;padding:30px;background:#0a0a0a'><div style='font-size:60px'>📅</div><div>Reward: <b style='color:#1da1f2'>UGX {CHECKIN_REWARD:,}</b></div><div id='tm' style='color:#1da1f2;font-weight:800;margin:12px;font-size:20px'></div><form method='POST'><button {"disabled" if not can else ""} style='background:{'#1da1f2' if can else '#333'};color:#fff;border:0;padding:14px 40px;border-radius:10px;font-weight:800'>{"Check In Now" if can else "Checked In"}</button></form><div style='color:#666;font-size:13px'>No check-in = no reward.<br>Timer resets each check-in.</div></div><a href='/home' style='color:#1da1f2'>Back</a><script>let end={rem};function tick(){{let e=document.getElementById('tm');if(!end){{e.innerText='Ready!';return;}}let d=end-new Date();if(d<=0){{e.innerText='Ready! Refresh.';return;}}let h=Math.floor(d/3600000),m=Math.floor(d%3600000/60000),s=Math.floor(d%60000/1000);e.innerText=h+'h '+m+'m '+s+'s';}}setInterval(tick,1000);tick();</script></body></html>"""
 
 
 @app.route("/investments")
