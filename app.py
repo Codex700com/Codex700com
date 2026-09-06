@@ -646,8 +646,35 @@ def checkin_page():
             st='<div style="background:#334155;color:#cbd5e1;font-size:11px;padding:4px 8px;border-radius:12px;margin-top:6px">Pending</div>'; bo="border:1px solid #1e90ff55"; bg="background:#0a1440"
         cards+=f'<div style="flex:1;{bg};{bo};border-radius:12px;padding:8px 4px;text-align:center"><div style="color:#00cfff;font-size:12px">Day {i}</div><div style="font-size:28px">X</div><div style="font-size:11px">UGX {amt:,}</div>{st}</div>'
     claim_html=f'<div style="margin:10px;padding:16px;background:linear-gradient(135deg,#0a3cc0,#00cfff);border-radius:16px;text-align:center"><div>UGX {reward:,}</div><form method="POST"><button style="background:#00c853;color:#fff;padding:14px 18px;border-radius:12px;font-weight:900">CLAIM REWARD</button></form></div>' if can else f'<div style="margin:10px;padding:16px;background:#001a5e;border-radius:16px;text-align:center"><div style="color:#00ff66">CLAIMED</div><div>Next reward in:</div><div id="timer" style="font-size:32px;color:#ffcc00">--:--:--</div><script>let s={secs};function tick(){{let h=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=s%60;document.getElementById("timer").innerText=String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0");if(s>0)s--;}};tick();setInterval(tick,1000);</script></div>'
+    disp_streak = streak if claimed else cur_day
+    elig = "You are eligible to claim your reward!" if can else "You have claimed today. Come back tomorrow!"
     con.close()
-    return "<html><head><meta name=viewport content='width=device-width,initial-scale=1'></head><body style='background:#020a24;color:#fff;font-family:Arial'><h2>DAILY CHECK-IN</h2><div style='display:flex;gap:6px'>"+cards+"</div>"+claim_html+"<a href=/home>Back</a></body></html>"
+    return f"""<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+    body{margin:0;background:#020a24;color:#fff;font-family:Inter,system-ui,Arial;padding-bottom:90px}
+    .top{display:flex;align-items:center;justify-content:space-between;padding:12px}
+    .banner{margin:10px;border-radius:18px;padding:20px;background:linear-gradient(135deg,#0a2a9a,#020a24);border:1px solid #1e90ff55;position:relative;overflow:hidden}
+    .card{margin:10px;border:1px solid #1e90ff44;border-radius:14px;padding:12px;background:#041338}
+    .bottom{position:fixed;bottom:0;left:0;right:0;display:flex;background:#020a24;border-top:1px solid #1e90ff33;padding:8px}
+    .bottom a{flex:1;text-align:center;color:#88aaff;text-decoration:none;font-size:12px}
+    </style></head><body>
+    <div class="top"><a href="/home" style="color:#fff;font-size:26px;text-decoration:none">←</a>
+    <div style="text-align:center"><b style="font-size:24px;color:#00cfff">👑 CODEX</b><div style="font-size:9px;letter-spacing:3px;color:#88aaff">INVEST • GROW • WIN</div></div><div>🔔 👤</div></div>
+    <div class="banner"><div style="font-size:38px;font-weight:900;line-height:1">DAILY<br><span style="color:#ffcc00">CHECK-IN</span></div>
+    <div style="color:#00cfff;margin-top:8px">Log in daily, stay active<br>and earn amazing rewards!</div>
+    <div style="font-size:55px;margin-top:10px">🎁</div>
+    <div style="position:absolute;right:14px;top:16px;text-align:right;color:#00cfff;font-style:italic;line-height:1.4">👑<br>Small Steps<br>Every Day<br>= Big Results</div></div>
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+    <div>📅 <b>Today's Check-In</b><br><small style="color:#00cfff">{elig}</small></div>
+    <div><span style="background:#00c853;color:#fff;padding:6px 14px;border-radius:20px;font-size:13px">✓ Day {cur_day}</span></div>
+    <div style="text-align:center">🔥<br><b style="color:#ffcc00">{disp_streak} Day</b><br><small>Streak</small></div></div>
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b>🎁 7-DAY REWARDS</b><span style="font-size:11px;border:1px solid #ffcc00;padding:4px 8px;border-radius:12px">🔥 Keep streak!</span></div>
+    <div style="display:flex;gap:6px;margin-top:10px">"""+cards+"""</div></div>
+    """+claim_html+"""
+    <div class="card" style="display:flex;gap:12px;align-items:center"><div style="font-size:50px">🏆</div>
+    <div><i style="color:#ffcc00;font-size:20px">Stay Consistent!</i><br><small>The more days you check in,<br>the bigger your rewards!</small><br><i style="color:#00cfff;font-size:13px">Discipline Today = Financial Freedom Tomorrow</i></div></div>
+    <div class="bottom"><a href="/home">🏠<br>Home</a><a href="/invest">📊<br>Invest</a><a href="/transactions">🔄<br>Transactions</a><a href="/referrals">👥<br>Referrals</a><a href="/account">👤<br>Account</a></div>
+    </body></html>"""
 @app.route("/investments")
 def investments_page():
     from flask import session, redirect
