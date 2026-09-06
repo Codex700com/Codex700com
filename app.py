@@ -16,7 +16,7 @@ def need(f):
  w.__name__=f.__name__;return w
 def cu():
  c=db();u=c.execute("SELECT * FROM users WHERE id=?",(session.get("uid"),)).fetchone();c.close();return u
-S="<meta name='viewport' content='width=device-width,initial-scale=1'><style>*{box-sizing:border-box}body{background:#000;color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;padding-bottom:80px;-webkit-font-smoothing:antialiased;letter-spacing:.2px}a{color:inherit;text-decoration:none}.card{background:#0a0a0a;border:1px solid #8a6a00;border-radius:10px;padding:12px;margin:12px;font-size:14px;line-height:1.5;word-break:break-word;text-align:center}.card h2,.card h3{font-weight:800;letter-spacing:.8px;text-transform:uppercase;font-size:15px}.btn{background:#c00;color:#fff;border:none;padding:12px 20px;border-radius:8px;display:inline-block;font-weight:700;letter-spacing:.6px;text-transform:uppercase;font-size:14px}.logo{color:#fbbf24;font-weight:900;font-size:22px;letter-spacing:2px;text-transform:uppercase;font-family:Inter,Arial,sans-serif}input{width:100%;padding:12px;margin:8px 0;background:#111;border:1px solid #d4a017;border-radius:8px;color:#fff;font-size:15px;font-family:Inter,Arial,sans-serif;letter-spacing:.3px}.nav{position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;display:flex;justify-content:space-around;padding:10px;border-top:1px solid #333;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}.red{color:#fbbf24}.gold{color:#d4a017}</style>"+"<style>.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px}.gbox{background:linear-gradient(180deg,#fbbf24,#d4a017);border:1px solid #d4a017;border-radius:12px;height:84px;min-height:84px;max-height:84px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6px 2px;font-size:12px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fbbf24}.gbox b{font-size:13px}</style>"""
+S="<meta name='viewport' content='width=device-width,initial-scale=1'><style>*{box-sizing:border-box}body{background:#000;color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;padding-bottom:80px;-webkit-font-smoothing:antialiased;letter-spacing:.2px}a{color:inherit;text-decoration:none}.card{background:#0a0a0a;border:1px solid #8a6a00;border-radius:10px;padding:12px;margin:12px;font-size:14px;line-height:1.5;word-break:break-word;text-align:center}.card h2,.card h3{font-weight:800;letter-spacing:.8px;text-transform:uppercase;font-size:15px}.btn{background:#c00;color:#fff;border:none;padding:12px 20px;border-radius:8px;display:inline-block;font-weight:700;letter-spacing:.6px;text-transform:uppercase;font-size:14px}.logo{color:#1da1f2;font-weight:900;font-size:22px;letter-spacing:2px;text-transform:uppercase;font-family:Inter,Arial,sans-serif}input{width:100%;padding:12px;margin:8px 0;background:#111;border:1px solid #d4a017;border-radius:8px;color:#fff;font-size:15px;font-family:Inter,Arial,sans-serif;letter-spacing:.3px}.nav{position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;display:flex;justify-content:space-around;padding:10px;border-top:1px solid #333;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}.red{color:#1da1f2}.gold{color:#d4a017}</style>"+"<style>.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px}.gbox{background:linear-gradient(180deg,#1da1f2,#d4a017);border:1px solid #d4a017;border-radius:12px;height:84px;min-height:84px;max-height:84px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6px 2px;font-size:12px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1da1f2}.gbox b{font-size:13px}</style>"""
 N="<div class=nav><a href='/home'><div>🏠<br>Home</div></a><a href='/invest'><div>📈<br>Invest</div></a><a href='/transactions'><div>⇄<br>Transactions</div></a><a href='/referrals'><div>👥<br>Referrals</div></a><a href='/account'><div>👤<br>Account</div></a></div>"
 def hdr(): return "<div style='display:flex;justify-content:space-between;padding:12px;'><a href='/menu'>☰</a><div class=logo>⬣ CODEX</div><div><a href='/notifications'>🔔</a> <a href='/account'>👤</a></div></div>"
 
@@ -284,8 +284,8 @@ def confirm_buy(pid):
     if bal < price:
         con.close()
         return f"""<div style="margin:20px;padding:16px 18px;background:#3d1a1a;border:1px solid #7f2d2d;border-radius:12px;display:flex;justify-content:space-between;align-items:center;font-family:sans-serif">
-<div style="color:#f59e0b;font-weight:600;line-height:1.5">Insufficient balance for {pid}.<br>Need UGX {price:,}.</div>
-<a href='/deposit' style="background:linear-gradient(180deg,#fbbf24,#f59e0b);color:#000;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:700;display:flex;align-items:center;gap:8px">💳 Deposit</a>
+<div style="color:#1da1f2;font-weight:600;line-height:1.5">Insufficient balance for {pid}.<br>Need UGX {price:,}.</div>
+<a href='/deposit' style="background:linear-gradient(180deg,#1da1f2,#1da1f2);color:#000;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:700;display:flex;align-items:center;gap:8px">💳 Deposit</a>
 </div>"""
     try:
         con.execute("UPDATE users SET balance=balance-? WHERE id=?",(price,uid))
@@ -310,26 +310,26 @@ def confirm_buy(pid):
 body{background:#000!important;color:#f5d67b!important}
 .card,.gbox{
   background:#0a0a0a!important;
-  border:1px solid #fbbf24!important;
+  border:1px solid #1da1f2!important;
   border-radius:14px!important;
   box-shadow:0 0 12px rgba(251,191,36,0.55),0 0 28px rgba(251,191,36,0.18),inset 0 0 8px rgba(251,191,36,0.12)!important;
-  color:#fde68a!important;
+  color:#ffffff!important;
 }
 .gbox b,.card b{
-  color:#fbbf24!important;
+  color:#1da1f2!important;
   text-shadow:0 0 8px rgba(251,191,36,0.9)!important;
   font-weight:800!important;
 }
-a{color:#fbbf24!important}
+a{color:#1da1f2!important}
 button,.btn{
-  background:linear-gradient(180deg,#fde68a,#f59e0b)!important;
+  background:linear-gradient(180deg,#ffffff,#1da1f2)!important;
   color:#000!important;
   border:none!important;
   box-shadow:0 0 15px rgba(251,191,36,0.7)!important;
   font-weight:800!important;
   border-radius:10px!important;
 }
-h1,h2,h3{color:#fde68a!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!important}
+h1,h2,h3{color:#ffffff!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!important}
 .grid4 .gbox{height:88px;min-height:88px}
 </style>
 </head>
@@ -373,26 +373,26 @@ body{{font-family:sans-serif;margin:0;background:#fff;padding-bottom:80px}}
 body{background:#000!important;color:#f5d67b!important}
 .card,.gbox{
   background:#0a0a0a!important;
-  border:1px solid #fbbf24!important;
+  border:1px solid #1da1f2!important;
   border-radius:14px!important;
   box-shadow:0 0 12px rgba(251,191,36,0.55),0 0 28px rgba(251,191,36,0.18),inset 0 0 8px rgba(251,191,36,0.12)!important;
-  color:#fde68a!important;
+  color:#ffffff!important;
 }
 .gbox b,.card b{
-  color:#fbbf24!important;
+  color:#1da1f2!important;
   text-shadow:0 0 8px rgba(251,191,36,0.9)!important;
   font-weight:800!important;
 }
-a{color:#fbbf24!important}
+a{color:#1da1f2!important}
 button,.btn{
-  background:linear-gradient(180deg,#fde68a,#f59e0b)!important;
+  background:linear-gradient(180deg,#ffffff,#1da1f2)!important;
   color:#000!important;
   border:none!important;
   box-shadow:0 0 15px rgba(251,191,36,0.7)!important;
   font-weight:800!important;
   border-radius:10px!important;
 }
-h1,h2,h3{color:#fde68a!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!important}
+h1,h2,h3{color:#ffffff!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!important}
 .grid4 .gbox{height:88px;min-height:88px}
 </style>
 </head><body>
@@ -570,7 +570,7 @@ def checkin_page():
             con.commit(); last=now; can=False
             msg=f"<div style='background:#052e16;border:1px solid #16a34a;color:#22c55e;padding:12px;border-radius:10px;margin:12px;text-align:center;font-weight:700'>Successfully checked in! UGX {CHECKIN_REWARD:,} added.</div>"
         else:
-            msg="<div style='margin:12px;text-align:center;color:#f59e0b'>Already checked in.</div>"
+            msg="<div style='margin:12px;text-align:center;color:#1da1f2'>Already checked in.</div>"
     rem = f"new Date(new Date('{last.isoformat()}').getTime()+24*3600000)" if (last and not can) else "null"
     con.close()
     return f"""<html><head><meta name='viewport' content='width=device-width,initial-scale=1'>
@@ -579,29 +579,29 @@ def checkin_page():
 body{background:#000!important;color:#f5d67b!important}
 .card,.gbox{
   background:#0a0a0a!important;
-  border:1px solid #fbbf24!important;
+  border:1px solid #1da1f2!important;
   border-radius:14px!important;
   box-shadow:0 0 12px rgba(251,191,36,0.55),0 0 28px rgba(251,191,36,0.18),inset 0 0 8px rgba(251,191,36,0.12)!important;
-  color:#fde68a!important;
+  color:#ffffff!important;
 }
 .gbox b,.card b{
-  color:#fbbf24!important;
+  color:#1da1f2!important;
   text-shadow:0 0 8px rgba(251,191,36,0.9)!important;
   font-weight:800!important;
 }
-a{color:#fbbf24!important}
+a{color:#1da1f2!important}
 button,.btn{
-  background:linear-gradient(180deg,#fde68a,#f59e0b)!important;
+  background:linear-gradient(180deg,#ffffff,#1da1f2)!important;
   color:#000!important;
   border:none!important;
   box-shadow:0 0 15px rgba(251,191,36,0.7)!important;
   font-weight:800!important;
   border-radius:10px!important;
 }
-h1,h2,h3{color:#fde68a!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!important}
+h1,h2,h3{color:#ffffff!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!important}
 .grid4 .gbox{height:88px;min-height:88px}
 </style>
-</head><body style='margin:0;background:#000;color:#fff;font-family:sans-serif;text-align:center'><div style='padding:14px;font-weight:800'>DAILY CHECK-IN</div>{msg}<div style='margin:20px;border:1px solid #222;border-radius:16px;padding:30px;background:#0a0a0a'><div style='font-size:60px'>📅</div><div>Reward: <b style='color:#e11d48'>UGX {CHECKIN_REWARD:,}</b></div><div id='tm' style='color:#f59e0b;font-weight:800;margin:12px;font-size:20px'></div><form method='POST'><button {"disabled" if not can else ""} style='background:{'#e11d48' if can else '#333'};color:#fff;border:0;padding:14px 40px;border-radius:10px;font-weight:800'>{"Check In Now" if can else "Checked In"}</button></form><div style='color:#666;font-size:13px'>No check-in = no reward.<br>Timer resets each check-in.</div></div><a href='/home' style='color:#e11d48'>Back</a><script>let end={rem};function tick(){{let e=document.getElementById('tm');if(!end){{e.innerText='Ready!';return;}}let d=end-new Date();if(d<=0){{e.innerText='Ready! Refresh.';return;}}let h=Math.floor(d/3600000),m=Math.floor(d%3600000/60000),s=Math.floor(d%60000/1000);e.innerText=h+'h '+m+'m '+s+'s';}}setInterval(tick,1000);tick();</script></body></html>"""
+</head><body style='margin:0;background:#000;color:#fff;font-family:sans-serif;text-align:center'><div style='padding:14px;font-weight:800'>DAILY CHECK-IN</div>{msg}<div style='margin:20px;border:1px solid #222;border-radius:16px;padding:30px;background:#0a0a0a'><div style='font-size:60px'>📅</div><div>Reward: <b style='color:#e11d48'>UGX {CHECKIN_REWARD:,}</b></div><div id='tm' style='color:#1da1f2;font-weight:800;margin:12px;font-size:20px'></div><form method='POST'><button {"disabled" if not can else ""} style='background:{'#e11d48' if can else '#333'};color:#fff;border:0;padding:14px 40px;border-radius:10px;font-weight:800'>{"Check In Now" if can else "Checked In"}</button></form><div style='color:#666;font-size:13px'>No check-in = no reward.<br>Timer resets each check-in.</div></div><a href='/home' style='color:#e11d48'>Back</a><script>let end={rem};function tick(){{let e=document.getElementById('tm');if(!end){{e.innerText='Ready!';return;}}let d=end-new Date();if(d<=0){{e.innerText='Ready! Refresh.';return;}}let h=Math.floor(d/3600000),m=Math.floor(d%3600000/60000),s=Math.floor(d%60000/1000);e.innerText=h+'h '+m+'m '+s+'s';}}setInterval(tick,1000);tick();</script></body></html>"""
 
 
 @app.route("/investments")
@@ -635,10 +635,10 @@ def admin():
     rows="".join([f"<tr><td>{u['id']}</td><td>{u['name']}</td><td>{u['phone']}</td><td>{u['balance']}</td><td>{u['refcode']}</td><td>{'ADMIN' if u['is_admin'] else ''}</td></tr>" for u in users])
     return f"""
     <head><meta name=viewport content="width=device-width,initial-scale=1">
-    <style>body{{background:#000;color:#fde68a;font-family:sans-serif;padding:15px}}table{{width:100%;border-collapse:collapse}}td,th{{border:1px solid #fbbf24;padding:8px;font-size:13px}}th{{background:#fbbf24;color:#000}}</style></head>
+    <style>body{{background:#000;color:#ffffff;font-family:sans-serif;padding:15px}}table{{width:100%;border-collapse:collapse}}td,th{{border:1px solid #1da1f2;padding:8px;font-size:13px}}th{{background:#1da1f2;color:#000}}</style></head>
     <h2>👑 Codex700 Admin - {len(users)} users</h2>
     <table><tr><th>ID</th><th>Name</th><th>Phone</th><th>Bal</th><th>Ref</th><th>Role</th></tr>{rows}</table>
-    <p><a href="/" style="color:#fbbf24">← Back to app</a></p>
+    <p><a href="/" style="color:#1da1f2">← Back to app</a></p>
     """
 
 if __name__=="__main__":
