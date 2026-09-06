@@ -71,4 +71,15 @@ if(true){ // TEST
   }, 1200);
 }
 </script>
+<script>
+setInterval(async()=>{
+ try{
+  let r=await fetch('/api/notifs'); let j=await r.json();
+  if(j.notifs && j.notifs.length){
+   let last=localStorage.getItem('ln')||0;
+   if(String(j.notifs[0].id)!=String(last)){ alert(j.notifs[0].msg); localStorage.setItem('ln', j.notifs[0].id); }
+  }
+ }catch(e){}
+},5000);
+</script>
 </body></html>
