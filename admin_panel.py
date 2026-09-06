@@ -7,7 +7,27 @@ def ok(): return session.get('is_admin')
 def guard():
     if not ok(): return redirect('/admin/login')
     return None
-BASE="<a href=/admin>Dashboard</a> | <a href=/admin/users>Users</a> | <a href=/admin/deposits>Deposits</a> | <a href=/admin/withdrawals>Withdrawals</a> | <a href=/admin/plans>Plans</a> | <a href=/admin/rewards>Rewards</a> | <a href=/admin/referrals>Referrals</a> | <a href=/admin/support>Support</a> | <a href=/admin/announce>Announce</a> | <a href=/admin/reports>Reports</a> | <a href=/admin/settings>Settings</a> | <a href=/admin/security>Security</a><hr>{c}"
+BASE=""<!doctype html><html><head><meta name=viewport content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box;font-family:system-ui,Inter,Arial}
+body{margin:0;background:#0f172a;color:#e2e8f0}
+.nav{background:#1e293b;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:10}
+.nav a{color:#94a3b8;text-decoration:none;padding:8px 12px;border-radius:8px;font-size:14px}
+.nav a:hover,.nav a.active{background:#334155;color:white}
+.wrap{padding:20px;max-width:1100px;margin:auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:16px 0}
+.card{background:#1e293b;padding:16px;border-radius:12px;border:1px solid #334155}
+.card h3{margin:0;font-size:13px;color:#94a3b8}
+.card p{margin:8px 0 0;font-size:22px;font-weight:700}
+table{width:100%;border-collapse:collapse;background:#1e293b;border-radius:12px;overflow:hidden;margin-top:12px}
+th,td{padding:10px;text-align:left;font-size:14px;border-bottom:1px solid #334155}
+th{background:#0f172a;color:#94a3b8}
+a.btn{background:#3b82f6;color:white;padding:6px 10px;border-radius:6px;text-decoration:none;font-size:13px}
+h2{margin:8px 0}
+</style></head><body>
+<div class=nav>
+<a href=/admin>📊 Dashboard</a><a href=/admin/users>👥 Users</a><a href=/admin/deposits>💰 Deposits</a><a href=/admin/withdrawals>💸 Withdrawals</a><a href=/admin/plans>📈 Plans</a><a href=/admin/rewards>🎁 Rewards</a><a href=/admin/referrals>🔗 Referrals</a><a href=/admin/support>💬 Support</a><a href=/admin/announce>📢 Announce</a><a href=/admin/reports>📑 Reports</a><a href=/admin/settings>⚙️ Settings</a><a href=/admin/security>🔒 Security</a>
+</div><div class=wrap>{c}</div></body></html>"""
 
 @admin_bp.route('/login', methods=['GET','POST'])
 def login():
