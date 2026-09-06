@@ -3,17 +3,17 @@ import sqlite3,datetime,uuid
 app=Flask(__name__);app.secret_key="codex700secret"
 
 def ensure_admin_column():
- import sqlite3
- try:
- con=sqlite3.connect('codex700.db')
- cols=[r[1] for r in con.execute('PRAGMA table_info(users)')]
- print('users cols:',cols)
- if 'is_admin' not in cols:
- con.execute('ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0')
- con.execute('UPDATE users SET is_admin=1 WHERE id=1')
- con.commit();con.close()
- except Exception as e:
- print('admin mig failed:',e)
+    import sqlite3
+    try:
+        con=sqlite3.connect("codex700.db")
+        cols=[r[1] for r in con.execute("PRAGMA table_info(users)")]
+        if "is_admin" not in cols:
+            con.execute("ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0")
+        con.execute("UPDATE users SET is_admin=1 WHERE id=1")
+        con.commit()
+        con.close()
+    except Exception as e:
+        print("admin mig failed:", e)
 ensure_admin_column()
 
 DB="codex700.db"
