@@ -3,8 +3,8 @@
 body{background:#0a0a0a;color:#fff;font-family:Arial;margin:0;padding-bottom:80px}
 .header{display:flex;align-items:center;justify-content:space-between;padding:12px}
 .card{background:#111;border:1px solid #5a3d00;border-radius:12px;margin:10px;padding:14px}
-.red{color:#ff1a1a}.gold{color:#ffb700}
-.btn-red{background:#c40000;color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer}
+.blue{color:#ff1a1a}.gold{color:#ffb700}
+.btn-blue{background:#c40000;color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer}
 .code-box{display:flex;align-items:center;gap:10px}
 .code{background:#000;border:1px dashed #ffb700;padding:8px 16px;font-size:22px;letter-spacing:2px;color:#ffb700;border-radius:8px}
 .stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px}
@@ -21,30 +21,30 @@ input{width:100%;background:#000;border:1px solid #333;color:#ffb700;padding:10p
 
 <div class="card">
 <div style="display:flex;justify-content:space-between">
-<div><div class="red"><b>Invite Friends & Earn</b></div><small>Earn unlimited commissions from your referrals.</small><br><br>
-<button class="btn-red" onclick="showHow()">How it Works →</button></div>
-<div style="text-align:center"><small>Your Referral Code</small><div class="code-box"><div class="code" id="rcode">{{code}}</div><button class="btn-red" onclick="copyCode()">📋</button></div></div>
+<div><div style="color:#1da1f2"><b>Invite Friends & Earn</b></div><small>Earn unlimited commissions from your referrals.</small><br><br>
+<button class="btn-blue" onclick="showHow()">How it Works →</button></div>
+<div style="text-align:center"><small>Your Referral Code</small><div class="code-box"><div class="code" id="rcode">{{code}}</div><button class="btn-blue" onclick="copyCode()">📋</button></div></div>
 </div></div>
 
-<div class="card"><small>Your Referral Link</small><div style="display:flex;gap:8px;margin-top:8px"><input id="rlink" readonly value="{{link}}"><button class="btn-red" onclick="copyLink()">Copy Link 📋</button></div></div>
+<div class="card"><small>Your Referral Link</small><div style="display:flex;gap:8px;margin-top:8px"><input id="rlink" readonly value="{{link}}"><button class="btn-blue" onclick="copyLink()">Copy Link 📋</button></div></div>
 
 <div class="stats">
-<div class="stat">Total Referrals<br><b class="red">{{total}}</b><br><small>All Time</small></div>
+<div class="stat">Total Referrals<br><b style="color:#1da1f2">{{total}}</b><br><small>All Time</small></div>
 <div class="stat">Active Referrals<br><b class="gold">{{active}}</b><br><small>Active Now</small></div>
-<div class="stat">Total Earnings<br><b class="red">UGX {{earnings}}</b><br><small>All Time</small></div>
-<div class="stat">This Month<br><b class="red">UGX {{month_earnings}}</b><br><small>Earnings</small></div>
+<div class="stat">Total Earnings<br><b style="color:#1da1f2">UGX {{earnings}}</b><br><small>All Time</small></div>
+<div class="stat">This Month<br><b style="color:#1da1f2">UGX {{month_earnings}}</b><br><small>Earnings</small></div>
 </div>
 
 <div class="card"><b>Referral Commission Structure</b><div class="lv" style="margin-top:10px">
-<div><div class="red">Lv1</div><div class="red"><b>32%</b></div><small>First Level</small></div>
-<div><div class="red">Lv2</div><div class="red"><b>5%</b></div><small>Second Level</small></div>
-<div><div class="red">Lv3</div><div class="red"><b>1%</b></div><small>Third Level</small></div>
+<div><div style="color:#1da1f2">Lv1</div><div style="color:#1da1f2"><b>32%</b></div><small>First Level</small></div>
+<div><div style="color:#1da1f2">Lv2</div><div style="color:#1da1f2"><b>5%</b></div><small>Second Level</small></div>
+<div><div style="color:#1da1f2">Lv3</div><div style="color:#1da1f2"><b>1%</b></div><small>Third Level</small></div>
 </div></div>
 
-<div class="card"><div style="display:flex;justify-content:space-between"><b>Your Referrals</b><a href="#" onclick="viewAll();return false" class="red">View All ></a></div>
+<div class="card"><div style="display:flex;justify-content:space-between"><b>Your Referrals</b><a href="#" onclick="viewAll();return false" style="color:#1da1f2">View All ></a></div>
 {% if referrals %}
 {% for r in referrals %}
-<div class="ref-row"><div>{{r.name}}<br><small>{{r.phone}}</small></div><span class="red">{{r.level}}</span><span style="color:{{'green' if r.active else 'red'}}">{{'Active' if r.active else 'Inactive'}}</span><small>{{r.date}}</small></div>
+<div class="ref-row"><div>{{r.name}}<br><small>{{r.phone}}</small></div><span style="color:#1da1f2">{{r.level}}</span><span style="color:{{'#1da1f2' if r.active else '#1da1f2'}}">{{'Active' if r.active else 'Inactive'}}</span><small>{{r.date}}</small></div>
 {% endfor %}
 {% else %}
 <div style="text-align:center;padding:20px;color:#888">No referrals yet.<br>Share your link to start earning.</div>
@@ -52,17 +52,17 @@ input{width:100%;background:#000;border:1px solid #333;color:#ffb700;padding:10p
 </div>
 
 <div class="card"><b>Earnings Summary</b><div style="display:flex;justify-content:space-between;margin-top:10px">
-<div>Lv1 Earnings<br><b class="red">UGX {{lv1}}</b></div>
-<div>Lv2 Earnings<br><b class="red">UGX {{lv2}}</b></div>
-<div>Lv3 Earnings<br><b class="red">UGX {{lv3}}</b></div>
+<div>Lv1 Earnings<br><b style="color:#1da1f2">UGX {{lv1}}</b></div>
+<div>Lv2 Earnings<br><b style="color:#1da1f2">UGX {{lv2}}</b></div>
+<div>Lv3 Earnings<br><b style="color:#1da1f2">UGX {{lv3}}</b></div>
 <div style="background:#c40000;padding:10px;border-radius:8px">Total Earnings<br><b>UGX {{earnings}}</b></div>
 </div></div>
 
 <div class="modal" id="howModal"><div>
-<h3 class="red">How it Works</h3>
+<h3 style="color:#1da1f2">How it Works</h3>
 <p>Invite Ur friends and grow together</p>
 <p style="font-size:20px">邀请您的朋友一起成长</p>
-<button class="btn-red" onclick="hideHow()">Close</button>
+<button class="btn-blue" onclick="hideHow()">Close</button>
 </div></div>
 
 <div class="nav">
