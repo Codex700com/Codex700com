@@ -939,6 +939,34 @@ def deposit_submit():
  con.commit(); con.close()
  return jsonify({"ok":True,"msg":"Deposit submitted! Will be reviewed shortly."})
 
-if __name__=="__main__":
+
+@app.route("/admin2")
+def admin2():
+ from flask import session; import sqlite3
+ if str(session.get("uid"))!="1": return "Not admin",403
+ con=sqlite3.connect("codex700.db")
+ def q(s):
+  try: return con.execute(s).fetchone()[0] or 0
+  except: return 0
+ stats={
+  "Total users": q("SELECT COUNT(*) FROM users"),
+  "Platform balance": q("SELECT SUM(balance) FROM users"),
+  "Total deposits": q("SELECT SUM(amount) FROM deposits WHERE status='approved'"),
+  "Pending deposits": q("SELECT COUNT(*) FROM deposits WHERE status='pending'"),
+  "Pending withdrawals": q("SELECT COUNT(*) FROM withdrawals WHERE status='pending'"),
+  "Total investments": q("SELECT COUNT(*) FROM investments") if True else 0,
+ }
+ con.close()
+ cards="".join([f"<div style='background:#161b22;padding:15px;border-radius:10px;min-width:140px'><small>{k}</small><h3>{v}</h3></div>" for k,v in stats.items()])
+ return f"""
+ <h2>Dashboard</h2>
+ <div style='display:flex;gap:10px;flex-wrap:wrap'>{cards}</div>
+ <hr>
+ <a href='/admin/deposits'>Deposits</a> | <a href='/admin/withdrawals'>Withdrawals</a> |
+ <a href='/admin/search'>Search Users</a> | <a href='/admin/plans'>Plans</a> |
+ <a href='/admin/activity'>Activity Log</a> | <a href='/admin'>Old Admin</a>
+ <style>body{{font-family:sans-serif;background:#0d1117;color:#fff;padding:20px}} a{{color:#58a6ff}}</style>
+ """
+\nif __name__=="__main__":
     print("Starting on http://127.0.0.1:5000/")
     app.run(host="127.0.0.1", port=5000, debug=True)
