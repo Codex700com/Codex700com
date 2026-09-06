@@ -1,101 +1,31 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Referrals</title><style>
-body{background:#0a0a0a;color:#fff;font-family:Arial;margin:0;padding-bottom:80px}
-.header{display:flex;align-items:center;justify-content:space-between;padding:12px}
-.card{background:#111;border:1px solid #5a3d00;border-radius:12px;margin:10px;padding:14px}
-.blue{color:#ff1a1a}.gold{color:#ffb700}
-.btn-blue{background:#1da1f2;color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer}
-.code-box{display:flex;align-items:center;gap:10px}
-.code{background:#000;border:1px dashed #ffb700;padding:8px 16px;font-size:22px;letter-spacing:2px;color:#ffb700;border-radius:8px}
-.stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px}
-.stat{background:#111;border:1px solid #333;border-radius:10px;padding:10px;text-align:center}
-.lv{display:flex;justify-content:space-around;text-align:center}
-.ref-row{display:flex;align-items:center;justify-content:space-between;padding:10px;border-bottom:1px solid #222}
-.nav{position:fixed;bottom:0;left:0;right:0;background:#111;display:flex;justify-content:space-around;padding:10px;border-top:1px solid #333}
-.nav a{color:#888;text-decoration:none;font-size:12px;text-align:center}.nav a.active{color:#ff1a1a}
-.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);align-items:center;justify-content:center}
-.modal div{background:#1a1a1a;padding:20px;border-radius:12px;max-width:320px;text-align:center}
-input{width:100%;background:#000;border:1px solid #333;color:#ffb700;padding:10px;border-radius:8px}
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+body{background:#081627;color:#fff;font-family:-apple-system,Inter,Roboto,sans-serif;margin:0;padding-bottom:90px}
+.top{padding:18px 16px 6px}.top h2{margin:0;font-size:22px}.top p{color:#8aa0b8;font-size:13px;margin:4px 0 0}
+.banner{margin:12px 16px;background:linear-gradient(135deg,#0e4a7a,#1da1f2);border-radius:14px;padding:18px}
+.banner h3{margin:0 0 6px}.banner p{margin:0;font-size:13px;opacity:.9}.banner b{font-size:22px}
+.card{background:#0e233f;border:1px solid #1a3a5f;border-radius:14px;margin:12px 16px;padding:16px}
+.card h4{margin:0 0 4px;font-size:14px}.card p{color:#8aa0b8;font-size:12px;margin:0 0 10px}
+.codebox{display:flex;align-items:center;justify-content:space-between;background:#081627;border:1px dashed #1da1f2;border-radius:10px;padding:12px;margin-top:8px}
+.codebox b{font-size:20px;letter-spacing:2px;color:#fff}
+.btn{background:#1da1f2;color:#04263b;border:0;padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer}
+.linkbox{word-break:break-all;background:#081627;border:1px solid #1a3a5f;border-radius:10px;padding:12px;font-size:12px;color:#8aa0b8;margin:8px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 16px}
+.gbox{background:#0e233f;border:1px solid #1a3a5f;border-radius:12px;padding:14px;text-align:center}
+.gbox small{color:#8aa0b8;font-size:11px}.gbox b{color:#1da1f2;font-size:18px;display:block;margin-top:6px}
+.step{display:flex;gap:12px;margin:12px 0}.n{width:28px;height:28px;border-radius:50%;background:#1da1f2;color:#04263b;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.lvl{display:flex;justify-content:space-between;align-items:center;background:#081627;border-radius:10px;padding:12px;margin:8px 0}
+.lvl b{color:#1da1f2}.pill{background:#1da1f2;color:#04263b;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.empty{text-align:center;color:#8aa0b8;padding:20px;font-size:13px}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#0a1c33;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #1a3a5f}
+.nav a{color:#8aa0b8;text-decoration:none;font-size:11px;text-align:center}.nav a.on{color:#1da1f2}
 </style></head><body>
-<div class="header"><a href="/" style="color:#ffb700;font-size:24px;text-decoration:none">←</a><h3>Referrals</h3><div>🔔👤</div></div>
-
-<div class="card">
-<div style="display:flex;justify-content:space-between">
-<div><div style="color:#1da1f2"><b>Invite Friends & Earn</b></div><small>Earn unlimited commissions from your referrals.</small><br><br>
-<button class="btn-blue" onclick="showHow()">How it Works →</button></div>
-<div style="text-align:center"><small>Your Referral Code</small><div class="code-box"><div class="code" id="rcode">{{code}}</div><button class="btn-blue" onclick="copyCode()">📋</button></div></div>
-</div></div>
-
-<div class="card"><small>Your Referral Link</small><div style="display:flex;gap:8px;margin-top:8px"><input id="rlink" readonly value="{{link}}"><button class="btn-blue" onclick="copyLink()">Copy Link 📋</button></div></div>
-
-<div class="stats">
-<div class="stat">Total Referrals<br><b style="color:#1da1f2">{{total}}</b><br><small>All Time</small></div>
-<div class="stat">Active Referrals<br><b class="gold">{{active}}</b><br><small>Active Now</small></div>
-<div class="stat">Total Earnings<br><b style="color:#1da1f2">UGX {{earnings}}</b><br><small>All Time</small></div>
-<div class="stat">This Month<br><b style="color:#1da1f2">UGX {{month_earnings}}</b><br><small>Earnings</small></div>
-</div>
-
-<div class="card"><b>Referral Commission Structure</b><div class="lv" style="margin-top:10px">
-<div><div style="color:#1da1f2">Lv1</div><div style="color:#1da1f2"><b>32%</b></div><small>First Level</small></div>
-<div><div style="color:#1da1f2">Lv2</div><div style="color:#1da1f2"><b>5%</b></div><small>Second Level</small></div>
-<div><div style="color:#1da1f2">Lv3</div><div style="color:#1da1f2"><b>1%</b></div><small>Third Level</small></div>
-</div></div>
-
-<div class="card"><div style="display:flex;justify-content:space-between"><b>Your Referrals</b><a href="#" onclick="viewAll();return false" style="color:#1da1f2">View All ></a></div>
-{% if referrals %}
-{% for r in referrals %}
-<div class="ref-row"><div>{{r.name}}<br><small>{{r.phone}}</small></div><span style="color:#1da1f2">{{r.level}}</span><span style="color:{{'#1da1f2' if r.active else '#1da1f2'}}">{{'Active' if r.active else 'Inactive'}}</span><small>{{r.date}}</small></div>
-{% endfor %}
-{% else %}
-<div style="text-align:center;padding:20px;color:#888">No referrals yet.<br>Share your link to start earning.</div>
-{% endif %}
-</div>
-
-<div class="card"><b>Earnings Summary</b><div style="display:flex;justify-content:space-between;margin-top:10px">
-<div>Lv1 Earnings<br><b style="color:#1da1f2">UGX {{lv1}}</b></div>
-<div>Lv2 Earnings<br><b style="color:#1da1f2">UGX {{lv2}}</b></div>
-<div>Lv3 Earnings<br><b style="color:#1da1f2">UGX {{lv3}}</b></div>
-<div style="background:#1da1f2;padding:10px;border-radius:8px">Total Earnings<br><b>UGX {{earnings}}</b></div>
-</div></div>
-
-<div class="modal" id="howModal"><div>
-<h3 style="color:#1da1f2">How it Works</h3>
-<p>Invite Ur friends and grow together</p>
-<p style="font-size:20px">邀请您的朋友一起成长</p>
-<button class="btn-blue" onclick="hideHow()">Close</button>
-</div></div>
-
-<div class="nav">
-<a href="/">Home</a><a href="#">Invest</a><a href="#">Transactions</a><a class="active" href="/referrals">Referrals</a><a href="#">Account</a>
-</div>
-
-<script>
-function copyCode(){var el=document.getElementById('rcode'); el.select(); try{document.execCommand('copy'); alert('link successfully copied');}catch(e){prompt('Copy:',el.value)}}
-function copyLink(){
-  var el=document.getElementById('rlink');
-  el.select(); el.setSelectionRange(0,99999);
-  try{
-    document.execCommand('copy');
-    alert('link successfully copied');
-  }catch(e){
-    // fallback for mobile
-    if(navigator.clipboard){ navigator.clipboard.writeText(el.value).then(()=>alert('link successfully copied')); }
-    else{ prompt('Long-press to copy:', el.value); }
-  }
-}
-function showHow(){document.getElementById('howModal').style.display='flex'}
-function hideHow(){document.getElementById('howModal').style.display='none'}
-function viewAll(){alert('Total referrals: {{total}}');}
-</script>
-<script>
-setInterval(async()=>{
- try{
-  let r=await fetch('/api/notifs'); let j=await r.json();
-  if(j.notifs && j.notifs.length){
-   let last=localStorage.getItem('ln')||0;
-   if(String(j.notifs[0].id)!=String(last)){ alert(j.notifs[0].msg); localStorage.setItem('ln', j.notifs[0].id); }
-  }
- }catch(e){}
-},5000);
-</script>
+<div class="top"><h2>Referral Program</h2><p>Invite friends and earn together</p></div>
+<div class="banner"><h3>🎁 Exclusive Rewards</h3><p>Earn up to</p><b>17% Commission</b><p>on every referral investment</p></div>
+<div class="card"><h4>Your Referral Code</h4><p>Share this code with friends</p><div class="codebox"><b>{{code}}</b><button class="btn" onclick="navigator.clipboard.writeText('{{code}}');alert('Copied')">Copy</button></div></div>
+<div class="card"><h4>Referral Link</h4><p>Share this link to invite friends</p><div class="linkbox">{{link}}</div><button class="btn" style="width:100%;padding:12px" onclick="navigator.clipboard.writeText('{{link}}');alert('Link copied')">Copy Invite Link</button></div>
+<div class="grid"><div class="gbox"><small>Total Referrals</small><b>{{total}}</b></div><div class="gbox"><small>Active Referrals</small><b>{{active}}</b></div><div class="gbox"><small>Referral Earnings</small><b>UGX {{earnings}}</b></div><div class="gbox"><small>This Month</small><b>UGX {{month_earnings}}</b></div></div>
+<div class="card"><h4>How It Works</h4><div class="step"><div class="n">1</div><div><b>Share Your Code</b><br><small style="color:#8aa0b8">Send your referral code or link to friends</small></div></div><div class="step"><div class="n">2</div><div><b>Friends Invest</b><br><small style="color:#8aa0b8">They register and make their first investment</small></div></div><div class="step"><div class="n">3</div><div><b>Earn Commission</b><br><small style="color:#8aa0b8">Get instant commission on their investments</small></div></div></div>
+<div class="card"><h4>Commission Structure</h4><div class="lvl"><div>📊 Level 1 <br><small style="color:#8aa0b8">Direct referrals</small></div><span class="pill">10%</span></div><div class="lvl"><div>📊 Level 2 <br><small style="color:#8aa0b8">Second level</small></div><span class="pill">5%</span></div><div class="lvl"><div>📊 Level 3 <br><small style="color:#8aa0b8">Third level</small></div><span class="pill">2%</span></div></div>
+<div class="card"><h4>Your Referrals ({{total}})</h4><div class="empty">👥<br>No referrals yet<br><small>Share your code to start earning</small></div></div>
+<div class="nav"><a href="/home">🏠<br>Home</a><a href="/invest">📈<br>Invest</a><a href="/wallet">💼<br>Wallet</a><a href="/account" class="on">👤<br>Account</a></div>
 </body></html>
