@@ -717,7 +717,6 @@ def is_admin():
     from flask import session
     uid=session.get("uid")
     return str(uid)=="1"
-    except: return False
 
 @app.route("/admin")
 def admin_panel():
@@ -848,3 +847,6 @@ def admin_reply():
     c.execute("INSERT INTO notifications(user_id,msg,date) VALUES(?,?,?)",(uid,"Admin replied to your support message","now"))
     con.commit(); con.close()
     return "<script>location='/admin'</script>"
+
+if __name__=='__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
