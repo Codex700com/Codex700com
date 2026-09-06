@@ -715,14 +715,8 @@ def deposit_submit():
 # --- ADMIN PANEL Deep Blue / White ---
 def is_admin():
     from flask import session
-    import sqlite3
     uid=session.get("uid")
-    if not uid: return False
-    try:
-        con=sqlite3.connect("database.db")
-        r=con.execute("SELECT phone FROM users WHERE id=?",(uid,)).fetchone()
-        con.close()
-        return r and r[0]=="0770000000"
+    return str(uid)=="1"
     except: return False
 
 @app.route("/admin")
