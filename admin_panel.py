@@ -113,3 +113,47 @@ def plans():
 def settings():
     if guard(): return guard()
     return page("<div class=panel><h3>Settings</h3><p>OK</p></div>")
+
+# --- Editable Plans v2 ---
+def _ensure_plans():
+    con=db()
+    con.execute("CREATE TABLE IF NOT EXISTS plans(id INTEGER PRIMARY KEY, name TEXT, min_amount INT, return_pct INT, duration_days INT)")
+    if con.execute("SELECT COUNT(*) FROM plans").fetchone()[0]==0:
+        con.execute("INSERT INTO plans(name,min_amount,return_pct,duration_days) VALUES('Starter',50000,20,7)")
+        con.execute("INSERT INTO plans(name,min_amount,return_pct,duration_days) VALUES('Pro',200000,35,14)")
+        con.commit()
+    con.close()
+_ensure_plans()
+
+@admin_bp.route('/plans2')
+def plans2():
+    if guard(): return guard()
+    con=db(); rows=con.execute("SELECT * FROM plans ORDER BY min_amount").fetchall(); con.close()
+    h="<div class=panel><h3>Investment Plans - Editable</h3><a class=btn href=/admin/plans_add>Add Plan</a><table><tr><th>Name</th><th>Min UGX</th><th>Return %</th><th>Days</th><th>Action</th></tr>"
+    for r in rows:
+        h+="<tr><td>"+str(r["name"])+"</td><td>"+str(r["min_amount"])+"</td><td>"+str(r["return_pct"])+"%</td><td>"+str(r["duration_days"])+"</td><td><a class=btn href=/admin/plans_edit/"+str(r["id"])+">Edit</a> <a class=btnr href=/admin/plans_del/"+str(r["id"])+">Del</a></td></tr>"
+    return page(h+"</table></div>")
+
+@admin_bp.route('/plans_add', methods=['GET','POST'])
+def plans_add():
+    if guard(): return guard()
+    if request.method=='POST':
+        con=db(); con.execute("INSERT INTO plans(name,min_amount,return_pct,duration_days) VALUES(?,?,?,?)",(request.form.get('name'),int(request.form.get('min',0)),int(request.form.get('pct',0)),int(request.form.get('days',0)))); con.commit(); con.close()
+        return redirect('/admin/plans2')
+    return page("<div class=panel><h3>Add Plan</h3><form method=post><input name=name placeholder='Plan name'><input name=min type=number placeholder='Min price UGX'><input name=pct type=number placeholder='Return %'><input name=days type=number placeholder='Duration days'><button class=btn>Save</button></form></div>")
+
+@admin_bp.route('/plans_edit/<int:pid>', methods=['GET','POST'])
+def plans_edit(pid):
+    if guard(): return guard()
+    con=db()
+    if request.method=='POST':
+        con.execute("UPDATE plans SET name=?, min_amount=?, return_pct=?, duration_days=? WHERE id=?",(request.form.get('name'),int(request.form.get('min',0)),int(request.form.get('pct',0)),int(request.form.get('days',0)),pid)); con.commit(); con.close()
+        return redirect('/admin/plans2')
+    r=con.execute("SELECT * FROM plans WHERE id=?",(pid,)).fetchone(); con.close()
+    return page(f"<div class=panel><h3>Edit {r['name']}</h3><form method=post><input name=name value=\"{r['name']}\"><input name=min type=number value=\"{r['min_amount']}\"><input name=pct type=number value=\"{r['return_pct']}\"><input name=days type=number value=\"{r['duration_days']}\"><button class=btn>Update Price</button></form></div>")
+
+@admin_bp.route('/plans_del/<int:pid>')
+def plans_del(pid):
+    if guard(): return guard()
+    con=db(); con.execute("DELETE FROM plans WHERE id=?",(pid,)); con.commit(); con.close()
+    return redirect('/admin/plans2')
