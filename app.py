@@ -967,7 +967,7 @@ def admin2():
  <a href='/admin/activity'>Activity Log</a> | <a href='/admin'>Old Admin</a>
  <style>body{{font-family:sans-serif;background:#0d1117;color:#fff;padding:20px}} a{{color:#58a6ff}}</style>
  """
-\n
+
 # --- PUSH2 ---
 @app.route("/admin/plans", methods=["GET","POST"])
 def adm_plans():
@@ -1020,6 +1020,6 @@ def adm_ref():
  r="".join([f"<tr><td>{x['id']}</td><td>{x['name']}</td><td>{x['phone']}</td><td>{x['referred_by'] if 'referred_by' in x.keys() else '-'}</td></tr>" for x in rows])
  return f"<h2>Referrals (L1)</h2><p>Top referrers query coming in Push3</p><table border=1><tr><th>User</th><th>Name</th><th>Phone</th><th>Referred By</th></tr>{r}</table><a href='/admin2'>back</a>"
 # --- END PUSH2 ---
-\nif __name__=="__main__":
+if __name__=="__main__":
     print("Starting on http://127.0.0.1:5000/")
     app.run(host="127.0.0.1", port=5000, debug=True)
