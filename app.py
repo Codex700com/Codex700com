@@ -120,6 +120,13 @@ def home():
 @need
 def menu():
  ls=[("Home","/home"),("Invest","/invest"),("Deposit","/deposit"),("Withdrawal","/withdraw"),("Transactions","/transactions"),("Referrals","/referrals"),("Raffle","/raffle"),("About Us","/about"),("Support","/support"),("Chat Manager","/chat"),("Account","/account"),("Logout","/logout")]
+ try:
+  import sqlite3
+  _u=session.get("uid") or session.get("user_id")
+  _c=sqlite3.connect("codex700.db"); _c.row_factory=sqlite3.Row
+  _me=_c.execute("SELECT is_admin FROM users WHERE id=?",(_u,)).fetchone(); _c.close()
+  if _me and _me["is_admin"]: ls.insert(0,("👑 Admin","/admin"))
+ except: pass
  h=S+hdr()+"<div class=card><h3>Menu</h3>"
  for nm,lk in ls: h+="<p><a href='"+lk+"'>"+nm+"</a></p>"
  return h+"</div>"+N
