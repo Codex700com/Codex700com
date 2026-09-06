@@ -817,5 +817,24 @@ def raffle_winners():
     from flask import jsonify
     return jsonify([["Lucky256","iPhone 14","15 Aug 2026"],["Bright001","$500 Cash","01 Aug 2026"]])
 
+@app.route("/set-language", methods=["POST"])
+def set_language():
+    from flask import request, jsonify, session
+    import sqlite3
+    d=request.get_json(force=True)
+    lang=d.get("lang","en")
+    session["lang"]=lang
+    uid=session.get("uid") or session.get("user_id")
+    if uid:
+        try:
+            db="codex700.db" if os.path.exists("codex700.db") else "codex.db"
+            con=sqlite3.connect(db)
+            try: con.execute("ALTER TABLE users ADD COLUMN lang TEXT DEFAULT 'en'")
+            except: pass
+            con.execute("UPDATE users SET lang=? WHERE id=?",(lang,uid))
+            con.commit(); con.close()
+        except Exception as e: print(e)
+    return jsonify(ok=True)
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
