@@ -143,7 +143,7 @@ def menu():
  ls=[("Home","/home"),("Invest","/invest"),("Deposit","/deposit"),("Withdrawal","/withdraw"),("Transactions","/transactions"),("Referrals","/referrals"),("Raffle","/raffle"),("About Us","/about"),("Support","/support"),("Chat Manager","/chat"),("Account","/account"),("Logout","/logout")]
  try:
   import sqlite3
-  _u=session.get("uid") or session.get("user_id")
+  _u=session.get("uid") or session.get("uid")
   _c=sqlite3.connect("codex700.db"); _c.row_factory=sqlite3.Row
   _me=_c.execute("SELECT is_admin FROM users WHERE id=?",(_u,)).fetchone(); _c.close()
 
@@ -167,7 +167,7 @@ def account_page():
 def api_account():
     import sqlite3, datetime
     from flask import session, jsonify
-    uid=session.get("user_id") or session.get("uid")
+    uid=session.get("uid") or session.get("uid")
     con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
     u=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone() if uid else None
     if not u:
@@ -190,7 +190,7 @@ def api_lang():
     from flask import session, request, jsonify
     l=request.get_json().get("lang","en")
     con=sqlite3.connect("codex700.db")
-    con.execute("UPDATE users SET lang=? WHERE id=?",(l, session.get("user_id") or session.get("uid")))
+    con.execute("UPDATE users SET lang=? WHERE id=?",(l, session.get("uid") or session.get("uid")))
     con.commit(); con.close()
     return jsonify({"ok":True})
 
@@ -200,7 +200,7 @@ def api_notif():
     from flask import session, request, jsonify
     m=1 if request.get_json().get("muted") else 0
     con=sqlite3.connect("codex700.db")
-    con.execute("UPDATE users SET notif_muted=? WHERE id=?",(m, session.get("user_id") or session.get("uid")))
+    con.execute("UPDATE users SET notif_muted=? WHERE id=?",(m, session.get("uid") or session.get("uid")))
     con.commit(); con.close()
     return jsonify({"ok":True})
 
@@ -212,7 +212,7 @@ def api_pwd():
     if len(pwd)<4: return jsonify({"msg":"Too short"})
     h=hashlib.sha256(pwd.encode()).hexdigest()
     con=sqlite3.connect("codex700.db")
-    con.execute("UPDATE users SET password=? WHERE id=?",(h, session.get("user_id") or session.get("uid")))
+    con.execute("UPDATE users SET password=? WHERE id=?",(h, session.get("uid") or session.get("uid")))
     con.commit(); con.close()
     return jsonify({"msg":"Password changed successfully"})
 
@@ -224,7 +224,7 @@ def api_reset():
 def api_statement():
     import sqlite3, csv, io
     from flask import session, Response
-    uid=str(session.get("user_id") or session.get("uid") or "guest")
+    uid=str(session.get("uid") or session.get("uid") or "guest")
     con=sqlite3.connect("codex700.db")
     rows=con.execute("SELECT created_at,type,title,amount,status,ref FROM transactions WHERE user_id=? ORDER BY id DESC",(uid,)).fetchall()
     con.close()
@@ -238,7 +238,7 @@ def api_statement():
 def can_statement():
     import sqlite3
     from flask import session, jsonify
-    uid=str(session.get("user_id") or session.get("uid") or "guest")
+    uid=str(session.get("uid") or session.get("uid") or "guest")
     con=sqlite3.connect("codex700.db")
     c=con.execute("SELECT COUNT(*) FROM transactions WHERE user_id=? AND type='deposit'",(uid,)).fetchone()[0]
     con.close()
@@ -250,7 +250,7 @@ def can_statement():
 def api_statement_guard():
     import sqlite3
     from flask import session, jsonify
-    uid=str(session.get("user_id") or session.get("uid") or "guest")
+    uid=str(session.get("uid") or session.get("uid") or "guest")
     con=sqlite3.connect("codex700.db")
     c=con.execute("SELECT COUNT(*) FROM transactions WHERE user_id=? AND type='deposit'",(uid,)).fetchone()[0]
     con.close()
@@ -283,7 +283,7 @@ def raffle_page_auto():
 def confirm_buy(pid):
     from flask import session, redirect
     import sqlite3
-    uid=str(session.get("user_id") or session.get("uid") or "guest")
+    uid=str(session.get("uid") or session.get("uid") or "guest")
     # price map
     prices={"A1":20000,"A2":100000,"M1":50000,"M2":100000,"M3":250000,"M4":500000,"M5":1000000,"M6":2000000,"M7":5000000,"L1":500000,"L2":1000000,"L3":2000000,"GS1":600000,"GS2":1200000,"GS3":2500000,"J1":800000,"J2":1500000,"J3":3000000}
     price=prices.get(pid,0)
@@ -715,7 +715,7 @@ def deposit_submit():
 # --- ADMIN PANEL Deep Blue / White ---
 def is_admin():
     from flask import session
-    uid = session.get("user_id")
+    uid = session.get("uid")
     return str(uid)=="1"
 
 @app.route("/admin")
