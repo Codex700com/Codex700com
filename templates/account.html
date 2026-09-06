@@ -12,16 +12,16 @@
 
 <div class="card" style="display:flex;gap:14px;align-items:center">
 <div style="width:80px;height:80px;border-radius:50%;border:2px solid #00cfff;display:flex;align-items:center;justify-content:center;font-size:40px;background:#0a4dff33">👤</div>
-<div><span style="background:#0a4dff55;border:1px solid #00cfff;padding:2px 10px;border-radius:20px;font-size:12px">✅ Verified</span><div style="margin-top:6px">Member ID:<br><b id="mid" style="color:#00cfff;font-size:20px">{{ member_id or user.member_id or 'CDX77891' }}</b></div><div style="font-style:italic;color:#7ecbff" data-i18n="motto">Your goals. Our priority!</div><div style="font-size:13px;color:#aac">{{ user.name or '' }} • {{ user.phone or '' }}</div></div>
+<div><span style="background:#0a4dff55;border:1px solid #00cfff;padding:2px 10px;border-radius:20px;font-size:12px">✅ Verified</span><div style="margin-top:6px">Member ID:<br><b id="mid" style="color:#00cfff;font-size:20px">{{ member_id }}</b></div><div style="font-style:italic;color:#7ecbff" data-i18n="motto">Your goals. Our priority!</div><div style="font-size:13px;color:#aac">{{ user_name }}</div></div>
 </div>
 
 <div class="card">
 <div style="display:flex;justify-content:space-between"><b>💼 <span data-i18n="wallet">WALLET OVERVIEW</span></b><a href="#" onclick="toggleBal(event)" style="color:#00cfff;font-size:13px">Hide Balance 👁️</a></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
-<div>💳 <span data-i18n="balance">Wallet Balance</span><br><b class="bal" style="color:#00cfff;font-size:20px">UGX {{ "{:,}".format(user.balance or 0) }}</b></div>
-<div>💰 <span data-i18n="invested">Total Invested</span><br><b style="color:#00cfff;font-size:20px">UGX {{ "{:,}".format(total_invested or 0) }}</b></div>
-<div>💵 <span data-i18n="income">Total Income</span><br><b style="color:#00cfff;font-size:20px">UGX {{ "{:,}".format(total_income or 0) }}</b></div>
-<div>📈 <span data-i18n="active">Active Investments</span><br><b style="color:#00cfff;font-size:20px">{{ active_investments or 0 }}</b></div>
+<div>💳 <span data-i18n="balance">Wallet Balance</span><br><b class="bal" style="color:#00cfff;font-size:20px">UGX {{ wallet_balance }}</b></div>
+<div>💰 <span data-i18n="invested">Total Invested</span><br><b style="color:#00cfff;font-size:20px">UGX {{ total_invested_f }}</b></div>
+<div>💵 <span data-i18n="income">Total Income</span><br><b style="color:#00cfff;font-size:20px">UGX {{ total_income_f }}</b></div>
+<div>📈 <span data-i18n="active">Active Investments</span><br><b style="color:#00cfff;font-size:20px">{{ active_investments }}</b></div>
 </div></div>
 
 <div class="card"><b>👤 <span data-i18n="menu">ACCOUNT MENU</span></b>
@@ -30,7 +30,7 @@
 <div class="menu" onclick="location.href='/bank'"><div class="icon">💳</div><div style="flex:1"><b>Bank / Payment Details</b><br><small style="color:#7ecbff">Manage your payment methods</small></div>></div>
 <div class="menu"><div class="icon">🛡️</div><div style="flex:1"><b>KYC Verification</b><br><small style="color:#7ecbff">Verify your account (if required)</small></div><span style="background:#0a4dff55;padding:4px 10px;border-radius:12px;font-size:12px">Not Required</span>></div>
 <div class="menu"><div class="icon">🔔</div><div style="flex:1"><b>Notification Settings</b><br><small style="color:#7ecbff">Manage your notification preferences</small></div>></div>
-<div class="menu" onclick="document.getElementById('langModal').style.display='flex'"><div class="icon">🌐</div><div style="flex:1"><b data-i18n="lang">Language</b><br><small style="color:#7ecbff">Choose your preferred language</small></div><span id="langCur" style="background:#0a4dff55;padding:4px 12px;border-radius:12px">{{ lang or 'English' }}</span>></div>
+<div class="menu" onclick="document.getElementById('langModal').style.display='flex'"><div class="icon">🌐</div><div style="flex:1"><b data-i18n="lang">Language</b><br><small style="color:#7ecbff">Choose your preferred language</small></div><span id="langCur" style="background:#0a4dff55;padding:4px 12px;border-radius:12px">{{ lang_name }}</span>></div>
 </div>
 
 <div id="langModal"><div class="card" style="width:80%">
@@ -51,5 +51,5 @@ ja:{subtitle:"プロフィールとアカウント設定を管理",motto:"あな
 function applyLang(l){const d=T[l]||T.en;document.querySelectorAll('[data-i18n]').forEach(e=>{const k=e.getAttribute('data-i18n');if(d[k])e.textContent=d[k]});localStorage.setItem('lang',l)}
 function setLang(code,name){applyLang(code);document.getElementById('langCur').textContent=name;document.getElementById('langModal').style.display='none';fetch('/set-language',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lang:code})});}
 applyLang(localStorage.getItem('lang')||'{{ lang_code or "en" }}');
-function toggleBal(e){e.preventDefault();document.querySelectorAll('.bal').forEach(b=>b.textContent=b.textContent.includes('***')?'UGX {{ "{:,}".format(user.balance or 0) }}':'***')}
+function toggleBal(e){e.preventDefault();document.querySelectorAll('.bal').forEach(b=>b.textContent=b.textContent.includes('***')?'UGX {{ wallet_balance }}':'***')}
 </script></body></html>
