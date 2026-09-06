@@ -1094,4 +1094,6 @@ def adm_sec():
 # END PUSH3
 if __name__=="__main__":
     print("Starting on http://127.0.0.1:5000/")
-    import os; app.run(host="0.0.0.0", port=int(os.environ.get("PORT",5000)))
+if __name__ == "__main__":
+    import os
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT",5000)))
