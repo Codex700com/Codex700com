@@ -7,7 +7,7 @@ def ok(): return session.get('is_admin')
 def guard():
     if not ok(): return redirect('/admin/login')
     return None
-BASE="<a href=/admin>Dashboard</a> | <a href=/admin/users>Users</a> | <a href=/admin/deposits>Deposits</a> | <a href=/admin/withdrawals>Withdrawals</a> | <a href=/admin/plans>Plans</a> | <a href=/admin/rewards>Rewards</a> | <a href=/admin/referrals>Referrals</a> | <a href=/admin/support>Support</a> | <a href=/admin/announce>Announce</a> | <a href=/admin/reports>Reports</a> | <a href=/admin/settings>Settings</a> | <a href=/admin/security>Security</a><hr>{c}"
+BASE = """<style>body{font-family:system-ui;background:#0f172a;color:#fff;margin:0}.nav{background:#1e293b;padding:12px;display:flex;gap:10px;flex-wrap:wrap}.nav a{color:#94a3b8;text-decoration:none;padding:8px}.wrap{padding:20px;max-width:1000px;margin:auto}.card{background:#1e293b;padding:16px;border-radius:10px;margin:10px 0}</style><div class=nav><a href=/admin>Dashboard</a> <a href=/admin/users>Users</a> <a href=/admin/deposits>Deposits</a> <a href=/admin/withdrawals>Withdrawals</a></div><div class=wrap>{c}</div>"""
 
 @admin_bp.route('/login', methods=['GET','POST'])
 def login():
