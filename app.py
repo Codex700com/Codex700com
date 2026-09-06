@@ -130,7 +130,7 @@ def home():
  h+="<div class=card>🎁 Daily Check-In <a class=btn href='/checkin'>Check In →</a></div>"
  h+="<div class=grid4>"
  acts=[("Invest","/invest","📈"),("Deposit","/deposit","💰"),("Withdrawal","/withdraw","💸"),("Referrals","/referrals","👥"),("Transactions","/transactions","📄"),("Raffle","/raffle","🎁"),("Support","/support","🎧"),("Chat","/chat","💬")]
- for nm,lk,ic in acts: h+="<a href='"+lk+"'><div class=gbox style='"+('background:#0aa5ff;color:#fff;' if nm=='Deposit' else 'background:#ff6b2f;color:#fff;' if nm=='Withdrawal' else '')+"'>"+ic+"<br><span style='color:#ff0000;font-weight:800'>"+nm+"</span></div></a>"
+ for nm,lk,ic in acts: h+="<a href='"+lk+"'><div class=gbox style='"+('background:#0aa5ff;color:#fff;' if nm=='Deposit' else 'background:#ff6b2f;color:#fff;' if nm=='Withdrawal' else '')+"'>"+ic+"<br><span style='color:#1da1f2;font-weight:800'>"+nm+"</span></div></a>"
  h+="</div><a href='/raffle'><div class=card>🏆 <b class=red>RAFFLE DRAW</b><br><span class=btn>View Prizes →</span></div></a>"
  h+="<div class=card><b class=red>INVESTMENT PLANS</b> <a href='/invest' style='float:right'>View All ></a></div><div style='display:flex;gap:8px;overflow:auto;margin:10px'>"
  for pl,amt in [("L1 Plan Lock",500000),("L2 Plan Lock",1000000),("L3 Plan Lock",2000000)]: h+="<a href='/invest'><div class=card style='min-width:140px'><b>"+pl+"</b><br>UGX "+f"{amt:,}"+"</div></a>"
