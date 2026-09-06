@@ -1,6 +1,12 @@
 from flask import Flask,request,redirect,session
 import sqlite3,datetime,uuid
 app=Flask(__name__);app.secret_key="codex700secret"
+try:
+ from admin_panel import admin_bp
+ app.register_blueprint(admin_bp)
+ print('admin wired')
+except Exception as e:
+ print('admin wire fail',e)
 
 def ensure_admin_column():
     import sqlite3
@@ -636,242 +642,31 @@ def investments_page():
     return S+hdr()+h+N
 
 
-@app.route("/admin", methods=["GET","POST"])
-def admin():
- import sqlite3
- con=sqlite3.connect("codex700.db")
- con.row_factory=sqlite3.Row
- me_id=session.get("uid")
- me=con.execute("SELECT * FROM users WHERE id=?", (me_id,)).fetchone() if me_id else None
- admin_ok=(me and "is_admin" in me.keys() and me["is_admin"]) or str(me_id)=="1"
-
- if not admin_ok:
-  con.close()
-  return "Not admin",403
- users=list(con.execute("SELECT * FROM users ORDER BY id DESC LIMIT 100"))
- con.close()
- out="<head><meta name=viewport content='width=device-width,initial-scale=1'><style>body{background:#000;color:#fff;font-family:sans-serif;padding:10px}a.btn{padding:4px 8px;margin:2px;display:inline-block;border-radius:4px;font-size:12px;text-decoration:none;color:#000}table{width:100%;border-collapse:collapse}td,th{border:1px solid #333;padding:6px;font-size:12px}</style></head>"
- out+="<h2>Admin - "+str(len(users))+" users</h2>"
- out+="<a class=btn style='background:#0f0' href='/admin/wd'>Withdrawals</a> <a class=btn style='background:#0ff' href='/admin/plans'>Plans</a> <a class=btn style='background:#ff0' href='/admin/notif'>Notifs</a> <a class=btn style='background:#ccc' href='/'>Back</a><br><br>"
- out+="<table><tr><th>ID</th><th>User</th><th>Bal</th><th>Acts</th></tr>"
- for u in users:
-  uid=u["id"]
-  out+="<tr><td>"+str(uid)+"</td><td>"+str(u["name"])+"<br><small>"+str(u["phone"])+"</small></td><td>"+str(u["balance"])+"</td><td>"
-  out+="<a class=btn style='background:#1da1f2' href='/admin/user/"+str(uid)+"'>Bal</a>"
-  out+="<a class=btn style='background:#0f0' href='/admin/dm/"+str(uid)+"'>DM</a>"
-  out+="<a class=btn style='background:#f90' href='/admin/block/"+str(uid)+"'>Blk</a>"
-  out+="<a class=btn style='background:#f90' href='/admin/unblock/"+str(uid)+"'>Unblk</a>"
-  out+="<a class=btn style='background:#ccc' href='/admin/viewpw/"+str(uid)+"'>PW</a>"
-  out+="<a class=btn style='background:#ff0' href='/admin/resetpw/"+str(uid)+"'>RstPW</a>"
-  out+="<a class=btn style='background:#0ff' href='/admin/resetlink/"+str(uid)+"'>Link</a>"
-  out+="<a class=btn style='background:#f00;color:#fff' href='/admin/deluser/"+str(uid)+"'>Del</a>"
-  out+="</td></tr>"
- out+="</table>"
- return out
-
-@app.route("/admin/user/<int:uid>", methods=["GET","POST"])
-def admin_user(uid):
-    import sqlite3
-    con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
-    me_id=session.get("uid")
-    me=con.execute("SELECT * FROM users WHERE id=?", (me_id,)).fetchone() if me_id else None
-    if not ((me and me["is_admin"]) or str(me_id)=="1"):
-        con.close(); return "Not admin",403
-    if request.method=="POST":
-        con.execute("UPDATE users SET balance=? WHERE id=?", (float(request.form.get("balance","0")), uid)); con.commit()
-    u=con.execute("SELECT * FROM users WHERE id=?", (uid,)).fetchone(); con.close()
-    return f"<form method=post><h2>Edit {u['name']}</h2><input name=balance value='{u['balance']}'><button>Save</button></form>"
 
 
-# ===== SUPER ADMIN EXTENSIONS =====
-def is_admin_user():
-    import sqlite3
-    con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
-    me_id=session.get("uid")
-    me=con.execute("SELECT * FROM users WHERE id=?",(me_id,)).fetchone() if me_id else None
-    con.close()
-    return (me and me["is_admin"]) or str(me_id)=="1"
 
-def ensure_extra_tables():
-    import sqlite3
-    con=sqlite3.connect("codex700.db")
-    con.execute("CREATE TABLE IF NOT EXISTS withdrawals (id INTEGER PRIMARY KEY, user_id INT, amount REAL, status TEXT DEFAULT 'pending', created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
-    con.execute("CREATE TABLE IF NOT EXISTS deposits (id INTEGER PRIMARY KEY, user_id INT, amount REAL, status TEXT DEFAULT 'pending', created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
-    con.execute("CREATE TABLE IF NOT EXISTS plans (id INTEGER PRIMARY KEY, name TEXT, price REAL, ret REAL)")
-    con.execute("CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY, msg TEXT, created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
-    con.execute("CREATE TABLE IF NOT EXISTS dms (id INTEGER PRIMARY KEY, user_id INT, from_admin INT, msg TEXT, created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
-    # add columns if missing
-    try: con.execute("ALTER TABLE users ADD COLUMN blocked INT DEFAULT 0")
-    except: pass
-    try: con.execute("ALTER TABLE users ADD COLUMN password_visible TEXT")
-    except: pass
-    con.commit(); con.close()
-ensure_extra_tables()
 
-@app.route("/admin/block/<int:uid>")
-def adm_block(uid):
-    if not is_admin_user(): return "Not admin",403
-    import sqlite3; con=sqlite3.connect("codex700.db"); con.execute("UPDATE users SET blocked=1 WHERE id=?",(uid,)); con.commit(); con.close()
-    return '<script>location="/admin"</script>'
-@app.route("/admin/unblock/<int:uid>")
-def adm_unblock(uid):
-    if not is_admin_user(): return "Not admin",403
-    import sqlite3; con=sqlite3.connect("codex700.db"); con.execute("UPDATE users SET blocked=0 WHERE id=?",(uid,)); con.commit(); con.close()
-    return '<script>location="/admin"</script>'
-@app.route("/admin/deluser/<int:uid>")
-def adm_deluser(uid):
-    if not is_admin_user(): return "Not admin",403
-    import sqlite3; con=sqlite3.connect("codex700.db"); con.execute("DELETE FROM users WHERE id=?",(uid,)); con.commit(); con.close()
-    return '<script>location="/admin"</script>'
-@app.route("/admin/resetpw/<int:uid>")
-def adm_resetpw(uid):
-    if not is_admin_user(): return "Not admin",403
-    import sqlite3; con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
-    u=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone()
-    con.execute("UPDATE users SET password='123456' WHERE id=?",(uid,)); con.commit(); con.close()
-    return f"Password reset to 123456 for {u['name']} <a href='/admin'>back</a>"
-@app.route("/admin/resetlink/<int:uid>")
-def adm_resetlink(uid):
-    if not is_admin_user(): return "Not admin",403
-    import sqlite3, secrets; con=sqlite3.connect("codex700.db")
-    newcode=secrets.token_hex(4)
-    con.execute("UPDATE users SET refcode=? WHERE id=?",(newcode,uid)); con.commit(); con.close()
-    return '<script>location="/admin"</script>'
-@app.route("/admin/viewpw/<int:uid>")
-def adm_viewpw(uid):
-    if not is_admin_user(): return "Not admin",403
-    import sqlite3; con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
-    u=con.execute("SELECT password FROM users WHERE id=?",(uid,)).fetchone(); con.close()
-    return f"Password hash/pw: {u['password']} <a href='/admin'>back</a>" if u else "no user"
 
-@app.route("/admin/wd")
-def adm_wd():
-    if not is_admin_user(): return "Not admin",403
-    import sqlite3; con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
-    w=list(con.execute("SELECT * FROM withdrawals ORDER BY id DESC")); con.close()
-    rows="".join([f"<tr><td>{x['id']}</td><td>{x['user_id']}</td><td>{x['amount']}</td><td>{x['status']}</td><td><a href='/admin/wd_ok/{x['id']}'>Approve</a> | <a href='/admin/wd_no/{x['id']}'>Reject</a></td></tr>" for x in w])
-    return f"<h2>Withdrawals</h2><table border=1>{rows}</table><a href='/admin'>back</a>"
-@app.route("/admin/wd_ok/<int:did>")
-def adm_wd_ok(did):
-    if not is_admin_user(): return "Not admin",403
-    import sqlite3; con=sqlite3.connect("codex700.db"); con.execute("UPDATE withdrawals SET status='approved' WHERE id=?",(did,)); con.commit(); con.close()
-    return '<script>location="/admin/wd"</script>'
-@app.route("/admin/wd_no/<int:did>")
-def adm_wd_no(did):
-    if not is_admin_user(): return "Not admin",403
-    import sqlite3; con=sqlite3.connect("codex700.db"); con.execute("UPDATE withdrawals SET status='rejected' WHERE id=?",(did,)); con.commit(); con.close()
-    return '<script>location="/admin/wd"</script>'
 
-@app.route("/admin/dep_ok/<int:did>")
-def adm_dep_ok(did):
-    if not is_admin_user(): return "Not admin",403
-    import sqlite3; con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
-    d=con.execute("SELECT * FROM deposits WHERE id=?",(did,)).fetchone()
-    if d and d["status"]=="pending":
-        con.execute("UPDATE deposits SET status='approved' WHERE id=?",(did,))
-        con.execute("UPDATE users SET balance=balance+? WHERE id=?",(d["amount"], d["user_id"]))
-        con.commit()
-    con.close(); return '<script>location="/admin"</script>'
 
-@app.route("/admin/plans", methods=["GET","POST"])
-def adm_plans():
-    if not is_admin_user(): return "Not admin",403
-    import sqlite3; con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
-    if request.method=="POST":
-        con.execute("UPDATE plans SET price=?, ret=? WHERE id=?",(float(request.form["price"]), float(request.form["ret"]), int(request.form["id"]))); con.commit()
-    plans=list(con.execute("SELECT * FROM plans")); con.close()
-    f="".join([f"<form method=post>ID {p['id']} {p['name']} <input name=id type=hidden value='{p['id']}'><input name=price value='{p['price']}'><input name=ret value='{p['ret']}'><button>Save</button></form><br>" for p in plans])
-    return f"<h2>Plans</h2>{f}<a href='/admin'>back</a>"
 
-@app.route("/admin/notif", methods=["GET","POST"])
-def adm_notif():
-    if not is_admin_user(): return "Not admin",403
-    import sqlite3; con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
-    if request.method=="POST":
-        con.execute("INSERT INTO notifications (msg) VALUES (?)",(request.form["msg"],)); con.commit()
-    ns=list(con.execute("SELECT * FROM notifications ORDER BY id DESC")); con.close()
-    rows="".join([f"<p>{x['id']}: {x['msg']} <a href='/admin/notif_del/{x['id']}'>Delete</a></p>" for x in ns])
-    return f"<h2>Notifications (popup to all)</h2><form method=post><input name=msg placeholder='message'><button>Send</button></form>{rows}<a href='/admin'>back</a>"
-@app.route("/admin/notif_del/<int:nid>")
-def adm_notif_del(nid):
-    if not is_admin_user(): return "Not admin",403
-    import sqlite3; con=sqlite3.connect("codex700.db"); con.execute("DELETE FROM notifications WHERE id=?",(nid,)); con.commit(); con.close()
-    return '<script>location="/admin/notif"</script>'
+
+
+
+
+
+
+
 @app.route("/api/notifs")
 def api_notifs():
     import sqlite3; con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
     ns=list(con.execute("SELECT * FROM notifications ORDER BY id DESC LIMIT 5")); con.close()
     return {"notifs":[dict(n) for n in ns]}
 
-@app.route("/admin/dm/<int:uid>", methods=["GET","POST"])
-def adm_dm(uid):
-    if not is_admin_user(): return "Not admin",403
-    import sqlite3; con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
-    if request.method=="POST":
-        con.execute("INSERT INTO dms (user_id, from_admin, msg) VALUES (?,?,?)",(uid,1,request.form["msg"])); con.commit()
-    msgs=list(con.execute("SELECT * FROM dms WHERE user_id=? ORDER BY id DESC LIMIT 20",(uid,))); con.close()
-    rows="".join([f"<p>{'Admin' if m['from_admin'] else 'User'}: {m['msg']}</p>" for m in msgs])
-    return f"<h2>DM user {uid}</h2><form method=post><input name=msg><button>Send</button></form>{rows}<a href='/admin'>back</a>"
-
-@app.route("/admin/delmsg/<int:mid>")
-def adm_delmsg(mid):
-    if not is_admin_user(): return "Not admin",403
-    import sqlite3; con=sqlite3.connect("codex700.db")
-    try: con.execute("DELETE FROM messages WHERE id=?",(mid,))
-    except: pass
-    try: con.execute("DELETE FROM group_messages WHERE id=?",(mid,))
-    except: pass
-    con.commit(); con.close()
-    return '<script>history.back()</script>'
 
 
-# --- ADD5 ---
-def log_act(uid, act):
- try:
-  import sqlite3; c=sqlite3.connect("codex700.db")
-  c.execute("CREATE TABLE IF NOT EXISTS activity (id INTEGER PRIMARY KEY, user_id INT, act TEXT, created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
-  c.execute("INSERT INTO activity (user_id, act) VALUES (?,?)",(uid,act)); c.commit(); c.close()
- except: pass
 
-@app.route("/admin/deposits")
-def adm_deps():
- import sqlite3
- if str(session.get("uid"))!="1": return "Not admin",403
- con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
- ds=list(con.execute("SELECT * FROM deposits ORDER BY id DESC")); con.close()
- r="".join([f"<tr><td>{x['id']}</td><td>{x['user_id']}</td><td>{x['amount']}</td><td>{x['status']}</td><td><a href='/admin/dep_ok/{x['id']}'>Approve</a></td></tr>" for x in ds])
- return f"<h2>Deposits</h2><table border=1>{r}</table><a href='/admin'>back</a>"
 
-@app.route("/admin/activity")
-def adm_act():
- import sqlite3
- if str(session.get("uid"))!="1": return "Not admin",403
- con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
- acts=list(con.execute("SELECT * FROM activity ORDER BY id DESC LIMIT 200")); con.close()
- r="".join([f"<p>{x['created']} - User {x['user_id']}: {x['act']}</p>" for x in acts])
- return f"<h2>Activity Monitor</h2><a href='/admin'>back</a><br>{r}"
-
-@app.route("/admin/search")
-def adm_search():
- import sqlite3
- q=request.args.get("q","")
- if str(session.get("uid"))!="1": return "Not admin",403
- con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
- us=list(con.execute("SELECT * FROM users WHERE name LIKE? OR phone LIKE? LIMIT 50", (f"%{q}%",f"%{q}%"))); con.close()
- r="".join([f"<p>{u['id']} - {u['name']} - {u['phone']} - <a href='/admin/user/{u['id']}'>Edit</a></p>" for u in us])
- return f"<form><input name=q value='{q}' placeholder='search'><button>Search</button></form>{r}<a href='/admin'>back</a>"
-
-@app.route("/admin/stats")
-def adm_stats():
- import sqlite3
- if str(session.get("uid"))!="1": return "Not admin",403
- con=sqlite3.connect("codex700.db")
- tot=con.execute("SELECT COUNT(*) FROM users").fetchone()[0]
- bal=con.execute("SELECT SUM(balance) FROM users").fetchone()[0] or 0
- wd=con.execute("SELECT COUNT(*) FROM withdrawals WHERE status='pending'").fetchone()[0] if True else 0
- con.close()
- return f"<h2>Stats</h2><p>Total users: {tot}</p><p>Total balance: {bal}</p><p>Pending WD: {wd}</p><a href='/admin'>back</a>"
-# --- END ADD5 ---
 
 
 @app.route("/deposit-submit", methods=["POST"])
@@ -907,160 +702,13 @@ def deposit_submit():
  return jsonify({"ok":True,"msg":"Deposit submitted! Will be reviewed shortly."})
 
 
-@app.route("/admin2")
-def admin2():
- from flask import session; import sqlite3
- if str(session.get("uid"))!="1": return "Not admin",403
- con=sqlite3.connect("codex700.db")
- def q(s):
-  try: return con.execute(s).fetchone()[0] or 0
-  except: return 0
- stats={
-  "Total users": q("SELECT COUNT(*) FROM users"),
-  "Platform balance": q("SELECT SUM(balance) FROM users"),
-  "Total deposits": q("SELECT SUM(amount) FROM deposits WHERE status='approved'"),
-  "Pending deposits": q("SELECT COUNT(*) FROM deposits WHERE status='pending'"),
-  "Pending withdrawals": q("SELECT COUNT(*) FROM withdrawals WHERE status='pending'"),
-  "Total investments": q("SELECT COUNT(*) FROM investments") if True else 0,
- }
- con.close()
- cards="".join([f"<div style='background:#161b22;padding:15px;border-radius:10px;min-width:140px'><small>{k}</small><h3>{v}</h3></div>" for k,v in stats.items()])
- return f"""
- <h2>Dashboard</h2>
- <div style='display:flex;gap:10px;flex-wrap:wrap'>{cards}</div>
- <hr>
- <a href='/admin/deposits'>Deposits</a> | <a href='/admin/withdrawals'>Withdrawals</a> |
- <a href='/admin/search'>Search Users</a> | <a href='/admin/plans'>Plans</a> |
- <a href='/admin/activity'>Activity Log</a> | <a href='/admin'>Old Admin</a>
- <style>body{{font-family:sans-serif;background:#0d1117;color:#fff;padding:20px}} a{{color:#58a6ff}}</style>
- """
 
-# --- PUSH2 ---
-@app.route("/admin/plans", methods=["GET","POST"])
-def adm_plans_2():
- from flask import session, request, redirect; import sqlite3
- if str(session.get("uid"))!="1": return "Not admin",403
- con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
- con.execute("CREATE TABLE IF NOT EXISTS plans (id INTEGER PRIMARY KEY, name TEXT, min_amt INT, max_amt INT, duration INT, rate REAL, active INT DEFAULT 1)")
- if request.method=="POST":
-  con.execute("INSERT INTO plans (name,min_amt,max_amt,duration,rate) VALUES (?,?,?,?,?)",
-   (request.form.get("name"),request.form.get("min"),request.form.get("max"),request.form.get("dur"),request.form.get("rate")))
-  con.commit()
- plans=list(con.execute("SELECT * FROM plans ORDER BY id DESC")); con.close()
- rows="".join([f"<tr><td>{x['id']}</td><td>{x['name']}</td><td>{x['min_amt']}-{x['max_amt']}</td><td>{x['duration']}d {x['rate']}%</td><td>{'ON' if x['active'] else 'OFF'}</td><td><a href='/admin/plan_toggle/{x['id']}'>Toggle</a> | <a href='/admin/plan_del/{x['id']}'>Del</a></td></tr>" for x in plans])
- return f"<h2>Investment Plans</h2><form method=post><input name=name placeholder='Name' required> <input name=min placeholder='Min' type=number required> <input name=max placeholder='Max' type=number required> <input name=dur placeholder='Days' type=number required> <input name=rate placeholder='Rate%' type=number step=0.1 required> <button>Create</button></form><table border=1><tr><th>ID</th><th>Name</th><th>Range</th><th>Term</th><th>Active</th><th>Act</th></tr>{rows}</table><a href='/admin2'>back</a><style>body{{font-family:sans-serif;padding:20px}}input{{padding:5px;margin:2px}}</style>"
 
-@app.route("/admin/plan_toggle/<int:pid>")
-def plan_toggle(pid):
- from flask import session, redirect; import sqlite3
- if str(session.get("uid"))!="1": return "Not admin",403
- con=sqlite3.connect("codex700.db"); con.execute("UPDATE plans SET active = 1-active WHERE id=?",(pid,)); con.commit(); con.close()
- return redirect("/admin/plans")
 
-@app.route("/admin/plan_del/<int:pid>")
-def plan_del(pid):
- from flask import session, redirect; import sqlite3
- if str(session.get("uid"))!="1": return "Not admin",403
- con=sqlite3.connect("codex700.db"); con.execute("DELETE FROM plans WHERE id=?",(pid,)); con.commit(); con.close()
- return redirect("/admin/plans")
 
-@app.route("/admin/bonus", methods=["GET","POST"])
-def adm_bonus():
- from flask import session, request; import sqlite3
- if str(session.get("uid"))!="1": return "Not admin",403
- msg=""
- if request.method=="POST":
-  uid=request.form.get("uid"); amt=request.form.get("amt","0")
-  con=sqlite3.connect("codex700.db")
-  con.execute("UPDATE users SET balance=balance+? WHERE id=?",(int(float(amt)),uid))
-  con.commit(); con.close(); msg=f"Credited {amt} to user {uid}"
- return f"<h2>Manual Bonus / Rewards</h2><p>{msg}</p><form method=post><input name=uid placeholder='User ID' required> <input name=amt placeholder='Amount' type=number required> <input name=reason placeholder='Reason (daily check-in, referral, promo)'> <button>Credit</button></form><a href='/admin2'>back</a>"
 
-@app.route("/admin/referrals")
-def adm_ref():
- from flask import session; import sqlite3
- if str(session.get("uid"))!="1": return "Not admin",403
- con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
- try: rows=list(con.execute("SELECT id,name,phone,referred_by FROM users WHERE referred_by IS NOT NULL AND referred_by!='' ORDER BY id DESC LIMIT 100"))
- except: rows=list(con.execute("SELECT id,name,phone FROM users LIMIT 20"))
- con.close()
- r="".join([f"<tr><td>{x['id']}</td><td>{x['name']}</td><td>{x['phone']}</td><td>{x['referred_by'] if 'referred_by' in x.keys() else '-'}</td></tr>" for x in rows])
- return f"<h2>Referrals (L1)</h2><p>Top referrers query coming in Push3</p><table border=1><tr><th>User</th><th>Name</th><th>Phone</th><th>Referred By</th></tr>{r}</table><a href='/admin2'>back</a>"
-# --- END PUSH2 ---
 
-# PUSH3
-@app.route("/admin/announce", methods=["GET","POST"])
-def adm_announce():
- from flask import session, request, redirect
- import sqlite3
- if str(session.get("uid"))!="1": return "Not admin",403
- con=sqlite3.connect("codex700.db")
- con.execute("CREATE TABLE IF NOT EXISTS announcements (id INTEGER PRIMARY KEY, title TEXT, body TEXT, created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
- if request.method=="POST":
-  con.execute("INSERT INTO announcements (title,body) VALUES (?,?)",(request.form.get("title"),request.form.get("body")))
-  con.commit()
- con.row_factory=__import__("sqlite3").Row
- rows=list(con.execute("SELECT * FROM announcements ORDER BY id DESC LIMIT 20"))
- con.close()
- r="".join([f"<p><b>{x['title']}</b><br>{x['body']}<br><small>{x['created']}</small></p><hr>" for x in rows])
- return f"<h2>Announcements</h2><form method=post><input name=title placeholder='Title' required><br><textarea name=body placeholder='Body' required></textarea><br><button>Publish</button></form><hr>{r}<a href='/admin2'>back</a>"
 
-@app.route("/admin/settings", methods=["GET","POST"])
-def adm_settings():
- from flask import session, request
- import sqlite3, json, os
- if str(session.get("uid"))!="1": return "Not admin",403
- fp="settings.json"
- s={}
- if os.path.exists(fp):
-  s=json.load(open(fp))
- if request.method=="POST":
-  s={"min_wd":request.form.get("min_wd"),"fee":request.form.get("fee"),"maint":request.form.get("maint"),"support":request.form.get("support")}
-  json.dump(s, open(fp,"w"))
- return f"<h2>Platform Settings</h2><form method=post>Min WD<input name=min_wd value='{s.get('min_wd','')}'> Fee<input name=fee value='{s.get('fee','')}'> Maint<input name=maint value='{s.get('maint','off')}'> Support<input name=support value='{s.get('support','')}'><button>Save</button></form><a href='/admin2'>back</a>"
 
-@app.route("/admin/reports")
-def adm_reports():
- from flask import session
- import sqlite3
- if str(session.get("uid"))!="1": return "Not admin",403
- con=sqlite3.connect("codex700.db")
- def q(s):
-  try: return con.execute(s).fetchone()[0] or 0
-  except: return 0
- con.close()
- return f"<h2>Reports</h2><p>Daily deposits: {q("SELECT SUM(amount) FROM deposits WHERE date(created)=date('now') AND status='approved'")}</p><p>Daily WD: {q("SELECT SUM(amount) FROM withdrawals WHERE date(created)=date('now')")}</p><p><a href='/admin/export_csv?type=deposits'>Export deposits CSV</a> | <a href='/admin/export_csv?type=users'>Export users CSV</a></p><a href='/admin2'>back</a>"
 
-@app.route("/admin/export_csv")
-def adm_export():
- from flask import session, Response
- import sqlite3, csv, io
- if str(session.get("uid"))!="1": return "Not admin",403
- typ=__import__("flask").request.args.get("type","users")
- con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
- tbl="users" if typ=="users" else "deposits"
- rows=list(con.execute(f"SELECT * FROM {tbl} LIMIT 1000")); con.close()
- out=io.StringIO()
- if rows:
-  w=csv.DictWriter(out, fieldnames=rows[0].keys()); w.writeheader()
-  for r in rows: w.writerow(dict(r))
- return Response(out.getvalue(), mimetype="text/csv", headers={"Content-Disposition":f"attachment;filename={tbl}.csv"})
 
-@app.route("/admin/security")
-def adm_sec():
- from flask import session
- import sqlite3
- if str(session.get("uid"))!="1": return "Not admin",403
- con=sqlite3.connect("codex700.db")
- con.execute("CREATE TABLE IF NOT EXISTS admin_log (id INTEGER PRIMARY KEY, admin_id INT, action TEXT, created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
- con.row_factory=sqlite3.Row
- rows=list(con.execute("SELECT * FROM admin_log ORDER BY id DESC LIMIT 100"))
- con.close()
- r="".join([f"<p>{x['created']} - admin {x['admin_id']}: {x['action']}</p>" for x in rows])
- return f"<h2>Admin Security Log</h2>{r}<a href='/admin2'>back</a>"
-# END PUSH3
-if __name__=="__main__":
-    print("Starting on http://127.0.0.1:5000/")
-if __name__ == "__main__":
-    import os
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT",5000)))
