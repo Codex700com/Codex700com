@@ -120,21 +120,16 @@ def home():
  ti=c.execute("SELECT COALESCE(SUM(amount),0) s FROM investments WHERE user_id=?",(u["id"],)).fetchone()["s"]
  ac=c.execute("SELECT COUNT(*) n FROM investments WHERE user_id=? AND active=1",(u["id"],)).fetchone()["n"]
  c.close()
- h=S+hdr()
- h+="<div class=card><div>WELCOME BACK,</div><div class=red style='font-weight:900;font-size:20px'>"+u["name"].upper()+"</div><br><a class=btn href='/invest'>Invest Now →</a></div>"
- h+="<div class=grid4>"
- h+="<a href='/wallet'><div class=gbox>Wallet<br><b class=red>UGX "+str(u["balance"])+"</b></div></a>"
- h+="<a href='/investments'><div class=gbox>Invested<br><b class=red>UGX "+str(ti)+"</b></div></a>"
- h+="<a href='/transactions'><div class=gbox>Income<br><b class=red>UGX 0</b></div></a>"
- h+="<a href='/investments'><div class=gbox>Active<br><b>"+str(ac)+"</b></div></a></div>"
- h+="<div class=card>🎁 Daily Check-In <a class=btn href='/checkin'>Check In →</a></div>"
- h+="<div class=grid4>"
- acts=[("Invest","/invest","📈"),("Deposit","/deposit","💰"),("Withdrawal","/withdraw","💸"),("Referrals","/referrals","👥"),("Transactions","/transactions","📄"),("Raffle","/raffle","🎁"),("Support","/support","🎧"),("Chat","/chat","💬")]
- for nm,lk,ic in acts: h+="<a href='"+lk+"'><div class=gbox style='"+('background:#0aa5ff;color:#fff;' if nm=='Deposit' else 'background:#ff6b2f;color:#fff;' if nm=='Withdrawal' else '')+"'>"+ic+"<br><span style='color:#1da1f2;font-weight:800'>"+nm+"</span></div></a>"
- h+="</div><a href='/raffle'><div class=card>🏆 <b class=red>RAFFLE DRAW</b><br><span class=btn>View Prizes →</span></div></a>"
- h+="<div class=card><b style='color:#1da1f2'>INVESTMENT PLANS</b> <a href='/invest' style='float:right'>View All ></a></div><div style='display:flex;gap:8px;overflow:auto;margin:10px'>"
- for pl,amt in [("L1 Plan Lock",500000),("L2 Plan Lock",1000000),("L3 Plan Lock",2000000)]: h+="<a href='/invest'><div class=card style='min-width:140px'><b>"+pl+"</b><br>UGX "+f"{amt:,}"+"</div></a>"
- h+="</div><div class=card>Need Help? <a class=btn href='/support'>Contact Support</a></div>"+N
+ nm=u["name"].upper(); bal=f"{u['balance']:,}"; tiv=f"{ti:,}"
+ h="<html><head><meta name='viewport' content='width=device-width,initial-scale=1'><style>body{background:#020b1f;color:#fff;font-family:sans-serif;margin:0;padding-bottom:100px}.chead{display:flex;justify-content:space-between;padding:12px 16px}.logo{color:#ffcc33;font-weight:900;font-size:26px}.welcome{margin:10px 12px;background:#0a2a6b;border:2px solid #1a5cff;border-radius:16px;padding:18px}.ibtn{display:inline-block;background:#ffcc33;color:#000;font-weight:800;padding:12px 28px;border-radius:30px;text-decoration:none;margin-top:10px}.stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px 12px}.sbox{background:#0a2a6b;border:1px solid #1e90ff;border-radius:12px;padding:12px 6px;text-align:center}.grid8{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px 12px}.g{background:#0a2a6b;border:1px solid #1e90ff;border-radius:12px;padding:14px 6px;text-align:center;color:#fff;text-decoration:none}.nav{position:fixed;bottom:0;left:0;right:0;background:#020b1f;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #333}</style></head><body>"
+ h+="<div class=chead><div>☰</div><div class=logo>CODEX<br><small style='font-size:10px;color:#fff'>INVEST • GROW • WIN</small></div><div>🔔👤</div></div>"
+ h+="<div class=welcome>👑 WELCOME BACK,<h2 style='color:#00c6ff;margin:0'>"+nm+"</h2><p>Big dreams require action.</p><a class=ibtn href='/invest'>INVEST NOW</a></div>"
+ h+="<div class=stats><div class=sbox>Wallet<br><b>"+bal+"</b></div><div class=sbox>Invested<br><b>"+tiv+"</b></div><div class=sbox>Income<br><b>0</b></div><div class=sbox>Active<br><b>"+str(ac)+"</b></div></div>"
+ h+="<div class=grid8>"
+ acts=[("Invest","/invest","📈"),("Deposit","/deposit","💲"),("Withdraw","/withdraw","💼"),("Referral","/referrals","👥"),("Transactions","/transactions","🧾"),("Raffle","/raffle","🎁"),("Support","/support","🎧"),("Chat","/chat","💬")]
+ for nm2,lk,ic in acts:
+  h+="<a class=g href='"+lk+"'>"+ic+"<br><b>"+nm2+"</b></a>"
+ h+="</div><div class=nav><a href='/home' style='color:#ffcc33'>🏠<br>HOME</a><a href='/invest' style='color:#888'>📊<br>INVEST</a><a href='/transactions' style='color:#888'>⇄<br>TRANS</a><a href='/referrals' style='color:#888'>👥<br>REF</a><a href='/account' style='color:#888'>👤<br>ACC</a></div></body></html>"
  return h
 
 @app.route("/menu")
