@@ -906,6 +906,39 @@ def deposit_submit():
  con.commit(); con.close()
  return jsonify({"ok":True,"msg":"Deposit submitted! Will be reviewed shortly."})
 
+
+@app.route("/deposit-submit", methods=["POST"])
+def deposit_submit():
+ import sqlite3, os, time
+ from flask import request, session, jsonify
+ uid=session.get("uid")
+ if not uid:
+  return jsonify({"ok":False,"msg":"Please login first"})
+ airtel=request.form.get("airtel_number","").strip()
+ amount=request.form.get("amount","").strip()
+ txid=request.form.get("txid","").strip()
+ if not airtel or not amount or not txid:
+  return jsonify({"ok":False,"msg":"Fill all fields"})
+ try: amt=int(float(amount))
+ except: return jsonify({"ok":False,"msg":"Invalid amount"})
+ if amt<1000: return jsonify({"ok":False,"msg":"Minimum 1000 UGX"})
+ f=request.files.get("screenshot")
+ shot_path=""
+ if f and f.filename:
+  os.makedirs("static/shots", exist_ok=True)
+  fn=f"{uid}_{int(time.time())}_{f.filename.replace('/','_')}"
+  fp=os.path.join("static/shots", fn)
+  f.save(fp); shot_path="/"+fp
+ con=sqlite3.connect("codex700.db")
+ con.execute("CREATE TABLE IF NOT EXISTS deposits (id INTEGER PRIMARY KEY, user_id INT, airtel TEXT, amount INT, txid TEXT, screenshot TEXT, status TEXT DEFAULT 'pending', created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+ # prevent duplicate txid
+ cur=con.execute("SELECT id FROM deposits WHERE txid=?",(txid,)).fetchone()
+ if cur:
+  con.close(); return jsonify({"ok":False,"msg":"This Transaction ID already used"})
+ con.execute("INSERT INTO deposits (user_id, airtel, amount, txid, screenshot, status) VALUES (?,?,?,?,?, 'pending')",(uid, airtel, amt, txid, shot_path))
+ con.commit(); con.close()
+ return jsonify({"ok":True,"msg":"Deposit submitted! Will be reviewed shortly."})
+
 if __name__=="__main__":
     print("Starting on http://127.0.0.1:5000/")
     app.run(host="127.0.0.1", port=5000, debug=True)
