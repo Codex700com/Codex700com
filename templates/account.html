@@ -1,55 +1,68 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>My Account</title>
-<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#010d1f;color:#fff;font-family:Segoe UI,Arial;padding-bottom:110px}
-.card{background:linear-gradient(180deg,#021a3a,#011026);border:1.5px solid #0a4dff;border-radius:14px;margin:10px 12px;padding:14px;box-shadow:0 0 18px #0a4dff55}
-.menu{display:flex;align-items:center;padding:12px 6px;border-bottom:1px solid #0a4dff33;cursor:pointer}
-.menu:last-child{border:none}.icon{width:44px;height:44px;border-radius:50%;background:#0a4dff33;display:flex;align-items:center;justify-content:center;font-size:22px;margin-right:12px}
-.nav{position:fixed;bottom:0;left:0;right:0;background:#010d1f;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #0a4dff}
-.nav a{color:#7ecbff;text-decoration:none;font-size:12px;text-align:center}.nav a.on{color:#00cfff;border-bottom:2px solid #00cfff}
-#langModal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000a;z-index:99;align-items:center;justify-content:center}
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020a1f;color:#fff;font-family:'Segoe UI',Arial,sans-serif;padding-bottom:95px}
+.header{padding:18px 16px 10px;display:flex;justify-content:space-between;align-items:flex-start}
+.header h1{font-size:42px;font-style:italic}.header h1 span{color:#00d4ff}
+.header p{font-style:italic;color:#cbd5ff;margin-top:2px}
+.tagline{text-align:right;color:#00d4ff;font-style:italic;font-size:13px;line-height:1.3}
+.card{background:linear-gradient(180deg,#06225e,#020f38);border:1px solid #1e90ff;border-radius:14px;margin:10px 12px;padding:14px;box-shadow:0 0 15px #1e90ff66}
+.profile{display:flex;gap:14px;align-items:center}
+.avatar{width:85px;height:85px;border-radius:50%;border:2px solid #00d4ff;display:flex;align-items:center;justify-content:center;font-size:48px;background:#06225e;box-shadow:0 0 12px #00d4ff}
+.badge{background:#0a3a8a;border:1px solid #00d4ff;color:#fff;padding:3px 12px;border-radius:20px;font-size:13px}
+.mid{color:#00d4ff;font-weight:800;font-size:22px}
+.motto{font-style:italic;color:#fff;margin-top:4px}
+.wallet-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.witem{display:flex;gap:10px;align-items:center}
+.wicon{width:48px;height:48px;border-radius:50%;background:#0a3a8a;display:flex;align-items:center;justify-content:center;font-size:24px}
+.wval{color:#00d4ff;font-weight:800;font-size:22px}
+.menu-row{display:flex;align-items:center;padding:13px 4px;border-bottom:1px solid #1e90ff33}
+.menu-row:last-child{border:none}
+.micon{width:46px;height:46px;border-radius:50%;background:#0a3a8a;display:flex;align-items:center;justify-content:center;font-size:22px;margin-right:12px}
+.arrow{margin-left:auto;color:#00d4ff;font-size:22px}
+.pill{background:#0a3a8a;padding:5px 14px;border-radius:15px;font-size:13px;color:#00d4ff}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#020a1f;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #1e90ff}
+.nav a{color:#8aa0d0;text-decoration:none;font-size:12px;text-align:center}
+.nav a.on{color:#00d4ff}
+.hidebtn{color:#00d4ff;font-size:13px;text-decoration:underline;cursor:pointer}
 </style></head><body>
-<div style="padding:16px;display:flex;justify-content:space-between"><div><h1 style="font-style:italic"><span style="color:#fff">👑 My</span> <span style="color:#00cfff">Account</span></h1><p style="font-style:italic;color:#aac" data-i18n="subtitle">Manage your profile and account settings</p></div><div style="text-align:right;color:#00cfff;font-style:italic;font-size:13px">👑 Bigger Dreams<br>Better Moves<br>Higher Earnings</div></div>
+<div class="header">
+<div><h1>👑 My <span>Account</span></h1><p>Manage your profile and account settings</p></div>
+<div class="tagline">👑<br>Bigger Dreams<br>Better Moves<br>Higher Earnings</div>
+</div>
 
-<div class="card" style="display:flex;gap:14px;align-items:center">
-<div style="width:80px;height:80px;border-radius:50%;border:2px solid #00cfff;display:flex;align-items:center;justify-content:center;font-size:40px;background:#0a4dff33">👤</div>
-<div><span style="background:#0a4dff55;border:1px solid #00cfff;padding:2px 10px;border-radius:20px;font-size:12px">✅ Verified</span><div style="margin-top:6px">Member ID:<br><b id="mid" style="color:#00cfff;font-size:20px">{{ member_id }}</b></div><div style="font-style:italic;color:#7ecbff" data-i18n="motto">Your goals. Our priority!</div><div style="font-size:13px;color:#aac">{{ user_name }}</div></div>
+<div class="card profile">
+<div class="avatar">👤</div>
+<div><span class="badge">✅ Verified</span><div style="margin-top:6px">Member ID:</div><div class="mid">{{ member_id }}</div><div class="motto">Your goals. Our priority!</div><div style="font-size:13px;color:#8aa0d0">{{ user_name }}</div></div>
 </div>
 
 <div class="card">
-<div style="display:flex;justify-content:space-between"><b>💼 <span data-i18n="wallet">WALLET OVERVIEW</span></b><a href="#" onclick="toggleBal(event)" style="color:#00cfff;font-size:13px">Hide Balance 👁️</a></div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
-<div>💳 <span data-i18n="balance">Wallet Balance</span><br><b class="bal" style="color:#00cfff;font-size:20px">UGX {{ wallet_balance }}</b></div>
-<div>💰 <span data-i18n="invested">Total Invested</span><br><b style="color:#00cfff;font-size:20px">UGX {{ total_invested_f }}</b></div>
-<div>💵 <span data-i18n="income">Total Income</span><br><b style="color:#00cfff;font-size:20px">UGX {{ total_income_f }}</b></div>
-<div>📈 <span data-i18n="active">Active Investments</span><br><b style="color:#00cfff;font-size:20px">{{ active_investments }}</b></div>
-</div></div>
-
-<div class="card"><b>👤 <span data-i18n="menu">ACCOUNT MENU</span></b>
-<div class="menu" onclick="location.href='/personal'"><div class="icon">👤</div><div style="flex:1"><b data-i18n="pinfo">Personal Information</b><br><small style="color:#7ecbff" data-i18n="pinfo2">View and update your personal details</small></div>></div>
-<div class="menu" onclick="location.href='/security'"><div class="icon">🔒</div><div style="flex:1"><b data-i18n="sec">Security Settings</b><br><small style="color:#7ecbff" data-i18n="sec2">Change password and manage security</small></div>></div>
-<div class="menu" onclick="location.href='/bank'"><div class="icon">💳</div><div style="flex:1"><b>Bank / Payment Details</b><br><small style="color:#7ecbff">Manage your payment methods</small></div>></div>
-<div class="menu"><div class="icon">🛡️</div><div style="flex:1"><b>KYC Verification</b><br><small style="color:#7ecbff">Verify your account (if required)</small></div><span style="background:#0a4dff55;padding:4px 10px;border-radius:12px;font-size:12px">Not Required</span>></div>
-<div class="menu"><div class="icon">🔔</div><div style="flex:1"><b>Notification Settings</b><br><small style="color:#7ecbff">Manage your notification preferences</small></div>></div>
-<div class="menu" onclick="document.getElementById('langModal').style.display='flex'"><div class="icon">🌐</div><div style="flex:1"><b data-i18n="lang">Language</b><br><small style="color:#7ecbff">Choose your preferred language</small></div><span id="langCur" style="background:#0a4dff55;padding:4px 12px;border-radius:12px">{{ lang_name }}</span>></div>
+<div style="display:flex;justify-content:space-between;align-items:center"><b>💼 WALLET OVERVIEW</b><span class="hidebtn" onclick="toggleBal()">Hide Balance 👁️</span></div>
+<div class="wallet-grid">
+<div class="witem"><div class="wicon">👛</div><div>Wallet Balance<br><span class="wval bal">UGX {{ wallet_balance }}</span></div></div>
+<div class="witem"><div class="wicon">💽</div><div>Total Invested<br><span class="wval">UGX {{ total_invested_f }}</span></div></div>
+<div class="witem"><div class="wicon">💰</div><div>Total Income<br><span class="wval">UGX {{ total_income_f }}</span></div></div>
+<div class="witem"><div class="wicon">📈</div><div>Active Investments<br><span class="wval">{{ active_investments }}</span></div></div>
+</div>
 </div>
 
-<div id="langModal"><div class="card" style="width:80%">
-<h3>Choose Language</h3>
-<div class="menu" onclick="setLang('en','English')">English</div>
-<div class="menu" onclick="setLang('zh','中文')">中文 Chinese</div>
-<div class="menu" onclick="setLang('ja','日本語')">日本語 Japanese</div>
-<button onclick="document.getElementById('langModal').style.display='none'" style="margin-top:10px;width:100%;padding:10px;background:#0a4dff;border:none;color:#fff;border-radius:8px">Close</button>
-</div></div>
+<div class="card">
+<b>👤 ACCOUNT MENU</b>
+<div class="menu-row" onclick="location.href='/personal'"><div class="micon">👤</div><div><b>Personal Information</b><br><small style="color:#8aa0d0">View and update your personal details</small></div><div class="arrow">›</div></div>
+<div class="menu-row" onclick="location.href='/security'"><div class="micon">🔒</div><div><b>Security Settings</b><br><small style="color:#8aa0d0">Change password and manage security</small></div><div class="arrow">›</div></div>
+<div class="menu-row"><div class="micon">💳</div><div><b>Bank / Payment Details</b><br><small style="color:#8aa0d0">Manage your payment methods</small></div><div class="arrow">›</div></div>
+<div class="menu-row"><div class="micon">🛡️</div><div><b>KYC Verification</b><br><small style="color:#8aa0d0">Verify your account (if required)</small></div><span class="pill" style="margin-left:auto">Not Required</span><div class="arrow">›</div></div>
+<div class="menu-row"><div class="micon">🔔</div><div><b>Notification Settings</b><br><small style="color:#8aa0d0">Manage your notification preferences</small></div><div class="arrow">›</div></div>
+<div class="menu-row" onclick="document.getElementById('langM').style.display='flex'"><div class="micon">🌐</div><div><b>Language</b><br><small style="color:#8aa0d0">Choose your preferred language</small></div><span class="pill" id="langCur" style="margin-left:auto">{{ lang_name }}</span><div class="arrow">›</div></div>
+</div>
+
+<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div style="color:#00d4ff;font-style:italic">Discipline today...<br>Financial freedom tomorrow!</div><div style="text-align:center">👑<br><b>CODEX</b><br><small>INVEST • GROW • WIN</small></div></div>
+
+<div id="langM" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000a;align-items:center;justify-content:center;z-index:99"><div class="card" style="width:85%"><h3>Choose Language</h3><div class="menu-row" onclick="setLang('en','English')"><b>English</b></div><div class="menu-row" onclick="setLang('zh','中文')"><b>中文 Chinese</b></div><div class="menu-row" onclick="setLang('ja','日本語')"><b>日本語 Japanese</b></div><button onclick="document.getElementById('langM').style.display='none'" style="width:100%;padding:10px;margin-top:10px;background:#1e90ff;border:none;color:#fff;border-radius:8px">Close</button></div></div>
 
 <div class="nav"><a href="/home">🏠<br>Home</a><a href="/invest">📊<br>Invest</a><a href="/transactions">🔄<br>Transactions</a><a href="/referrals">👥<br>Referrals</a><a href="/account" class="on">👤<br>Account</a></div>
-
 <script>
-const T={
-en:{subtitle:"Manage your profile and account settings",motto:"Your goals. Our priority!",wallet:"WALLET OVERVIEW",balance:"Wallet Balance",invested:"Total Invested",income:"Total Income",active:"Active Investments",menu:"ACCOUNT MENU",pinfo:"Personal Information",pinfo2:"View and update your personal details",sec:"Security Settings",sec2:"Change password and manage security",lang:"Language"},
-zh:{subtitle:"管理您的个人资料和账户设置",motto:"您的目标。我们的优先！",wallet:"钱包总览",balance:"钱包余额",invested:"总投资",income:"总收入",active:"活跃投资",menu:"账户菜单",pinfo:"个人信息",pinfo2:"查看和更新您的个人详细信息",sec:"安全设置",sec2:"更改密码和管理安全",lang:"语言"},
-ja:{subtitle:"プロフィールとアカウント設定を管理",motto:"あなたの目標。私たちの優先事項！",wallet:"ウォレット概要",balance:"ウォレット残高",invested:"総投資額",income:"総収入",active:"アクティブな投資",menu:"アカウントメニュー",pinfo:"個人情報",pinfo2:"個人の詳細を表示および更新",sec:"セキュリティ設定",sec2:"パスワード変更とセキュリティ管理",lang:"言語"}};
-function applyLang(l){const d=T[l]||T.en;document.querySelectorAll('[data-i18n]').forEach(e=>{const k=e.getAttribute('data-i18n');if(d[k])e.textContent=d[k]});localStorage.setItem('lang',l)}
-function setLang(code,name){applyLang(code);document.getElementById('langCur').textContent=name;document.getElementById('langModal').style.display='none';fetch('/set-language',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lang:code})});}
-applyLang(localStorage.getItem('lang')||'{{ lang_code or "en" }}');
-function toggleBal(e){e.preventDefault();document.querySelectorAll('.bal').forEach(b=>b.textContent=b.textContent.includes('***')?'UGX {{ wallet_balance }}':'***')}
+function toggleBal(){document.querySelectorAll('.bal').forEach(b=>{b.dataset.v=b.dataset.v||b.textContent;b.textContent=b.textContent.includes('*')?b.dataset.v:'***'})}
+function setLang(c,n){document.getElementById('langCur').textContent=n;document.getElementById('langM').style.display='none';fetch('/set-language',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lang:c})}).then(()=>location.reload())}
 </script></body></html>
