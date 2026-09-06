@@ -5,10 +5,18 @@ def db():
     c=sqlite3.connect('database.db'); c.row_factory=sqlite3.Row; return c
 def ok(): return session.get('is_admin')
 def guard():
-    if not ok(): return redirect('/admin-login')
+    if not ok(): return redirect('/admin/login')
     return None
 BASE="<a href=/admin>Dashboard</a> | <a href=/admin/users>Users</a> | <a href=/admin/deposits>Deposits</a> | <a href=/admin/withdrawals>Withdrawals</a> | <a href=/admin/plans>Plans</a> | <a href=/admin/rewards>Rewards</a> | <a href=/admin/referrals>Referrals</a> | <a href=/admin/support>Support</a> | <a href=/admin/announce>Announce</a> | <a href=/admin/reports>Reports</a> | <a href=/admin/settings>Settings</a> | <a href=/admin/security>Security</a><hr>{c}"
 
+@admin_bp.route('/login', methods=['GET','POST'])
+def login():
+    from flask import request, session, redirect
+    if request.method=='POST':
+        # TODO: check real admin password here
+        session['is_admin']=True
+        return redirect('/admin/')
+    return '<form method=post><input name=u placeholder=username><input name=p type=password placeholder=password><button>Login</button></form>'
 @admin_bp.route('/')
 def adm_dash():
     if g:=guard(): return g
