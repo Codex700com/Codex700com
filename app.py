@@ -601,66 +601,53 @@ def api_chat():
     return json.load(open(CHAT_FILE))
 
 
-CHECKIN_REWARD=500
+REWARDS=[500,700,1000,1500,2000,3000,5000]
 def ensure_daily_checkin(con):
-    con.execute("CREATE TABLE IF NOT EXISTS daily_checkin (user_id INTEGER PRIMARY KEY, last_check TEXT)")
+    con.execute("CREATE TABLE IF NOT EXISTS daily_checkin (user_id INTEGER PRIMARY KEY, last_check TEXT, streak INTEGER DEFAULT 0)")
     con.commit()
-
 @app.route("/checkin", methods=["GET","POST"])
 def checkin_page():
     from datetime import datetime, timedelta
     uid=session.get("uid")
     if not uid: return redirect("/login")
     con=db(); ensure_daily_checkin(con)
-    row=con.execute("SELECT last_check FROM daily_checkin WHERE user_id=?",(uid,)).fetchone()
-    now=datetime.utcnow()
-    last=None
+    row=con.execute("SELECT last_check, streak FROM daily_checkin WHERE user_id=?",(uid,)).fetchone()
+    now=datetime.utcnow()+timedelta(hours=3)
+    today=now.date().isoformat()
+    last_check=None; streak=0
     if row and row[0]:
-        try: last=datetime.fromisoformat(row[0])
+        try:
+            last_check=datetime.fromisoformat(row[0]); streak=row[1] or 0
         except: pass
-    can = (last is None) or (now-last>=timedelta(hours=24))
-    msg=""
-    if request.method=="POST":
-        if can:
-            con.execute("INSERT OR REPLACE INTO daily_checkin (user_id,last_check) VALUES (?,?)",(uid,now.isoformat()))
-            con.execute("UPDATE users SET balance=balance+? WHERE id=?",(CHECKIN_REWARD,uid))
-            con.commit(); last=now; can=False
-            msg=f"<div style='background:#052e16;border:1px solid #16a34a;color:#22c55e;padding:12px;border-radius:10px;margin:12px;text-align:center;font-weight:700'>Successfully checked in! UGX {CHECKIN_REWARD:,} added.</div>"
+    last_date=last_check.date().isoformat() if last_check else None
+    claimed=(last_date==today)
+    if claimed:
+        cur_day=streak or 1; can=False
+    else:
+        cur_day=streak+1 if (last_check and (now.date()-last_check.date()).days==1) else 1
+        cur_day=((cur_day-1)%7)+1
+        can=True
+    reward=[500,700,1000,1500,2000,3000,5000][(cur_day-1)%7]
+    if request.method=="POST" and can:
+        con.execute("INSERT OR REPLACE INTO daily_checkin (user_id,last_check,streak) VALUES (?,?,?)",(uid,now.isoformat(),cur_day))
+        con.execute("UPDATE users SET balance=balance+? WHERE id=?",(reward,uid))
+        try: con.execute("INSERT INTO transactions(user_id,type,amount,status,created_at) VALUES(?,?,?,?,?)",(uid,"Daily Checkin Day "+str(cur_day),reward,"completed",now.isoformat()))
+        except: pass
+        con.commit(); claimed=True; can=False; streak=cur_day
+    nxt=datetime(now.year,now.month,now.day)+timedelta(days=1)
+    secs=int((nxt-now).total_seconds()) if claimed else 0
+    cards=""
+    for i,amt in enumerate([500,700,1000,1500,2000,3000,5000],1):
+        if (claimed and i<=cur_day) or (not claimed and i<cur_day):
+            st='<div style="background:#16a34a;color:#fff;font-size:11px;padding:4px 8px;border-radius:12px;margin-top:6px">Claimed</div>'; bo="border:2px solid #00ff66"; bg="background:#052e16"
+        elif i==cur_day and can:
+            st='<div style="background:#f59e0b;color:#000;font-size:11px;padding:4px 8px;border-radius:12px;margin-top:6px;font-weight:800">Claim</div>'; bo="border:2px solid #f59e0b"; bg="background:#0a0a3a"
         else:
-            msg="<div style='margin:12px;text-align:center;color:#1da1f2'>Already checked in.</div>"
-    rem = f"new Date(new Date('{last.isoformat()}').getTime()+24*3600000)" if (last and not can) else "null"
+            st='<div style="background:#334155;color:#cbd5e1;font-size:11px;padding:4px 8px;border-radius:12px;margin-top:6px">Pending</div>'; bo="border:1px solid #1e90ff55"; bg="background:#0a1440"
+        cards+=f'<div style="flex:1;{bg};{bo};border-radius:12px;padding:8px 4px;text-align:center"><div style="color:#00cfff;font-size:12px">Day {i}</div><div style="font-size:28px">X</div><div style="font-size:11px">UGX {amt:,}</div>{st}</div>'
+    claim_html=f'<div style="margin:10px;padding:16px;background:linear-gradient(135deg,#0a3cc0,#00cfff);border-radius:16px;text-align:center"><div>UGX {reward:,}</div><form method="POST"><button style="background:#00c853;color:#fff;padding:14px 18px;border-radius:12px;font-weight:900">CLAIM REWARD</button></form></div>' if can else f'<div style="margin:10px;padding:16px;background:#001a5e;border-radius:16px;text-align:center"><div style="color:#00ff66">CLAIMED</div><div>Next reward in:</div><div id="timer" style="font-size:32px;color:#ffcc00">--:--:--</div><script>let s={secs};function tick(){{let h=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=s%60;document.getElementById("timer").innerText=String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0");if(s>0)s--;}};tick();setInterval(tick,1000);</script></div>'
     con.close()
-    return f"""<html><head><meta name='viewport' content='width=device-width,initial-scale=1'>
-<style>
-/* SHINING GOLD THEME */
-body{background:#000!important;color:#f5d67b!important}
-.card,.gbox{
-  background:#0a0a0a!important;
-  border:1px solid #1da1f2!important;
-  border-radius:14px!important;
-  box-shadow:0 0 12px rgba(251,191,36,0.55),0 0 28px rgba(251,191,36,0.18),inset 0 0 8px rgba(251,191,36,0.12)!important;
-  color:#ffffff!important;
-}
-.gbox b,.card b{
-  color:#1da1f2!important;
-  text-shadow:0 0 8px rgba(251,191,36,0.9)!important;
-  font-weight:800!important;
-}
-a{color:#1da1f2!important}
-button,.btn{
-  background:linear-gradient(180deg,#ffffff,#1da1f2)!important;
-  color:#000!important;
-  border:none!important;
-  box-shadow:0 0 15px rgba(251,191,36,0.7)!important;
-  font-weight:800!important;
-  border-radius:10px!important;
-}
-h1,h2,h3{color:#ffffff!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!important}
-.grid4 .gbox{height:88px;min-height:88px}
-</style>
-</head><body style='margin:0;background:#000;color:#fff;font-family:sans-serif;text-align:center'><div style='padding:14px;font-weight:800'>DAILY CHECK-IN</div>{msg}<div style='margin:20px;border:1px solid #222;border-radius:16px;padding:30px;background:#0a0a0a'><div style='font-size:60px'>📅</div><div>Reward: <b style='color:#1da1f2'>UGX {CHECKIN_REWARD:,}</b></div><div id='tm' style='color:#1da1f2;font-weight:800;margin:12px;font-size:20px'></div><form method='POST'><button {"disabled" if not can else ""} style='background:{'#1da1f2' if can else '#333'};color:#fff;border:0;padding:14px 40px;border-radius:10px;font-weight:800'>{"Check In Now" if can else "Checked In"}</button></form><div style='color:#666;font-size:13px'>No check-in = no reward.<br>Timer resets each check-in.</div></div><a href='/home' style='color:#1da1f2'>Back</a><script>let end={rem};function tick(){{let e=document.getElementById('tm');if(!end){{e.innerText='Ready!';return;}}let d=end-new Date();if(d<=0){{e.innerText='Ready! Refresh.';return;}}let h=Math.floor(d/3600000),m=Math.floor(d%3600000/60000),s=Math.floor(d%60000/1000);e.innerText=h+'h '+m+'m '+s+'s';}}setInterval(tick,1000);tick();</script></body></html>"""
-
-
+    return "<html><head><meta name=viewport content='width=device-width,initial-scale=1'></head><body style='background:#020a24;color:#fff;font-family:Arial'><h2>DAILY CHECK-IN</h2><div style='display:flex;gap:6px'>"+cards+"</div>"+claim_html+"<a href=/home>Back</a></body></html>"
 @app.route("/investments")
 def investments_page():
     from flask import session, redirect
