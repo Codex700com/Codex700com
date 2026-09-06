@@ -722,7 +722,7 @@ def is_admin():
         con=sqlite3.connect("database.db")
         r=con.execute("SELECT phone FROM users WHERE id=?",(uid,)).fetchone()
         con.close()
-        return r and r[0]=="YOUR_PHONE"
+        return r and r[0]=="0770000000"
     except: return False
 
 @app.route("/admin")
