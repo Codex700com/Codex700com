@@ -149,6 +149,13 @@ def menu():
 
  except: pass
  h=S+hdr()+"<div class=card><h3>Menu</h3>"
+ try:
+  _adm=False
+  import sqlite3 as _sq
+  _cc=_sq.connect("codex700.db"); _cc.row_factory=_sq.Row
+  _row=_cc.execute("SELECT is_admin FROM users WHERE id=?",(session.get("uid"),)).fetchone(); _cc.close()
+  if _row and _row["is_admin"]==1: ls.insert(len(ls)-1,("Admin Panel","/admin/"))
+ except: pass
  for nm,lk in ls: h+="<p><a href='"+lk+"'>"+nm+"</a></p>"
  return h+"</div>"+N
 @app.route("/notifications")
