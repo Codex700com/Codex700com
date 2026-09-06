@@ -772,15 +772,34 @@ def raffle_buy():
     import sqlite3, datetime
     data = request.get_json(force=True)
     qty = max(1, int(data.get("qty",1)))
-    uid = str(session.get("uid") or session.get("user_id") or 1)
+    PRICE=5000
+    cost=PRICE*qty
+    uid = session.get("uid") or session.get("user_id")
+    if not uid:
+        return jsonify(ok=False, msg="Please login first")
     con = sqlite3.connect("codex.db")
+    # ensure tables exist in codex.db, but balance is in main db - try both
+    import glob
+    maindb = "codex700.db" if os.path.exists("codex700.db") else "codex.db"
+    # use main db connection for balance
+    import sqlite3 as s2
+    mcon = s2.connect(maindb)
+    mcon.row_factory = s2.Row
+    u = mcon.execute("SELECT balance FROM users WHERE id=?", (uid,)).fetchone()
+    bal = u["balance"] if u else 0
+    if bal < cost:
+        mcon.close(); con.close()
+        return jsonify(ok=False, msg=f"Insufficient balance. Need UGX {cost:,}, you have UGX {bal:,}")
+    mcon.execute("UPDATE users SET balance=balance-? WHERE id=?", (cost, uid))
+    mcon.execute("INSERT INTO transactions(user_id,type,amount,status,date,ref) VALUES(?,?,?,?,?,?)", (uid,"raffle",-cost,"completed",datetime.datetime.now().isoformat(),f"RAFFLE-{qty}"))
+    mcon.commit(); mcon.close()
     con.execute("CREATE TABLE IF NOT EXISTS rtickets (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, qty INT, date TEXT)")
     for _ in range(qty):
-        con.execute("INSERT INTO rtickets (user_id,qty,date) VALUES (?,?,?)", (uid,1,datetime.datetime.now().isoformat()))
+        con.execute("INSERT INTO rtickets (user_id,qty,date) VALUES (?,?,?)", (str(uid),1,datetime.datetime.now().isoformat()))
     con.commit()
-    total = con.execute("SELECT COUNT(*) FROM rtickets WHERE user_id=?", (uid,)).fetchone()[0]
+    total = con.execute("SELECT COUNT(*) FROM rtickets WHERE user_id=?", (str(uid),)).fetchone()[0]
     con.close()
-    return jsonify(ok=True, msg=f"Purchased {qty} ticket(s)!", total=total)
+    return jsonify(ok=True, msg=f"Purchased {qty} ticket(s) for UGX {cost:,}!", total=total)
 
 @app.route("/raffle-my")
 def raffle_my():
