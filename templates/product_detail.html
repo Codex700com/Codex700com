@@ -14,7 +14,7 @@ body{background:#0a0a0a;color:#fff;font-family:Arial;margin:0;padding-bottom:80p
 .related,.carousel,.slider,.others,.list{display:none!important}
 </style></head><body>
 <div class="top"><a class="back" href="/invest">←</a><span id="t1"></span></div>
-<div class="hero"><img src="/static/miner.jpg"></div>
+<div class="hero">{% if plan.startswith("K") %}<img src="/static/miner_k.jpg">{% else %}<img src="/static/miner.jpg">{% endif %}</div>
 <div class="info"><div style="display:flex;justify-content:space-between"><h2 id="t2"></h2><div style="text-align:right"><div id="price" style="color:#00aaff;font-weight:800;font-size:20px"></div><div id="roi" style="color:#aaa;font-size:12px"></div></div></div>
 <p style="color:#aaa;font-size:14px;margin:10px 0">After the cycle is over, you can collect all the income from this machine.</p>
 <div class="box"><div class="line"><span style="color:#aaa">Lock period</span><b id="days"></b></div><div class="line"><span style="color:#aaa">Daily income</span><b id="daily"></b></div><div class="line"><span style="color:#aaa">Total income</span><b id="total"></b></div></div>
