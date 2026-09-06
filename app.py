@@ -824,6 +824,55 @@ def adm_delmsg(mid):
     con.commit(); con.close()
     return '<script>history.back()</script>'
 
+
+# --- ADD5 ---
+def log_act(uid, act):
+ try:
+  import sqlite3; c=sqlite3.connect("codex700.db")
+  c.execute("CREATE TABLE IF NOT EXISTS activity (id INTEGER PRIMARY KEY, user_id INT, act TEXT, created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+  c.execute("INSERT INTO activity (user_id, act) VALUES (?,?)",(uid,act)); c.commit(); c.close()
+ except: pass
+
+@app.route("/admin/deposits")
+def adm_deps():
+ import sqlite3
+ if str(session.get("uid"))!="1": return "Not admin",403
+ con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
+ ds=list(con.execute("SELECT * FROM deposits ORDER BY id DESC")); con.close()
+ r="".join([f"<tr><td>{x['id']}</td><td>{x['user_id']}</td><td>{x['amount']}</td><td>{x['status']}</td><td><a href='/admin/dep_ok/{x['id']}'>Approve</a></td></tr>" for x in ds])
+ return f"<h2>Deposits</h2><table border=1>{r}</table><a href='/admin'>back</a>"
+
+@app.route("/admin/activity")
+def adm_act():
+ import sqlite3
+ if str(session.get("uid"))!="1": return "Not admin",403
+ con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
+ acts=list(con.execute("SELECT * FROM activity ORDER BY id DESC LIMIT 200")); con.close()
+ r="".join([f"<p>{x['created']} - User {x['user_id']}: {x['act']}</p>" for x in acts])
+ return f"<h2>Activity Monitor</h2><a href='/admin'>back</a><br>{r}"
+
+@app.route("/admin/search")
+def adm_search():
+ import sqlite3
+ q=request.args.get("q","")
+ if str(session.get("uid"))!="1": return "Not admin",403
+ con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
+ us=list(con.execute("SELECT * FROM users WHERE name LIKE? OR phone LIKE? LIMIT 50", (f"%{q}%",f"%{q}%"))); con.close()
+ r="".join([f"<p>{u['id']} - {u['name']} - {u['phone']} - <a href='/admin/user/{u['id']}'>Edit</a></p>" for u in us])
+ return f"<form><input name=q value='{q}' placeholder='search'><button>Search</button></form>{r}<a href='/admin'>back</a>"
+
+@app.route("/admin/stats")
+def adm_stats():
+ import sqlite3
+ if str(session.get("uid"))!="1": return "Not admin",403
+ con=sqlite3.connect("codex700.db")
+ tot=con.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+ bal=con.execute("SELECT SUM(balance) FROM users").fetchone()[0] or 0
+ wd=con.execute("SELECT COUNT(*) FROM withdrawals WHERE status='pending'").fetchone()[0] if True else 0
+ con.close()
+ return f"<h2>Stats</h2><p>Total users: {tot}</p><p>Total balance: {bal}</p><p>Pending WD: {wd}</p><a href='/admin'>back</a>"
+# --- END ADD5 ---
+
 if __name__=="__main__":
     print("Starting on http://127.0.0.1:5000/")
     app.run(host="127.0.0.1", port=5000, debug=True)
