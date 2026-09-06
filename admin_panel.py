@@ -21,7 +21,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px;borde
 .btnr{background:#ef4444;color:#fff}.btng{background:#22c55e;color:#fff}
 input,textarea{width:100%;padding:8px;margin:5px 0;background:#0b0f1a;border:1px solid #334155;color:#fff;border-radius:8px}
 </style></head><body><div class=sidebar><h2 style="color:#fbbf24;margin:0">CODEX</h2><small>ADMIN PANEL</small>
-<a href=/admin/>Dashboard</a><a href=/admin/users>Users</a><a href=/admin/deposits>Deposits</a><a href=/admin/withdrawals>Withdrawals</a><a href=/admin/plans>Plans</a><a href=/admin/notify>Notify</a><a href=/admin/settings>Settings</a><a href=/admin/logout style="color:#ef4444">Logout</a></div><div class=main>"""
+<a href=/admin/>Dashboard</a><a href=/admin/users>Users</a><a href=/admin/deposits>Deposits</a><a href=/admin/withdrawals>Withdrawals</a><a href=/admin/plans2>Plans</a><a href=/admin/notify>Notify</a><a href=/admin/settings>Settings</a><a href=/admin/logout style="color:#ef4444">Logout</a></div><div class=main>"""
 BOT="</div></body></html>"
 def page(c): return render_template_string(TOP+c+BOT)
 @admin_bp.route('/login', methods=['GET','POST'])
@@ -129,9 +129,9 @@ _ensure_plans()
 def plans2():
     if guard(): return guard()
     con=db(); rows=con.execute("SELECT * FROM plans ORDER BY min_amount").fetchall(); con.close()
-    h="<div class=panel><h3>Investment Plans - Editable</h3><a class=btn href=/admin/plans_add>Add Plan</a><table><tr><th>Name</th><th>Min UGX</th><th>Return %</th><th>Days</th><th>Action</th></tr>"
+    h="<div class=panel><h3>Investment Plans - Editable</h3><a class=btn href=/admin/plans2_add>Add Plan</a><table><tr><th>Name</th><th>Min UGX</th><th>Return %</th><th>Days</th><th>Action</th></tr>"
     for r in rows:
-        h+="<tr><td>"+str(r["name"])+"</td><td>"+str(r["min_amount"])+"</td><td>"+str(r["return_pct"])+"%</td><td>"+str(r["duration_days"])+"</td><td><a class=btn href=/admin/plans_edit/"+str(r["id"])+">Edit</a> <a class=btnr href=/admin/plans_del/"+str(r["id"])+">Del</a></td></tr>"
+        h+="<tr><td>"+str(r["name"])+"</td><td>"+str(r["min_amount"])+"</td><td>"+str(r["return_pct"])+"%</td><td>"+str(r["duration_days"])+"</td><td><a class=btn href=/admin/plans2_edit/"+str(r["id"])+">Edit</a> <a class=btnr href=/admin/plans2_del/"+str(r["id"])+">Del</a></td></tr>"
     return page(h+"</table></div>")
 
 @admin_bp.route('/plans_add', methods=['GET','POST'])
@@ -139,7 +139,7 @@ def plans_add():
     if guard(): return guard()
     if request.method=='POST':
         con=db(); con.execute("INSERT INTO plans(name,min_amount,return_pct,duration_days) VALUES(?,?,?,?)",(request.form.get('name'),int(request.form.get('min',0)),int(request.form.get('pct',0)),int(request.form.get('days',0)))); con.commit(); con.close()
-        return redirect('/admin/plans2')
+        return redirect('/admin/plans22')
     return page("<div class=panel><h3>Add Plan</h3><form method=post><input name=name placeholder='Plan name'><input name=min type=number placeholder='Min price UGX'><input name=pct type=number placeholder='Return %'><input name=days type=number placeholder='Duration days'><button class=btn>Save</button></form></div>")
 
 @admin_bp.route('/plans_edit/<int:pid>', methods=['GET','POST'])
@@ -148,7 +148,7 @@ def plans_edit(pid):
     con=db()
     if request.method=='POST':
         con.execute("UPDATE plans SET name=?, min_amount=?, return_pct=?, duration_days=? WHERE id=?",(request.form.get('name'),int(request.form.get('min',0)),int(request.form.get('pct',0)),int(request.form.get('days',0)),pid)); con.commit(); con.close()
-        return redirect('/admin/plans2')
+        return redirect('/admin/plans22')
     r=con.execute("SELECT * FROM plans WHERE id=?",(pid,)).fetchone(); con.close()
     return page(f"<div class=panel><h3>Edit {r['name']}</h3><form method=post><input name=name value=\"{r['name']}\"><input name=min type=number value=\"{r['min_amount']}\"><input name=pct type=number value=\"{r['return_pct']}\"><input name=days type=number value=\"{r['duration_days']}\"><button class=btn>Update Price</button></form></div>")
 
@@ -156,4 +156,4 @@ def plans_edit(pid):
 def plans_del(pid):
     if guard(): return guard()
     con=db(); con.execute("DELETE FROM plans WHERE id=?",(pid,)); con.commit(); con.close()
-    return redirect('/admin/plans2')
+    return redirect('/admin/plans22')
