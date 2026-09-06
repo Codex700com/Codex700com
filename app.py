@@ -712,3 +712,138 @@ def deposit_submit():
 
 
 
+# --- ADMIN PANEL Deep Blue / White ---
+def is_admin():
+    from flask import session
+    uid = session.get("user_id")
+    return str(uid)=="1"
+
+@app.route("/admin")
+def admin_panel():
+    if not is_admin(): return "Forbidden",403
+    con=db(); c=con.cursor()
+    # auto-migrate
+    try: c.execute("ALTER TABLE users ADD COLUMN blocked INT DEFAULT 0")
+    except: pass
+    try: c.execute("ALTER TABLE users ADD COLUMN joined TEXT DEFAULT ''")
+    except: pass
+    con.commit()
+    users=list(c.execute("SELECT id,name,phone,password,invite,refcode,balance,blocked FROM users ORDER BY id DESC"))
+    deps=list(c.execute("SELECT * FROM deposits WHERE status='pending' ORDER BY id DESC"))
+    # withdrawals = transactions pending withdraw
+    try:
+        wds=list(c.execute("SELECT * FROM transactions WHERE type='withdraw' AND status='Pending' ORDER BY id DESC"))
+    except:
+        wds=[]
+    chats=list(c.execute("SELECT * FROM chats ORDER BY id DESC LIMIT 100"))
+    con.close()
+    S="<meta name='viewport' content='width=device-width,initial-scale=1'><style>body{background:#001a33;color:#fff;font-family:sans-serif;margin:0;padding:0 0 40px}h1{background:#003366;padding:18px;margin:0;color:#fff;text-align:center;border-bottom:3px solid #fff}h2{background:#0a84ff;color:#fff;padding:10px;margin:20px 0 0}.card{background:#fff;color:#001a33;margin:10px;border-radius:12px;padding:12px}.card b{color:#003366}table{width:100%;border-collapse:collapse;font-size:13px}th{background:#003366;color:#fff;padding:8px}td{padding:8px;border-bottom:1px solid #ccc;text-align:center}.btn{background:#0a84ff;color:#fff;border:none;padding:6px 12px;border-radius:6px;margin:2px;cursor:pointer}.btn.red{background:#c00}.btn.green{background:#0a0}.btn.white{background:#fff;color:#003366;border:1px solid #003366}input,textarea{width:100%;padding:10px;margin:6px 0;border:1px solid #0a84ff;border-radius:8px}</style>"
+    H=f"<h1>👑 CODEX700 ADMIN</h1>"
+    # users
+    H+="<h2>Users - Block / Unblock / Delete / View</h2><div class=card><table><tr><th>ID</th><th>Name</th><th>Phone</th><th>Password</th><th>Invite</th><th>RefCode</th><th>Bal</th><th>Status</th><th>Action</th></tr>"
+    for u in users:
+        uid,name,phone,pwd,inv,refc,bal,blk=u
+        st="BLOCKED" if blk else "Active"
+        H+=f"<tr><td>{uid}</td><td>{name}</td><td>{phone}</td><td>{pwd}</td><td>{inv}</td><td>{refc}</td><td>{bal}</td><td>{st}</td><td><form method=POST action='/admin/user_action' style='display:inline'><input type=hidden name=uid value='{uid}'><button class=btn name=act value='block'>Block</button><button class=btn name=act value='unblock'>Unblock</button><button class='btn red' name=act value='delete' onclick='return confirm(\"Delete?\")'>Delete</button></form></td></tr>"
+    H+="</table></div>"
+    # deposits
+    H+="<h2>Pending Deposits - Approve</h2><div class=card>"
+    if not deps: H+="No pending deposits"
+    for d in deps:
+        # d is sqlite Row tuple - adapt indexes
+        try:
+            did=d[0]; duid=d[1]; damt=d[3]; dtx=d[4]
+        except: continue
+        H+=f"<p>#{did} User:{duid} Amount:{damt} Tx:{dtx} <form method=POST action='/admin/deposit_action' style='display:inline'><input type=hidden name=did value='{did}'><button class='btn green' name=act value='approve'>Approve</button><button class='btn red' name=act value='reject'>Reject</button></form></p>"
+    H+="</div>"
+    # withdrawals
+    H+="<h2>Pending Withdrawals</h2><div class=card>"
+    if not wds: H+="No pending withdrawals"
+    for w in wds:
+        try: wid=w[0]; wuid=w[1]; wamt=w[3]
+        except: continue
+        H+=f"<p>#{wid} User:{wuid} Amount:{wamt} <form method=POST action='/admin/withdraw_action' style='display:inline'><input type=hidden name=wid value='{wid}'><button class='btn green' name=act value='approve'>Approve</button><button class='btn red' name=act value='reject'>Reject</button></form></p>"
+    H+="</div>"
+    # notification
+    H+="<h2>Send Notification</h2><div class=card><form method=POST action='/admin/notify'><input name=uid placeholder='User ID or ALL'><textarea name=msg placeholder='Message'></textarea><button class=btn>Send Notification</button></form></div>"
+    # support chats
+    H+="<h2>Support Messages - Reply Privately</h2><div class=card>"
+    for ch in chats:
+        try: cid=ch[0]; cu=ch[1]; cwho=ch[2] if len(ch)>3 else ""; cmsg=ch[3] if len(ch)>4 else ch[2]
+        except: continue
+        H+=f"<p><b>User {cu} ({cwho}):</b> {cmsg}</p>"
+    H+="<form method=POST action='/admin/reply'><input name=uid placeholder='User ID'><textarea name=msg placeholder='Reply message'></textarea><button class=btn>Reply</button></form></div>"
+    H+="<div style='text-align:center;margin:20px'><a href='/home' class='btn white'>Back Home</a></div>"
+    return S+H
+
+@app.route("/admin/user_action",methods=["POST"])
+def admin_user_action():
+    if not is_admin(): return "Forbidden",403
+    from flask import request
+    uid=request.form["uid"]; act=request.form["act"]
+    con=db(); c=con.cursor()
+    if act=="block": c.execute("UPDATE users SET blocked=1 WHERE id=?",(uid,))
+    elif act=="unblock": c.execute("UPDATE users SET blocked=0 WHERE id=?",(uid,))
+    elif act=="delete": c.execute("DELETE FROM users WHERE id=?",(uid,))
+    con.commit(); con.close()
+    return "<script>location='/admin'</script>"
+
+@app.route("/admin/deposit_action",methods=["POST"])
+def admin_deposit_action():
+    if not is_admin(): return "Forbidden",403
+    from flask import request
+    import datetime
+    did=request.form["did"]; act=request.form["act"]
+    con=db(); c=con.cursor()
+    d=c.execute("SELECT user_id,amount FROM deposits WHERE id=?",(did,)).fetchone()
+    if d and act=="approve":
+        uid,amt=d[0],d[1]
+        c.execute("UPDATE deposits SET status='approved' WHERE id=?",(did,))
+        c.execute("UPDATE users SET balance=balance+? WHERE id=?",(amt,uid))
+        c.execute("INSERT INTO transactions(user_id,type,amount,status,date,ref) VALUES(?,?,?,?,?,?)",(uid,"deposit",amt,"Completed",datetime.datetime.now().isoformat(),f"DEP{did}"))
+        c.execute("INSERT INTO notifications(user_id,msg,date) VALUES(?,?,?)",(uid,f"Deposit of UGX {amt} approved","now"))
+    elif d:
+        c.execute("UPDATE deposits SET status='rejected' WHERE id=?",(did,))
+    con.commit(); con.close()
+    return "<script>location='/admin'</script>"
+
+@app.route("/admin/withdraw_action",methods=["POST"])
+def admin_withdraw_action():
+    if not is_admin(): return "Forbidden",403
+    from flask import request
+    wid=request.form["wid"]; act=request.form["act"]
+    con=db(); c=con.cursor()
+    if act=="approve":
+        c.execute("UPDATE transactions SET status='Completed' WHERE id=?",(wid,))
+    else:
+        # reject: refund?
+        t=c.execute("SELECT user_id,amount FROM transactions WHERE id=?",(wid,)).fetchone()
+        if t: c.execute("UPDATE users SET balance=balance+? WHERE id=?",(-t[1],t[0]))
+        c.execute("UPDATE transactions SET status='Rejected' WHERE id=?",(wid,))
+    con.commit(); con.close()
+    return "<script>location='/admin'</script>"
+
+@app.route("/admin/notify",methods=["POST"])
+def admin_notify():
+    if not is_admin(): return "Forbidden",403
+    from flask import request
+    uid=request.form["uid"]; msg=request.form["msg"]
+    con=db(); c=con.cursor()
+    if uid.upper()=="ALL":
+        users=c.execute("SELECT id FROM users").fetchall()
+        for u in users: c.execute("INSERT INTO notifications(user_id,msg,date) VALUES(?,?,?)",(u[0],msg,"now"))
+    else:
+        c.execute("INSERT INTO notifications(user_id,msg,date) VALUES(?,?,?)",(uid,msg,"now"))
+    con.commit(); con.close()
+    return "<script>location='/admin'</script>"
+
+@app.route("/admin/reply",methods=["POST"])
+def admin_reply():
+    if not is_admin(): return "Forbidden",403
+    from flask import request
+    uid=request.form["uid"]; msg=request.form["msg"]
+    con=db(); c=con.cursor()
+    c.execute("INSERT INTO chats(user_id,who,msg,date) VALUES(?,?,?,?)",(uid,"admin",msg,"now"))
+    c.execute("INSERT INTO notifications(user_id,msg,date) VALUES(?,?,?)",(uid,"Admin replied to your support message","now"))
+    con.commit(); con.close()
+    return "<script>location='/admin'</script>"
