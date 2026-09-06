@@ -636,25 +636,30 @@ def investments_page():
     return S+hdr()+h+N
 
 
-@app.route("/admin")
+@app.route("/admin", methods=["GET","POST"])
 def admin():
     import sqlite3
-    uid=session.get("user_id") or session.get("uid")
-    if not uid: return "Login first",403
     con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
-    me=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone()
-    if not me or not me["is_admin"]:
+    me_id=session.get("uid")
+    me=con.execute("SELECT * FROM users WHERE id=?", (me_id,)).fetchone() if me_id else None
+    if not ((me and me["is_admin"]) or str(me_id)=="1"):
         con.close(); return "Not admin",403
     users=list(con.execute("SELECT id,name,phone,balance,refcode,is_admin FROM users ORDER BY id DESC LIMIT 100"))
     con.close()
-    rows="".join([f"<tr><td>{u['id']}</td><td>{u['name']}</td><td>{u['phone']}</td><td>{u['balance']}</td><td>{u['refcode']}</td><td>{'ADMIN' if u['is_admin'] else ''}</td></tr>" for u in users])
-    return f"""
-    <head><meta name=viewport content="width=device-width,initial-scale=1">
-    <style>body{{background:#000;color:#ffffff;font-family:sans-serif;padding:15px}}table{{width:100%;border-collapse:collapse}}td,th{{border:1px solid #1da1f2;padding:8px;font-size:13px}}th{{background:#1da1f2;color:#000}}</style></head>
-    <h2>👑 Codex700 Admin - {len(users)} users</h2>
-    <table><tr><th>ID</th><th>Name</th><th>Phone</th><th>Bal</th><th>Ref</th><th>Role</th></tr>{rows}</table>
-    <p><a href="/" style="color:#1da1f2">← Back to app</a></p>
-    """
+    rows="".join([f"<tr><td>{u['id']}</td><td><a href='/admin/user/{u['id']}' style='color:#1da1f2'>{u['name']}</a></td><td>{u['phone']}</td><td>{u['balance']}</td></tr>" for u in users])
+    return f"<h2>Admin</h2><table border=1>{rows}</table><a href='/'>Back</a>"
+@app.route("/admin/user/<int:uid>", methods=["GET","POST"])
+def admin_user(uid):
+    import sqlite3
+    con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
+    me_id=session.get("uid")
+    me=con.execute("SELECT * FROM users WHERE id=?", (me_id,)).fetchone() if me_id else None
+    if not ((me and me["is_admin"]) or str(me_id)=="1"):
+        con.close(); return "Not admin",403
+    if request.method=="POST":
+        con.execute("UPDATE users SET balance=? WHERE id=?", (float(request.form.get("balance","0")), uid)); con.commit()
+    u=con.execute("SELECT * FROM users WHERE id=?", (uid,)).fetchone(); con.close()
+    return f"<form method=post><h2>Edit {u['name']}</h2><input name=balance value='{u['balance']}'><button>Save</button></form>"
 
 if __name__=="__main__":
     print("Starting on http://127.0.0.1:5000/")
