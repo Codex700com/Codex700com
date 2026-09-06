@@ -1020,6 +1020,78 @@ def adm_ref():
  r="".join([f"<tr><td>{x['id']}</td><td>{x['name']}</td><td>{x['phone']}</td><td>{x['referred_by'] if 'referred_by' in x.keys() else '-'}</td></tr>" for x in rows])
  return f"<h2>Referrals (L1)</h2><p>Top referrers query coming in Push3</p><table border=1><tr><th>User</th><th>Name</th><th>Phone</th><th>Referred By</th></tr>{r}</table><a href='/admin2'>back</a>"
 # --- END PUSH2 ---
+
+# PUSH3
+@app.route("/admin/announce", methods=["GET","POST"])
+def adm_announce():
+ from flask import session, request, redirect
+ import sqlite3
+ if str(session.get("uid"))!="1": return "Not admin",403
+ con=sqlite3.connect("codex700.db")
+ con.execute("CREATE TABLE IF NOT EXISTS announcements (id INTEGER PRIMARY KEY, title TEXT, body TEXT, created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+ if request.method=="POST":
+  con.execute("INSERT INTO announcements (title,body) VALUES (?,?)",(request.form.get("title"),request.form.get("body")))
+  con.commit()
+ con.row_factory=__import__("sqlite3").Row
+ rows=list(con.execute("SELECT * FROM announcements ORDER BY id DESC LIMIT 20"))
+ con.close()
+ r="".join([f"<p><b>{x['title']}</b><br>{x['body']}<br><small>{x['created']}</small></p><hr>" for x in rows])
+ return f"<h2>Announcements</h2><form method=post><input name=title placeholder='Title' required><br><textarea name=body placeholder='Body' required></textarea><br><button>Publish</button></form><hr>{r}<a href='/admin2'>back</a>"
+
+@app.route("/admin/settings", methods=["GET","POST"])
+def adm_settings():
+ from flask import session, request
+ import sqlite3, json, os
+ if str(session.get("uid"))!="1": return "Not admin",403
+ fp="settings.json"
+ s={}
+ if os.path.exists(fp):
+  s=json.load(open(fp))
+ if request.method=="POST":
+  s={"min_wd":request.form.get("min_wd"),"fee":request.form.get("fee"),"maint":request.form.get("maint"),"support":request.form.get("support")}
+  json.dump(s, open(fp,"w"))
+ return f"<h2>Platform Settings</h2><form method=post>Min WD<input name=min_wd value='{s.get('min_wd','')}'> Fee<input name=fee value='{s.get('fee','')}'> Maint<input name=maint value='{s.get('maint','off')}'> Support<input name=support value='{s.get('support','')}'><button>Save</button></form><a href='/admin2'>back</a>"
+
+@app.route("/admin/reports")
+def adm_reports():
+ from flask import session
+ import sqlite3
+ if str(session.get("uid"))!="1": return "Not admin",403
+ con=sqlite3.connect("codex700.db")
+ def q(s):
+  try: return con.execute(s).fetchone()[0] or 0
+  except: return 0
+ con.close()
+ return f"<h2>Reports</h2><p>Daily deposits: {q("SELECT SUM(amount) FROM deposits WHERE date(created)=date('now') AND status='approved'")}</p><p>Daily WD: {q("SELECT SUM(amount) FROM withdrawals WHERE date(created)=date('now')")}</p><p><a href='/admin/export_csv?type=deposits'>Export deposits CSV</a> | <a href='/admin/export_csv?type=users'>Export users CSV</a></p><a href='/admin2'>back</a>"
+
+@app.route("/admin/export_csv")
+def adm_export():
+ from flask import session, Response
+ import sqlite3, csv, io
+ if str(session.get("uid"))!="1": return "Not admin",403
+ typ=__import__("flask").request.args.get("type","users")
+ con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
+ tbl="users" if typ=="users" else "deposits"
+ rows=list(con.execute(f"SELECT * FROM {tbl} LIMIT 1000")); con.close()
+ out=io.StringIO()
+ if rows:
+  w=csv.DictWriter(out, fieldnames=rows[0].keys()); w.writeheader()
+  for r in rows: w.writerow(dict(r))
+ return Response(out.getvalue(), mimetype="text/csv", headers={"Content-Disposition":f"attachment;filename={tbl}.csv"})
+
+@app.route("/admin/security")
+def adm_sec():
+ from flask import session
+ import sqlite3
+ if str(session.get("uid"))!="1": return "Not admin",403
+ con=sqlite3.connect("codex700.db")
+ con.execute("CREATE TABLE IF NOT EXISTS admin_log (id INTEGER PRIMARY KEY, admin_id INT, action TEXT, created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+ con.row_factory=sqlite3.Row
+ rows=list(con.execute("SELECT * FROM admin_log ORDER BY id DESC LIMIT 100"))
+ con.close()
+ r="".join([f"<p>{x['created']} - admin {x['admin_id']}: {x['action']}</p>" for x in rows])
+ return f"<h2>Admin Security Log</h2>{r}<a href='/admin2'>back</a>"
+# END PUSH3
 if __name__=="__main__":
     print("Starting on http://127.0.0.1:5000/")
     app.run(host="127.0.0.1", port=5000, debug=True)
