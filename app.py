@@ -937,7 +937,7 @@ def admin2():
 
 # --- PUSH2 ---
 @app.route("/admin/plans", methods=["GET","POST"])
-def adm_plans():
+def adm_plans_2():
  from flask import session, request, redirect; import sqlite3
  if str(session.get("uid"))!="1": return "Not admin",403
  con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
