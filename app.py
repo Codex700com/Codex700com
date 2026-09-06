@@ -549,7 +549,7 @@ def transactions_page_auto():
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "transactions".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
 
 @app.route("/withdraw")
-def withdraw_fixed():
+def withdraw():
     from flask import render_template, session
     bal = session.get("balance", 0)
     return render_template("withdraw.html", balance=bal)
