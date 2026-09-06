@@ -486,6 +486,11 @@ if(found){{
 </script></body></html>
 """
 
+@app.route("/product")
+def product_page():
+    from flask import render_template
+    return render_template("product_detail.html")
+
 @app.route("/invest")
 def invest_page_auto():
     import pathlib
