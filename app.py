@@ -638,16 +638,37 @@ def investments_page():
 
 @app.route("/admin", methods=["GET","POST"])
 def admin():
-    import sqlite3
-    con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
-    me_id=session.get("uid")
-    me=con.execute("SELECT * FROM users WHERE id=?", (me_id,)).fetchone() if me_id else None
-    if not ((me and me["is_admin"]) or str(me_id)=="1"):
-        con.close(); return "Not admin",403
-    users=list(con.execute("SELECT id,name,phone,balance,refcode,is_admin FROM users ORDER BY id DESC LIMIT 100"))
-    con.close()
-    rows="".join([f"<tr><td>{u['id']}</td><td><a href='/admin/user/{u['id']}' style='color:#1da1f2'>{u['name']}</a></td><td>{u['phone']}</td><td>{u['balance']}</td></tr>" for u in users])
-    return f"<h2>Admin</h2><table border=1>{rows}</table><a href='/'>Back</a>"
+ import sqlite3
+ con=sqlite3.connect("codex700.db")
+ con.row_factory=sqlite3.Row
+ me_id=session.get("uid")
+ me=con.execute("SELECT * FROM users WHERE id=?", (me_id,)).fetchone() if me_id else None
+ admin_ok=(me and "is_admin" in me.keys() and me["is_admin"]) or str(me_id)=="1"
+
+ if not admin_ok:
+  con.close()
+  return "Not admin",403
+ users=list(con.execute("SELECT * FROM users ORDER BY id DESC LIMIT 100"))
+ con.close()
+ out="<head><meta name=viewport content='width=device-width,initial-scale=1'><style>body{background:#000;color:#fff;font-family:sans-serif;padding:10px}a.btn{padding:4px 8px;margin:2px;display:inline-block;border-radius:4px;font-size:12px;text-decoration:none;color:#000}table{width:100%;border-collapse:collapse}td,th{border:1px solid #333;padding:6px;font-size:12px}</style></head>"
+ out+="<h2>Admin - "+str(len(users))+" users</h2>"
+ out+="<a class=btn style='background:#0f0' href='/admin/wd'>Withdrawals</a> <a class=btn style='background:#0ff' href='/admin/plans'>Plans</a> <a class=btn style='background:#ff0' href='/admin/notif'>Notifs</a> <a class=btn style='background:#ccc' href='/'>Back</a><br><br>"
+ out+="<table><tr><th>ID</th><th>User</th><th>Bal</th><th>Acts</th></tr>"
+ for u in users:
+  uid=u["id"]
+  out+="<tr><td>"+str(uid)+"</td><td>"+str(u["name"])+"<br><small>"+str(u["phone"])+"</small></td><td>"+str(u["balance"])+"</td><td>"
+  out+="<a class=btn style='background:#1da1f2' href='/admin/user/"+str(uid)+"'>Bal</a>"
+  out+="<a class=btn style='background:#0f0' href='/admin/dm/"+str(uid)+"'>DM</a>"
+  out+="<a class=btn style='background:#f90' href='/admin/block/"+str(uid)+"'>Blk</a>"
+  out+="<a class=btn style='background:#f90' href='/admin/unblock/"+str(uid)+"'>Unblk</a>"
+  out+="<a class=btn style='background:#ccc' href='/admin/viewpw/"+str(uid)+"'>PW</a>"
+  out+="<a class=btn style='background:#ff0' href='/admin/resetpw/"+str(uid)+"'>RstPW</a>"
+  out+="<a class=btn style='background:#0ff' href='/admin/resetlink/"+str(uid)+"'>Link</a>"
+  out+="<a class=btn style='background:#f00;color:#fff' href='/admin/deluser/"+str(uid)+"'>Del</a>"
+  out+="</td></tr>"
+ out+="</table>"
+ return out
+
 @app.route("/admin/user/<int:uid>", methods=["GET","POST"])
 def admin_user(uid):
     import sqlite3
