@@ -1,59 +1,30 @@
-<!DOCTYPE html><html><head><style>/* CODEX BLUE-BLACK-WHITE THEME */body{background:#000!important;color:#fff!important}.card,.box,.panel{background:#111!important;border:1px solid #00b0ff!important;color:#fff!important}button,.btn{background:#00b0ff!important;color:#000!important;border:none!important;font-weight:700}a{color:#00b0ff!important}input,select,textarea{background:#111!important;color:#fff!important;border:1px solid #00b0ff!important}h1,h2,h3{color:#fff!important}</style><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<!DOCTYPE html>
+<html><head><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-body{background:#0a1220;color:#fff;font-family:system-ui;margin:0;padding:16px}
-.card{background:linear-gradient(135deg,#0f2a6b,#0a1a4a);border-radius:16px;padding:20px;margin-bottom:16px}
-.plan{font-size:12px;background:#1e4ed8;padding:4px 10px;border-radius:8px;display:inline-block}
-.j2{font-size:42px;font-weight:800;color:#00d4ff}
-.row{display:flex;gap:16px;margin:12px 0}
-.row div{flex:1}.lbl{font-size:12px;color:#aaa}.val{font-weight:700;color:#00ffb0}
-.box{border-radius:16px;padding:24px;text-align:center;margin-bottom:16px}
-.ok{background:linear-gradient(135deg,#052e22,#0a4a35);border:1px solid #00ff88}
-.err{background:linear-gradient(135deg,#3a0a12,#5a0f1a);border:1px solid #ff2d55}
-.btn{display:block;width:100%;padding:14px;border-radius:12px;margin:8px 0;text-align:center;font-weight:700;text-decoration:none}
-.btn-g{background:#00c853;color:#fff}.btn-r{background:#ff2d55;color:#fff}
-.btn-o{border:1px solid #4a6fa5;color:#fff;background:#0f1e3a}
-.info{background:rgba(0,0,0,.3);border-radius:12px;padding:16px;margin:16px 0;text-align:left}
-</style><style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script>
-<style>
-:root{ --main-blue:#00b0ff !important; }
-body{ background:#000 !important; color:#fff !important; }
-.card, .info-box, .detail-card{ background:#111 !important; border-radius:12px !important; }
-.price, .amount-blue{ color:#00b0ff !important; font-weight:700; }
-.btn-primary, .invest-btn, button[type=submit]{ background:#00b0ff !important; border:none !important; color:#fff !important; border-radius:10px !important; }
-</style>
-<style>:root{--main-blue:#00b0ff!important}body{background:#000!important}button,.btn,.btn-primary,.invest-btn,input[type=submit]{background:#00b0ff!important;border-color:#00b0ff!important;color:#fff!important}*{border-color:#00b0ff33!important}</style>
-
-<style>body{font-size:14px!important;line-height:1.4!important}h1{font-size:20px!important}h2{font-size:18px!important}h3{font-size:16px!important}p,div,span,a,button{font-size:14px!important}</style><style>
-body{background:radial-gradient(ellipse at top,#0a1e3f 0%,#050a14 60%)!important;color:#e0f0ff!important;font-family:Arial,sans-serif!important}
-.card,.container,.box{background:linear-gradient(180deg,#0a1428,#070d1d)!important;border:1px solid rgba(0,229,255,0.25)!important;border-radius:12px!important;box-shadow:0 0 20px rgba(30,144,255,0.15)!important;color:#e0f0ff!important}
-h1,h2,h3{color:#00e5ff!important;text-shadow:0 0 12px rgba(0,229,255,0.6)!important}
-button,.btn{background:linear-gradient(90deg,#1e90ff,#00e5ff)!important;color:#001220!important;border:none!important;border-radius:8px!important;font-weight:800!important;box-shadow:0 0 15px rgba(0,229,255,0.4)!important}
-.num,.balance,.amount{color:#00ff88!important;text-shadow:0 0 12px rgba(0,255,136,0.6)!important}
-a{color:#00e5ff!important}
-input,select{background:#050a14!important;color:#fff!important;border:1px solid #00b0ff!important;border-radius:8px!important}
-</style>
-</head>
-<body>
-<div class="card"><span class="plan">Investment Plan</span><div class="j2">{{plan_name|default('J2')}}</div>
-<div class="row"><div><div class="lbl">Daily Return</div><div class="val">{{daily|default("UGX 3,000")}}</div></div>
-<div><div class="lbl">Duration</div><div style="font-weight:700">{{duration|default("16")}} Days</div></div>
-<div><div class="lbl">Total Return</div><div class="val">{{total|default("UGX 48,000")}}</div></div></div>
-<div class="lbl">Purchase Amount</div><div style="font-size:22px;font-weight:800">UGX {{amount|default('1,000,000')}}</div></div>
-
-{% if success %}
-<div class="box ok"><div style="font-size:48px">✅</div><h2 style="color:#00ff88">Successfully Purchased!</h2>
-<p>Your investment in {{plan_name|default('J2')}} has been activated.<br>You will start earning daily returns from tomorrow.</p>
-<div class="info"><div>Investment Plan <span style="float:right;background:#00c853;padding:2px 10px;border-radius:20px;font-size:12px">Active</span></div><div style="font-size:20px;font-weight:800">{{plan_name|default('J2')}}</div>
-<div class="row"><div><div class="lbl">Purchase Amount</div>UGX {{amount}}</div><div><div class="lbl">Daily Return</div>{{daily|default("UGX 3,000")}}</div><div><div class="lbl">Duration</div>{{duration|default("16")}} Days</div><div><div class="lbl">Total Return</div><div class="val">{{total|default("UGX 48,000")}}</div></div></div></div>
-<a class="btn btn-g" href="/my-investments">View My Investments</a>
-<a class="btn btn-o" href="/">Back to Home</a></div>
-{% else %}
-<div class="box err"><div style="font-size:48px">❌</div><h2 style="color:#ff5a7a">Insufficient Funds</h2>
-<p>You don't have enough balance to purchase this investment plan.</p>
-<div class="info"><div class="lbl">Your current balance</div><div style="color:#ff5a7a;font-weight:800;font-size:20px">UGX {{balance|default('0')}}</div><hr>
-<div class="lbl">Requi#00b0ff amount</div><div style="font-weight:800;font-size:20px">UGX {{amount}}</div></div>
-<a class="btn btn-r" href="/deposit">Top Up Wallet</a>
-<a class="btn btn-o" href="javascript:history.back()">Go Back</a></div>
-{% endif %}
-<p style="text-align:center;color:#888;font-size:13px">Need help? Contact our support team ></p>
-</body></html>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#020617;color:#fff;font-family:sans-serif;padding:12px}
+.top{background:linear-gradient(135deg,#0a1a4d,#071033);border:1px solid #1e40ff;border-radius:16px;padding:16px;position:relative}
+.top-badge{background:#1e40af;padding:6px 14px;border-radius:8px;display:inline-block;font-weight:600}
+.plan-name{font-size:48px;font-weight:800;color:#38bdf8;margin:8px 0}
+.plan-stats{display:flex;margin:12px 0;border-bottom:1px solid #1e3a8a;padding-bottom:12px}
+.stat{flex:1;border-right:1px solid #334155;padding-right:10px}.stat:last-child{border:none}
+.val{font-size:22px;font-weight:800;color:#22d3ee}.val-white{font-size:18px;font-weight:700}
+.success-card{background:#052e22;border:1px solid #10b981;border-radius:16px;padding:24px 16px;margin-top:12px;text-align:center}
+.check{width:80px;height:80px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 12px}
+.success-title{font-size:28px;font-weight:800;color:#6ee7b7;margin-bottom:8px}
+.detail-box{background:rgba(0,0,0,.3);border:1px solid #10b981;border-radius:12px;padding:16px;margin-top:16px;text-align:left}
+.detail-grid{display:flex;margin-top:14px;padding-top:14px;border-top:1px solid #065f46}
+.dcol{flex:1;text-align:center}.green{color:#22c55e}
+.btn{display:block;width:100%;padding:15px;border-radius:12px;font-weight:700;text-decoration:none;margin-top:12px;text-align:center}
+.btn-green{background:#16a34a;color:#fff}.btn-dark{background:#0a1a3a;color:#fff;border:1px solid #3b82f6}
+.active{background:#14532d;color:#86efac;padding:6px 14px;border-radius:20px;font-size:13px}
+</style></head><body>
+<div class="top"><div class="top-badge">Investment Plan</div><div class="plan-name">{{plan_name}}</div>
+<div class="plan-stats"><div class="stat"><small>Daily Return</small><div class="val">{{daily_pct}}%</div></div><div class="stat"><small>Duration</small><div class="val-white">{{duration_days}} Days</div></div><div class="stat"><small>Total Return</small><div class="val">+{{daily_pct*duration_days}}%</div></div></div>
+<div><small>Purchase Amount</small><div style="font-size:26px;font-weight:800">UGX {{amount}}</div></div></div>
+<div class="success-card"><div class="check">✓</div><div class="success-title">Successfully Purchased!</div>
+<p>Your investment in <b style="color:#22c55e">{{plan_name}}</b> has been activated.<br>You will start earning daily returns from tomorrow.</p>
+<div class="detail-box"><div style="display:flex;justify-content:space-between;align-items:center"><div><small>Investment Plan</small><div style="font-size:22px;font-weight:800">{{plan_name}}</div></div><div class="active">Active</div></div>
+<div class="detail-grid"><div class="dcol"><small>Purchase Amount</small><br><b>UGX {{amount}}</b></div><div class="dcol"><small>Daily Return</small><br><b>{{daily_pct}}%</b></div><div class="dcol"><small>Duration</small><br><b>{{duration_days}} Days</b></div><div class="dcol"><small>Total Return</small><br><b class="green">+{{daily_pct*duration_days}}%</b></div></div></div>
+<a href="/my-investments" class="btn btn-green">View My Investments</a><a href="/" class="btn btn-dark">Back to Home</a>
+<div style="margin-top:14px;color:#94a3b8;font-size:13px">Need help? Contact our support team ></div></div></body></html>
