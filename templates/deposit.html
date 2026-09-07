@@ -19,7 +19,7 @@ button{background:#00b0ff;color:#000;padding:14px;width:100%;border:none;border-
 <div class="card"><h3>HOW TO DEPOSIT</h3><ol style="color:#ddd;line-height:1.8;margin:0;padding-left:20px">
 <li>Dial *185# on your Airtel line</li><li>Select Send Money</li><li>Send money to <span id="anum2">0758878297</span></li>
 <li>Enter amount</li><li>Fill details below</li><li>Upload screenshot</li><li>Click "Confirm Deposit"</li></ol></div>
-<form method="POST" enctype="multipart/form-data">
+<form action="/deposit-submit" method="POST" enctype="multipart/form-data">
 <input name="phone_number" placeholder="Number you deposited from" required>
 <input name="amount" type="number" placeholder="Amount" required>
 <input name="txid" placeholder="Transaction ID" required>
