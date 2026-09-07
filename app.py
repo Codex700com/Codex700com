@@ -340,10 +340,7 @@ def confirm_buy(pid):
         bal=0
     if bal < price:
         con.close()
-        return f"""<div style="margin:20px;padding:16px 18px;background:#3d1a1a;border:1px solid #7f2d2d;border-radius:12px;display:flex;justify-content:space-between;align-items:center;font-family:sans-serif">
-<div style="color:#1da1f2;font-weight:600;line-height:1.5">Insufficient balance for {pid}.<br>Need UGX {price:,}.</div>
-<a href='/deposit' style="background:linear-gradient(180deg,#1da1f2,#1da1f2);color:#000;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:700;display:flex;align-items:center;gap:8px">💳 Deposit</a>
-</div>"""
+        return render_template('invest_success.html', success=False, plan_name=pid, amount=f"{price:,}", balance=f"{bal:,}"), 400
     try:
         con.execute("UPDATE users SET balance=balance-? WHERE id=?",(price,uid))
     except:
