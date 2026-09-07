@@ -639,17 +639,26 @@ def chat_page():
 
 @app.route("/api/chat", methods=["GET","POST"])
 def api_chat():
-    from flask import request, jsonify
+    from flask import request, jsonify, session
     if request.method=="POST":
         data=request.get_json(force=True)
         text=data.get("text","")[:1000]
-        user=data.get("user","Anonymous")[:30]
         if not text.strip():
             return jsonify({"ok":False})
+        user=data.get("user","Anonymous")[:30]
         msgs=json.load(open(CHAT_FILE))
         msgs.append({"user":user,"text":text,"time":datetime.datetime.now().strftime("%H:%M")})
         msgs=msgs[-200:]
         json.dump(msgs, open(CHAT_FILE,"w"))
+        try:
+            uid=session.get("user_id") or session.get("uid") or session.get("id")
+            if uid:
+                con=db()
+                con.execute("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, message TEXT, admin_reply TEXT, created_at TEXT)")
+                con.execute("INSERT INTO messages (user_id, message, created_at) VALUES (?,?,?)",(uid, text.strip(), datetime.datetime.now().isoformat()))
+                con.commit(); con.close()
+        except Exception as e:
+            print("msg save error", e)
         return jsonify({"ok":True})
     return json.load(open(CHAT_FILE))
 

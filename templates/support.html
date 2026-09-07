@@ -57,7 +57,7 @@ function render(){
 function sendMsg(){
  let inp=document.getElementById('tin');let txt=inp.value.trim();if(!txt)return;
  msgs.push({text:txt,me:true});localStorage.setItem('support_msgs',JSON.stringify(msgs));inp.value='';render();
- setTimeout(()=>{msgs.push({text:'Thanks for contacting support! We will reply soon. 🙏',me:false});localStorage.setItem('support_msgs',JSON.stringify(msgs));render();},800);
+ // auto-reply removed - admin will reply via /admin/chats
 }
 document.getElementById('imgIn').onchange=function(e){
  let f=e.target.files[0];if(!f)return;let r=new FileReader();
