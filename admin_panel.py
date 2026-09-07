@@ -21,7 +21,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px;borde
 .btnr{background:#ef4444;color:#fff}.btng{background:#22c55e;color:#fff}
 input,textarea{width:100%;padding:8px;margin:5px 0;background:#0b0f1a;border:1px solid #334155;color:#fff;border-radius:8px}
 </style></head><body><div class=sidebar><h2 style="color:#fbbf24;margin:0">CODEX</h2><small>ADMIN PANEL</small>
-<a href=/admin/>Dashboard</a><a href=/admin/users>Users</a><a href=/admin/deposits>Deposits</a><a href=/admin/withdrawals>Withdrawals</a><a href=/admin/plans2>Plans</a><a href=/admin/notify>Notify</a><a href=/admin/settings>Settings</a><a href=/admin/logout style="color:#ef4444">Logout</a></div><div class=main>"""
+<a href=/admin/>Dashboard</a><a href=/admin/users>Users</a><a href=/admin/deposits>Deposits</a><a href=/admin/withdrawals>Withdrawals</a><a href=/admin/plans2>Plans</a><a href=/admin/notify>Notify</a><a href=/admin/chats>Chats</a><a href=/admin/settings>Settings</a><a href=/admin/logout style="color:#ef4444">Logout</a></div><div class=main>"""
 BOT="</div></body></html>"
 def page(c): return render_template_string(TOP+c+BOT)
 @admin_bp.route('/login', methods=['GET','POST'])
@@ -66,7 +66,10 @@ def users():
     else: rows=con.execute("SELECT * FROM users ORDER BY id DESC LIMIT 100").fetchall()
     con.close()
     h="<div class=panel><h3>Users ("+str(len(rows))+")</h3><table><tr><th>ID</th><th>Name</th><th>Phone</th><th>Balance</th></tr>"
-    for r in rows: h+="<tr><td>"+str(r["id"])+"</td><td>"+str(r["name"])+"</td><td>"+str(r["phone"])+"</td><td>"+str(r["balance"])+"</td></tr>"
+    for r in rows:
+        blk=r["blocked"] if "blocked" in r.keys() else 0
+        h+="<tr><td>"+str(r["id"])+"</td><td>"+str(r["name"])+"</td><td>"+str(r["phone"])+"</td><td>UGX "+str(r["balance"])+"</td><td><a class=btn href=/admin/user_block/"+str(r["id"])+">"+("Unblock" if blk else "Block")+"</a></td></tr>"
+    h=h.replace("<th>Balance</th>","<th>Balance</th><th>Action</th>")
     h+="</table></div>"
     return page(h)
 @admin_bp.route('/notify', methods=['GET','POST'])
@@ -86,14 +89,14 @@ def deposits():
     if guard(): return guard()
     con=db(); rows=con.execute("SELECT * FROM transactions WHERE type='deposit' ORDER BY id DESC LIMIT 100").fetchall(); con.close()
     h="<div class=panel><h3>Deposits</h3><table><tr><th>ID</th><th>User</th><th>Amount</th><th>Status</th><th>Action</th></tr>"
-    for r in rows: h+="<tr><td>"+str(r["id"])+"</td><td>"+str(r["user_id"])+"</td><td>"+str(r["amount"])+"</td><td>"+str(r["status"])+"</td><td><a class=btn href=/admin/dep_ok/"+str(r["id"])+">Approve</a></td></tr>"
+    for r in rows: h+="<tr><td>"+str(r["id"])+"</td><td>"+str(r["user_id"])+"</td><td>"+str(r["amount"])+"</td><td>"+str(r["status"])+"</td><td><a class=btn href=/admin/dep_ok/"+str(r["id"])+">Approve</a> <a class=btn style=background:#ef4444;color:#fff href=/admin/dep_no/"+str(r["id"])+">Reject</a></td></tr>"
     return page(h+"</table></div>")
 @admin_bp.route('/withdrawals')
 def withdrawals():
     if guard(): return guard()
     con=db(); rows=con.execute("SELECT * FROM transactions WHERE type='withdraw' ORDER BY id DESC LIMIT 100").fetchall(); con.close()
     h="<div class=panel><h3>Withdrawals</h3><table><tr><th>ID</th><th>User</th><th>Amount</th><th>Status</th><th>Action</th></tr>"
-    for r in rows: h+="<tr><td>"+str(r["id"])+"</td><td>"+str(r["user_id"])+"</td><td>"+str(r["amount"])+"</td><td>"+str(r["status"])+"</td><td><a class=btn href=/admin/wd_ok/"+str(r["id"])+">Approve</a></td></tr>"
+    for r in rows: h+="<tr><td>"+str(r["id"])+"</td><td>"+str(r["user_id"])+"</td><td>"+str(r["amount"])+"</td><td>"+str(r["status"])+"</td><td><a class=btn href=/admin/wd_ok/"+str(r["id"])+">Approve</a> <a class=btn style=background:#ef4444;color:#fff href=/admin/wd_no/"+str(r["id"])+">Reject</a></td></tr>"
     return page(h+"</table></div>")
 @admin_bp.route('/dep_ok/<int:i>')
 def dep_ok(i):
@@ -157,3 +160,50 @@ def plans_del(pid):
     if guard(): return guard()
     con=db(); con.execute("DELETE FROM plans WHERE id=?",(pid,)); con.commit(); con.close()
     return redirect('/admin/plans22')
+@admin_bp.route('/dep_no/<int:i>')
+def dep_no(i):
+    if guard(): return guard()
+    con=db(); con.execute("UPDATE transactions SET status='rejected' WHERE id=?", (i,)); con.commit(); con.close()
+    return redirect('/admin/deposits')
+
+@admin_bp.route('/wd_no/<int:i>')
+def wd_no(i):
+    if guard(): return guard()
+    con=db()
+    r=con.execute("SELECT * FROM transactions WHERE id=?", (i,)).fetchone()
+    if r and r["status"]!="approved":
+        con.execute("UPDATE users SET balance=balance+? WHERE id=?", (r["amount"], r["user_id"]))
+    con.execute("UPDATE transactions SET status='rejected' WHERE id=?", (i,))
+    con.commit(); con.close()
+    return redirect('/admin/withdrawals')
+
+@admin_bp.route('/user_block/<int:uid>')
+def user_block(uid):
+    if guard(): return guard()
+    con=db()
+    try: con.execute("ALTER TABLE users ADD COLUMN blocked INT DEFAULT 0")
+    except: pass
+    cur=con.execute("SELECT blocked FROM users WHERE id=?", (uid,)).fetchone()
+    nb=0 if cur["blocked"] else 1
+    con.execute("UPDATE users SET blocked=? WHERE id=?", (nb, uid))
+    con.commit(); con.close()
+    return redirect('/admin/users')
+
+# Chat reply
+@admin_bp.route('/chats')
+def chats():
+    if guard(): return guard()
+    con=db()
+    try: rows=con.execute("SELECT m.*, u.name FROM messages m JOIN users u ON u.id=m.user_id ORDER BY m.id DESC LIMIT 100").fetchall()
+    except: rows=[]
+    con.close()
+    h="<div class=panel><h3>User Messages</h3><table><tr><th>User</th><th>Msg</th><th>Reply</th></tr>"
+    for r in rows:
+        h+=f"<tr><td>{r['name']}</td><td>{r['message']}</td><td><form action=/admin/reply/{r['id']} method=post><input name=reply value='{r['admin_reply'] or ''}'><button class=btn>Reply</button></form></td></tr>"
+    return page(h+"</table></div>")
+
+@admin_bp.route('/reply/<int:mid>', methods=['POST'])
+def reply(mid):
+    if guard(): return guard()
+    con=db(); con.execute("UPDATE messages SET admin_reply=? WHERE id=?", (request.form.get('reply',''), mid)); con.commit(); con.close()
+    return redirect('/admin/chats')
