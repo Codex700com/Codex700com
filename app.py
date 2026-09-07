@@ -642,10 +642,15 @@ def api_my_chat():
  from flask import session, jsonify
  uid=session.get("user_id") or session.get("uid") or session.get("id")
  if not uid: return jsonify([])
- con=db()
- rows=con.execute("SELECT id, message as text, admin_reply, created_at FROM messages WHERE user_id=? ORDER BY id ASC",(uid,)).fetchall()
- con.close()
- return jsonify([dict(r) for r in rows])
+ try:
+  con=db()
+  con.execute("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, message TEXT, admin_reply TEXT, created_at TEXT)")
+  rows=con.execute("SELECT id, message as text, admin_reply, created_at FROM messages WHERE user_id=? ORDER BY id ASC",(uid,)).fetchall()
+  con.close()
+  return jsonify([dict(r) for r in rows])
+ except Exception as e:
+  print("my-chat error",e)
+  return jsonify([])
 
 @app.route("/api/chat", methods=["GET","POST"])
 def api_chat():
