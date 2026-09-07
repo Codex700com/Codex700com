@@ -1,41 +1,4 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>My Account</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#020a1f;color:#fff;font-family:'Segoe UI',Arial,sans-serif;padding-bottom:95px}
-.header{padding:18px 16px 10px;display:flex;justify-content:space-between;align-items:flex-start}
-.header h1{font-size:42px;font-style:italic}.header h1 span{color:#00d4ff}
-.header p{font-style:italic;color:#cbd5ff;margin-top:2px}
-.tagline{text-align:right;color:#00d4ff;font-style:italic;font-size:13px;line-height:1.3}
-.card{background:linear-gradient(180deg,#06225e,#020f38);border:1px solid #1e90ff;border-radius:14px;margin:10px 12px;padding:14px;box-shadow:0 0 15px #1e90ff66}
-.profile{display:flex;gap:14px;align-items:center}
-.avatar{width:85px;height:85px;border-radius:50%;border:2px solid #00d4ff;display:flex;align-items:center;justify-content:center;font-size:48px;background:#06225e;box-shadow:0 0 12px #00d4ff}
-.badge{background:#0a3a8a;border:1px solid #00d4ff;color:#fff;padding:3px 12px;border-radius:20px;font-size:13px}
-.mid{color:#00d4ff;font-weight:800;font-size:22px}
-.motto{font-style:italic;color:#fff;margin-top:4px}
-.wallet-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
-.witem{display:flex;gap:10px;align-items:center}
-.wicon{width:48px;height:48px;border-radius:50%;background:#0a3a8a;display:flex;align-items:center;justify-content:center;font-size:24px}
-.wval{color:#00d4ff;font-weight:800;font-size:22px}
-.menu-row{display:flex;align-items:center;padding:13px 4px;border-bottom:1px solid #1e90ff33}
-.menu-row:last-child{border:none}
-.micon{width:46px;height:46px;border-radius:50%;background:#0a3a8a;display:flex;align-items:center;justify-content:center;font-size:22px;margin-right:12px}
-.arrow{margin-left:auto;color:#00d4ff;font-size:22px}
-.pill{background:#0a3a8a;padding:5px 14px;border-radius:15px;font-size:13px;color:#00d4ff}
-.nav{position:fixed;bottom:0;left:0;right:0;background:#020a1f;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #1e90ff}
-.nav a{color:#8aa0d0;text-decoration:none;font-size:12px;text-align:center}
-.nav a.on{color:#00d4ff}
-.hidebtn{color:#00d4ff;font-size:13px;text-decoration:underline;cursor:pointer}
-</style><style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script>
-<style>
-:root{ --main-blue:#00b0ff !important; }
-body{ background:#000 !important; color:#fff !important; }
-.card, .info-box, .detail-card{ background:#111 !important; border-radius:12px !important; }
-.price, .amount-blue{ color:#00b0ff !important; font-weight:700; }
-.btn-primary, .invest-btn, button[type=submit]{ background:#00b0ff !important; border:none !important; color:#fff !important; border-radius:10px !important; }
-</style>
-<style>:root{--main-blue:#00b0ff!important}body{background:#000!important}button,.btn,.btn-primary,.invest-btn,input[type=submit]{background:#00b0ff!important;border-color:#00b0ff!important;color:#fff!important}*{border-color:#00b0ff33!important}</style>
-<style>/* CODEX BLUE-BLACK-WHITE THEME */
+<!DOCTYPE html><html><head><style>/* CODEX BLUE-BLACK-WHITE THEME */
 :root{--blue:#00b0ff;--black:#000000;--white:#ffffff;--card:#111111;}
 body{background:#000!important;color:#fff!important;font-family:system-ui,Arial,sans-serif}
 a{color:var(--blue)!important}
@@ -47,7 +10,44 @@ input,select,textarea{background:#1a1a1a!important;color:#fff!important;border:1
 .tabs button.active{background:var(--blue)!important;color:#fff!important}
 .badge{background:var(--blue)!important;color:#fff!important}
 </style>
-</head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>My Account</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#fff;font-family:'Segoe UI',Arial,sans-serif;padding-bottom:95px}
+.header{padding:18px 16px 10px;display:flex;justify-content:space-between;align-items:flex-start}
+.header h1{font-size:42px;font-style:italic}.header h1 span{color:#00b0ff}
+.header p{font-style:italic;color:#cbd5ff;margin-top:2px}
+.tagline{text-align:right;color:#00b0ff;font-style:italic;font-size:13px;line-height:1.3}
+.card{background:linear-gradient(180deg,#111,#020f38);border:1px solid #00b0ff;border-radius:14px;margin:10px 12px;padding:14px;box-shadow:0 0 15px #00b0ff66}
+.profile{display:flex;gap:14px;align-items:center}
+.avatar{width:85px;height:85px;border-radius:50%;border:2px solid #00b0ff;display:flex;align-items:center;justify-content:center;font-size:48px;background:#111;box-shadow:0 0 12px #00b0ff}
+.badge{background:#0a3a8a;border:1px solid #00b0ff;color:#fff;padding:3px 12px;border-radius:20px;font-size:13px}
+.mid{color:#00b0ff;font-weight:800;font-size:22px}
+.motto{font-style:italic;color:#fff;margin-top:4px}
+.wallet-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.witem{display:flex;gap:10px;align-items:center}
+.wicon{width:48px;height:48px;border-radius:50%;background:#0a3a8a;display:flex;align-items:center;justify-content:center;font-size:24px}
+.wval{color:#00b0ff;font-weight:800;font-size:22px}
+.menu-row{display:flex;align-items:center;padding:13px 4px;border-bottom:1px solid #00b0ff33}
+.menu-row:last-child{border:none}
+.micon{width:46px;height:46px;border-radius:50%;background:#0a3a8a;display:flex;align-items:center;justify-content:center;font-size:22px;margin-right:12px}
+.arrow{margin-left:auto;color:#00b0ff;font-size:22px}
+.pill{background:#0a3a8a;padding:5px 14px;border-radius:15px;font-size:13px;color:#00b0ff}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#000;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #00b0ff}
+.nav a{color:#8aa0d0;text-decoration:none;font-size:12px;text-align:center}
+.nav a.on{color:#00b0ff}
+.hidebtn{color:#00b0ff;font-size:13px;text-decoration:underline;cursor:pointer}
+</style><style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script>
+<style>
+:root{ --main-blue:#00b0ff !important; }
+body{ background:#000 !important; color:#fff !important; }
+.card, .info-box, .detail-card{ background:#111 !important; border-radius:12px !important; }
+.price, .amount-blue{ color:#00b0ff !important; font-weight:700; }
+.btn-primary, .invest-btn, button[type=submit]{ background:#00b0ff !important; border:none !important; color:#fff !important; border-radius:10px !important; }
+</style>
+<style>:root{--main-blue:#00b0ff!important}body{background:#000!important}button,.btn,.btn-primary,.invest-btn,input[type=submit]{background:#00b0ff!important;border-color:#00b0ff!important;color:#fff!important}*{border-color:#00b0ff33!important}</style>
+
 <body>
 <div class="header">
 <div><h1>👑 My <span>Account</span></h1><p>Manage your profile and account settings</p></div>
@@ -79,9 +79,9 @@ input,select,textarea{background:#1a1a1a!important;color:#fff!important;border:1
 <div class="menu-row" onclick="document.getElementById('langM').style.display='flex'"><div class="micon">🌐</div><div><b>Language</b><br><small style="color:#8aa0d0">Choose your prefer#00b0ff language</small></div><span class="pill" id="langCur" style="margin-left:auto">{{ lang_name }}</span><div class="arrow">›</div></div>
 </div>
 
-<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div style="color:#00d4ff;font-style:italic">Discipline today...<br>Financial freedom tomorrow!</div><div style="text-align:center">👑<br><b>CODEX</b><br><small>INVEST • GROW • WIN</small></div></div>
+<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div style="color:#00b0ff;font-style:italic">Discipline today...<br>Financial freedom tomorrow!</div><div style="text-align:center">👑<br><b>CODEX</b><br><small>INVEST • GROW • WIN</small></div></div>
 
-<div id="langM" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000a;align-items:center;justify-content:center;z-index:99"><div class="card" style="width:85%"><h3>Choose Language</h3><div class="menu-row" onclick="setLang('en','English')"><b>English</b></div><div class="menu-row" onclick="setLang('zh','中文')"><b>中文 Chinese</b></div><div class="menu-row" onclick="setLang('ja','日本語')"><b>日本語 Japanese</b></div><button onclick="document.getElementById('langM').style.display='none'" style="width:100%;padding:10px;margin-top:10px;background:#1e90ff;border:none;color:#fff;border-radius:8px">Close</button></div></div>
+<div id="langM" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000a;align-items:center;justify-content:center;z-index:99"><div class="card" style="width:85%"><h3>Choose Language</h3><div class="menu-row" onclick="setLang('en','English')"><b>English</b></div><div class="menu-row" onclick="setLang('zh','中文')"><b>中文 Chinese</b></div><div class="menu-row" onclick="setLang('ja','日本語')"><b>日本語 Japanese</b></div><button onclick="document.getElementById('langM').style.display='none'" style="width:100%;padding:10px;margin-top:10px;background:#00b0ff;border:none;color:#fff;border-radius:8px">Close</button></div></div>
 
 <div class="nav"><a href="/home">🏠<br>Home</a><a href="/invest">📊<br>Invest</a><a href="/transactions">🔄<br>Transactions</a><a href="/referrals">👥<br>Referrals</a><a href="/account" class="on">👤<br>Account</a></div>
 <script>
