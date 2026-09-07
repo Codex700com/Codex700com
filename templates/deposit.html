@@ -39,7 +39,7 @@ ol{font-size:13px;line-height:1.8;color:#ddd;margin-left:18px}
 <div class="nav"><a href="/">🏠<br>Home</a><a href="/invest">📊<br>Invest</a><a href="/wallet" class="active">👛<br>Wallet</a><a href="/referrals">👥<br>Referrals</a><a href="/account">👤<br>Account</a></div>
 <script>
 function copyNum(){navigator.clipboard.writeText(document.getElementById('agentNum').innerText);alert('Number copied: 0758878297')}
-document.getElementById('depForm').onsubmit=async e=>{e.preventDefault();let f=new FormData(e.target);let r=await fetch('/deposit-submit',{method:'POST',body:f}).then(r=>r.json());alert(r.msg);if(r.ok)e.target.reset()}
+document.getElementById('depForm').onsubmit=async e=>{e.preventDefault();let f=new FormData(e.target);try{let res=await fetch('/deposit-submit',{method:'POST',body:f});let txt=await res.text();console.log(txt);let r=JSON.parse(txt);alert(r.msg);if(r.ok)e.target.reset()}catch(err){alert('Error: '+err)}}
 </script><script>
 setInterval(async()=>{
  try{
