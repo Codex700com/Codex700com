@@ -361,6 +361,21 @@ def raffle_page_auto():
 
 
 
+
+# --- AUTO-MIGRATE OLD DB FOR PERSISTENT TIMER ---
+try:
+    import sqlite3
+    _c=sqlite3.connect("codex700.db")
+    for _q in ["ALTER TABLE investments ADD COLUMN daily INTEGER","ALTER TABLE investments ADD COLUMN duration INTEGER","ALTER TABLE investments ADD COLUMN created_at TEXT","ALTER TABLE investments ADD COLUMN end_at TEXT","ALTER TABLE investments ADD COLUMN credited INTEGER DEFAULT 0","ALTER TABLE investments ADD COLUMN status TEXT DEFAULT 'active'"]:
+        try: _c.execute(_q)
+        except: pass
+    _c.execute("CREATE TABLE IF NOT EXISTS daily_checkins (user_id TEXT PRIMARY KEY, last_claim TEXT, streak INTEGER DEFAULT 0)")
+    _c.commit(); _c.close()
+except Exception as _e:
+    print("migrate err", _e)
+# --- END MIGRATE ---
+
+
 @app.route("/confirm_buy/<pid>")
 def confirm_buy(pid):
     from flask import session, redirect
