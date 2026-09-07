@@ -979,57 +979,6 @@ def invest_success(inv_id):
     if not inv:
         return 'not found',404
 
-@app.route('/my-investments')
-def my_investments():
-    import time, sqlite3, datetime
-    uid=session.get('uid') or session.get('user_id')
-    if not uid: return redirect('/login')
-    now=int(time.time())
-    con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
-    try:
-        for inv in list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=1", (uid,))):
-            try:
-                start=inv["purchase_ts"] or now
-                daily=inv["daily_return"] or 0
-                credited=inv["credited_days"] or 0
-                duration=inv["duration_days"] or 30
-                expiry=inv["expiry_ts"] or (start+duration*86400)
-                total_days=int((expiry-start)//86400) if expiry>start else duration
-                days_passed=min(total_days, int((now-start)//86400))
-                claimable=int(days_passed-credited)
-                if claimable>0 and daily>0:
-                    con.execute("UPDATE users SET balance=balance+? WHERE id=?", (claimable*daily, uid))
-                    con.execute("UPDATE investments SET credited_days=? WHERE id=?", (credited+claimable, inv["id"]))
-                    con.execute("INSERT INTO transactions(user_id,type,amount,desc,created_ts) VALUES(?,?,?,?,?)",(uid,'daily_return',claimable*daily,f"Daily {inv['product_name']}",now))
-                if now>=expiry: con.execute("UPDATE investments SET active=0 WHERE id=?", (inv["id"],))
-            except Exception as e: print("credit err",e)
-        con.commit()
-    except Exception as e: print("credit loop",e)
-    active=list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=1 ORDER BY expiry_ts DESC", (uid,)))
-    done=list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=0 ORDER BY id DESC LIMIT 20", (uid,)))
-    def _map(inv):
-        try: d=dict(inv)
-        except: d={}
-        try:
-            for k in inv.keys(): d[k]=inv[k]
-        except: pass
-        et=d.get('expiry_ts') or 0
-        st=d.get('purchase_ts') or 0
-        try:
-            d['end_time']=datetime.datetime.fromtimestamp(et).isoformat() if isinstance(et,(int,float)) and et>1e6 else str(et)
-            d['start_time']=datetime.datetime.fromtimestamp(st).isoformat() if isinstance(st,(int,float)) and st>1e6 else str(st)
-        except: d['end_time']=str(et); d['start_time']=str(st)
-        d['plan_name']=d.get('product_name') or 'Plan'
-        return d
-    active=[_map(x) for x in active]; done=[_map(x) for x in done]
-    investments=active+done
-    con.close()
-    return render_template('my_investments.html', investments=investments, active=active, done=done, now=now)
-
-
-if __name__=='__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
-
 @app.route("/raffle-buy", methods=["POST"])
 def raffle_buy():
     from flask import request, jsonify, session

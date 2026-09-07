@@ -3,7 +3,11 @@
 {% for inv in investments %}
 <div class="card">
 <div style="display:flex;justify-content:space-between"><b style="font-size:20px;color:#38bdf8">{{ inv['plan_name'] }}</b><span class="badge {{ 'done' if inv['status']=='completed' else 'active' }}">{{ inv['status'] }}</span></div>
-<div style="margin-top:8px;display:flex;justify-content:space-between"><div>Amount<br><b>UGX {{ "{:,}".format(inv['amount']|int) }}</b></div><div>Daily<br><b>{% if inv['daily_pct'] %}{{ inv['daily_pct'] }}%{% else %}{{ (inv['daily_return']/inv['amount']*100)|int if inv['amount'] else 10 }}%{% endif %}</b><br><small>UGX {{ '{:,}'.format(inv['daily_return']|int) }}</small></div><div>Duration<br><b>{{ inv['duration_days'] }}d</b></div></div>
+<div style="margin-top:8px;display:flex;justify-content:space-between;text-align:center">
+<div>Amount<br><b>UGX {{ "{:,}".format(inv['amount']|int) }}</b></div>
+<div>Daily<br><b>{{ inv['daily_pct'] }}%</b><br><small style="color:#38bdf8">UGX {{ "{:,}".format(inv['daily_return']|int) }}</small></div>
+<div>Duration<br><b>{{ inv['duration_days'] }}d</b></div>
+</div>
 <div class="timer" data-end="{{ inv['end_time'] or inv['end_at'] }}">Loading...</div>
 <div style="font-size:12px;color:#94a3b8;margin-top:6px">Started: {{ inv['start_time'][:19] }}</div>
 </div>
