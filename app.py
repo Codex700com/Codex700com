@@ -1107,3 +1107,26 @@ if __name__ == "__main__":
 
 if __name__=='__main__':
  app.run(host='0.0.0.0', port=5000, debug=True)
+
+
+@app.route("/withdraw-submit", methods=["POST"])
+def withdraw_submit():
+    import sqlite3
+    from flask import request, session, jsonify
+    uid=session.get("uid") or session.get("user_id")
+    if not uid: return jsonify({"ok":False,"msg":"Login first"})
+    amt=request.form.get("amount","").strip()
+    phone=request.form.get("phone","").strip()
+    try: amt=int(float(amt))
+    except: return jsonify({"ok":False,"msg":"Invalid amount"})
+    if amt<5000: return jsonify({"ok":False,"msg":"Minimum 5000 UGX"})
+    con=sqlite3.connect("codex700.db")
+    con.row_factory=sqlite3.Row
+    bal=con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()[0]
+    if bal<amt:
+        con.close(); return jsonify({"ok":False,"msg":"Insufficient balance"})
+    con.execute("CREATE TABLE IF NOT EXISTS withdrawals (id INTEGER PRIMARY KEY, user_id INT, amount INT, phone TEXT, status TEXT DEFAULT 'pending', created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+    con.execute("UPDATE users SET balance=balance-? WHERE id=?",(amt,uid))
+    con.execute("INSERT INTO withdrawals (user_id,amount,phone,status) VALUES (?,?,?, 'pending')",(uid,amt,phone))
+    con.commit(); con.close()
+    return jsonify({"ok":True,"msg":"Withdrawal requested, wait for approval"})
