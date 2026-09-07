@@ -1,4 +1,4 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <style>
 body{background:#0a0a0a;color:#fff;font-family:Arial;margin:0;padding-bottom:80px;overflow-x:hidden}
 .top{padding:14px;text-align:center;font-weight:700;position:relative;background:#0a0a0a;z-index:2}
@@ -12,7 +12,7 @@ body{background:#0a0a0a;color:#fff;font-family:Arial;margin:0;padding-bottom:80p
 .btn button{width:100%;padding:15px;background:#00aaff;border:none;border-radius:10px;color:#fff;font-weight:700;font-size:17px}
 /* hide any related / carousel */
 .related,.carousel,.slider,.others,.list{display:none!important}
-</style></head><body>
+</style><style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script></head><body>
 <div class="top"><a class="back" href="/invest">←</a><span id="t1"></span></div>
 <div class="hero"><img src="/static/{{ img }}"></div>
 <div class="info"><div style="display:flex;justify-content:space-between"><h2 id="t2"></h2><div style="text-align:right"><div id="price" style="color:#00aaff;font-weight:800;font-size:20px"></div><div id="roi" style="color:#aaa;font-size:12px"></div></div></div>
