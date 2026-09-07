@@ -16,7 +16,15 @@ input{width:100%;background:#1e1e1e;border:1px solid #333;color:#fff;border-radi
 .nav{position:fixed;bottom:0;left:0;right:0;background:#111;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #222}
 .nav a{color:#888;text-decoration:none;font-size:11px;text-align:center}.nav a.active{color:#ff3333}
 ol{font-size:13px;line-height:1.8;color:#ddd;margin-left:18px}
-</style><style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script></head><body>
+</style><style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script>
+<style>
+:root{ --main-blue:#00b0ff !important; }
+body{ background:#000 !important; color:#fff !important; }
+.card, .info-box, .detail-card{ background:#111 !important; border-radius:12px !important; }
+.price, .amount-blue{ color:#00b0ff !important; font-weight:700; }
+.btn-primary, .invest-btn, button[type=submit]{ background:#00b0ff !important; border:none !important; color:#fff !important; border-radius:10px !important; }
+</style>
+</head><body>
 <div class="top"><a href="/wallet" style="color:#fff;text-decoration:none">←</a><span>Deposit Funds</span><span>📋</span></div>
 <div class="warn">⚠️ <b>IMPORTANT:</b> Send money only to the details below. Deposits to other numbers will not be accepted.</div>
 <div class="card"><div class="lbl">SEND MONEY TO</div>
@@ -27,12 +35,12 @@ ol{font-size:13px;line-height:1.8;color:#ddd;margin-left:18px}
 <ol><li>Dial *185# on your Airtel line</li><li>Select Send Money</li><li>Send money to 0758878297</li><li>Enter the amount you wish to deposit</li><li>After sending, fill in the details below</li><li>Upload screenshot of successful transaction</li><li>Click "Confirm Deposit"</li></ol></div>
 <form id="depForm" enctype="multipart/form-data">
 <div class="card"><div class="lbl">FILL IN YOUR DEPOSIT DETAILS</div>
-<label>Airtel Number Used To Send</label><input name="airtel_number" required placeholder="Enter the Airtel number you used">
-<label>Amount Deposited (UGX)</label><input name="amount" type="number" min="1000" max="10000000" required placeholder="Enter amount you deposited">
-<label>Transaction ID / Reference</label><input name="txid" required placeholder="Enter transaction ID">
+<label>Airtel Number Used To Send</label><input name="airtel_number" requi#00b0ff placeholder="Enter the Airtel number you used">
+<label>Amount Deposited (UGX)</label><input name="amount" type="number" min="1000" max="10000000" requi#00b0ff placeholder="Enter amount you deposited">
+<label>Transaction ID / Reference</label><input name="txid" requi#00b0ff placeholder="Enter transaction ID">
 <label>Upload Screenshot</label>
 <div class="upload" onclick="document.getElementById('shot').click()"><div style="font-size:32px">☁️⬆️</div><div>Tap to upload screenshot</div><small>PNG, JPG, JPEG (Max 5MB)</small><div id="fname" style="color:#0f0"></div></div>
-<input type="file" id="shot" name="screenshot" accept="image/*" style="display:none" required onchange="document.getElementById('fname').innerText=this.files[0].name">
+<input type="file" id="shot" name="screenshot" accept="image/*" style="display:none" requi#00b0ff onchange="document.getElementById('fname').innerText=this.files[0].name">
 </div>
 <div class="card note"><b>Please Note</b><br>• Minimum deposit: UGX 1,000<br>• Maximum deposit: UGX 10,000,000<br>• Your deposit will be reviewed and approved within a few minutes.<br>• You will be notified once your deposit is approved.</div>
 <button class="confirm" type="submit">✈️ CONFIRM DEPOSIT</button></form>

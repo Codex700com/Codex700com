@@ -26,7 +26,15 @@ body{background:#020a1f;color:#fff;font-family:'Segoe UI',Arial,sans-serif;paddi
 .nav a{color:#8aa0d0;text-decoration:none;font-size:12px;text-align:center}
 .nav a.on{color:#00d4ff}
 .hidebtn{color:#00d4ff;font-size:13px;text-decoration:underline;cursor:pointer}
-</style><style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script></head><body>
+</style><style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script>
+<style>
+:root{ --main-blue:#00b0ff !important; }
+body{ background:#000 !important; color:#fff !important; }
+.card, .info-box, .detail-card{ background:#111 !important; border-radius:12px !important; }
+.price, .amount-blue{ color:#00b0ff !important; font-weight:700; }
+.btn-primary, .invest-btn, button[type=submit]{ background:#00b0ff !important; border:none !important; color:#fff !important; border-radius:10px !important; }
+</style>
+</head><body>
 <div class="header">
 <div><h1>👑 My <span>Account</span></h1><p>Manage your profile and account settings</p></div>
 <div class="tagline">👑<br>Bigger Dreams<br>Better Moves<br>Higher Earnings</div>
@@ -52,9 +60,9 @@ body{background:#020a1f;color:#fff;font-family:'Segoe UI',Arial,sans-serif;paddi
 <div class="menu-row" onclick="location.href='/personal'"><div class="micon">👤</div><div><b>Personal Information</b><br><small style="color:#8aa0d0">View and update your personal details</small></div><div class="arrow">›</div></div>
 <div class="menu-row" onclick="location.href='/security'"><div class="micon">🔒</div><div><b>Security Settings</b><br><small style="color:#8aa0d0">Change password and manage security</small></div><div class="arrow">›</div></div>
 <div class="menu-row"><div class="micon">💳</div><div><b>Bank / Payment Details</b><br><small style="color:#8aa0d0">Manage your payment methods</small></div><div class="arrow">›</div></div>
-<div class="menu-row"><div class="micon">🛡️</div><div><b>KYC Verification</b><br><small style="color:#8aa0d0">Verify your account (if required)</small></div><span class="pill" style="margin-left:auto">Not Required</span><div class="arrow">›</div></div>
+<div class="menu-row"><div class="micon">🛡️</div><div><b>KYC Verification</b><br><small style="color:#8aa0d0">Verify your account (if requi#00b0ff)</small></div><span class="pill" style="margin-left:auto">Not Requi#00b0ff</span><div class="arrow">›</div></div>
 <div class="menu-row"><div class="micon">🔔</div><div><b>Notification Settings</b><br><small style="color:#8aa0d0">Manage your notification preferences</small></div><div class="arrow">›</div></div>
-<div class="menu-row" onclick="document.getElementById('langM').style.display='flex'"><div class="micon">🌐</div><div><b>Language</b><br><small style="color:#8aa0d0">Choose your preferred language</small></div><span class="pill" id="langCur" style="margin-left:auto">{{ lang_name }}</span><div class="arrow">›</div></div>
+<div class="menu-row" onclick="document.getElementById('langM').style.display='flex'"><div class="micon">🌐</div><div><b>Language</b><br><small style="color:#8aa0d0">Choose your prefer#00b0ff language</small></div><span class="pill" id="langCur" style="margin-left:auto">{{ lang_name }}</span><div class="arrow">›</div></div>
 </div>
 
 <div class="card" style="display:flex;justify-content:space-between;align-items:center"><div style="color:#00d4ff;font-style:italic">Discipline today...<br>Financial freedom tomorrow!</div><div style="text-align:center">👑<br><b>CODEX</b><br><small>INVEST • GROW • WIN</small></div></div>

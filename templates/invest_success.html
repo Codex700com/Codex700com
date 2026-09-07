@@ -13,7 +13,15 @@ body{background:#0a1220;color:#fff;font-family:system-ui;margin:0;padding:16px}
 .btn-g{background:#00c853;color:#fff}.btn-r{background:#ff2d55;color:#fff}
 .btn-o{border:1px solid #4a6fa5;color:#fff;background:#0f1e3a}
 .info{background:rgba(0,0,0,.3);border-radius:12px;padding:16px;margin:16px 0;text-align:left}
-</style><style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script></head><body>
+</style><style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script>
+<style>
+:root{ --main-blue:#00b0ff !important; }
+body{ background:#000 !important; color:#fff !important; }
+.card, .info-box, .detail-card{ background:#111 !important; border-radius:12px !important; }
+.price, .amount-blue{ color:#00b0ff !important; font-weight:700; }
+.btn-primary, .invest-btn, button[type=submit]{ background:#00b0ff !important; border:none !important; color:#fff !important; border-radius:10px !important; }
+</style>
+</head><body>
 <div class="card"><span class="plan">Investment Plan</span><div class="j2">{{plan_name|default('J2')}}</div>
 <div class="row"><div><div class="lbl">Daily Return</div><div class="val">{{daily|default("UGX 3,000")}}</div></div>
 <div><div class="lbl">Duration</div><div style="font-weight:700">{{duration|default("16")}} Days</div></div>
@@ -31,7 +39,7 @@ body{background:#0a1220;color:#fff;font-family:system-ui;margin:0;padding:16px}
 <div class="box err"><div style="font-size:48px">❌</div><h2 style="color:#ff5a7a">Insufficient Funds</h2>
 <p>You don't have enough balance to purchase this investment plan.</p>
 <div class="info"><div class="lbl">Your current balance</div><div style="color:#ff5a7a;font-weight:800;font-size:20px">UGX {{balance|default('0')}}</div><hr>
-<div class="lbl">Required amount</div><div style="font-weight:800;font-size:20px">UGX {{amount}}</div></div>
+<div class="lbl">Requi#00b0ff amount</div><div style="font-weight:800;font-size:20px">UGX {{amount}}</div></div>
 <a class="btn btn-r" href="/deposit">Top Up Wallet</a>
 <a class="btn btn-o" href="javascript:history.back()">Go Back</a></div>
 {% endif %}

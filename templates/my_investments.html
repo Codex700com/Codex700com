@@ -1,7 +1,15 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>My Investments</title>
 <style>body{background:#0a1230;color:#fff;font-family:Arial;margin:0;padding:12px}.card{background:linear-gradient(135deg,#14286b,#0a1a4a);border-radius:16px;padding:16px;margin-bottom:12px} img{width:80px;height:80px;border-radius:12px;object-fit:cover;background:#222}.bottomnav{position:fixed;bottom:0;left:0;right:0;background:#0d1b4d;display:flex;justify-content:space-around;padding:10px}.bottomnav a{color:#aaa;text-decoration:none;font-size:12px;text-align:center}.bottomnav a.active{color:#00d4ff}</style>
-<style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script></head><body>
+<style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script>
+<style>
+:root{ --main-blue:#00b0ff !important; }
+body{ background:#000 !important; color:#fff !important; }
+.card, .info-box, .detail-card{ background:#111 !important; border-radius:12px !important; }
+.price, .amount-blue{ color:#00b0ff !important; font-weight:700; }
+.btn-primary, .invest-btn, button[type=submit]{ background:#00b0ff !important; border:none !important; color:#fff !important; border-radius:10px !important; }
+</style>
+</head><body>
 <div style="max-width:600px;margin:0 auto 80px">
 <h2>My Investments</h2>
 <h3>Ongoing</h3>
@@ -21,7 +29,7 @@
 <h3>Completed</h3>
 {% for inv in done %}
 <div style="background:#052e22;border:1px solid #00ff88;border-radius:12px;padding:12px;margin-bottom:8px">
-<b>{{inv['product_name']}} </b> ✅<br><small>Credited: UGX {{ "{:,}".format(inv['total_expected']) }}</small>
+<b>{{inv['product_name']}} </b> ✅<br><small>C#00b0ffited: UGX {{ "{:,}".format(inv['total_expected']) }}</small>
 </div>
 {% else %}<p style="color:#aaa">No completed yet</p>{% endfor %}
 </div>
@@ -34,7 +42,7 @@
 </div>
 
 <script>
-function tick(){document.querySelectorAll('.countdown').forEach(el=>{let e=el.dataset.expiry*1000-Date.now();if(e<=0){el.textContent="Matured - credited";return;}let d=Math.floor(e/86400000),h=Math.floor(e%86400000/3600000),m=Math.floor(e%3600000/60000),s=Math.floor(e%60000/1000);el.textContent="⏳ "+d+"d "+h+"h "+m+"m "+s+"s left";});}
+function tick(){document.querySelectorAll('.countdown').forEach(el=>{let e=el.dataset.expiry*1000-Date.now();if(e<=0){el.textContent="Matu#00b0ff - c#00b0ffited";return;}let d=Math.floor(e/86400000),h=Math.floor(e%86400000/3600000),m=Math.floor(e%3600000/60000),s=Math.floor(e%60000/1000);el.textContent="⏳ "+d+"d "+h+"h "+m+"m "+s+"s left";});}
 setInterval(tick,1000);tick();
 </script>
 </body></html>
