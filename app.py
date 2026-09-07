@@ -213,8 +213,37 @@ def notif():
  return h+"</div>"+N
 @app.route("/account")
 def account_page():
-    import pathlib
-    return pathlib.Path("templates/account.html").read_text()
+    import sqlite3, datetime
+    from flask import session, render_template
+    uid=session.get('uid')
+    con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
+    u=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone() if uid else None
+    if not u:
+        return render_template("account.html",
+            user_name="Guest", member_id="CDX000000",
+            wallet_balance="0", total_invested_f="0",
+            total_income_f="0", active_investments=0,
+            lang_name="English")
+    # totals
+    try:
+        rows=con.execute("SELECT type,amount FROM transactions WHERE user_id=?",(str(uid),)).fetchall()
+    except: rows=[]
+    inv=sum(-r["amount"] for r in rows if r["type"]=="invest" and r["amount"]<0)
+    inc=sum(r["amount"] for r in rows if r["type"] in ("earn","referral","checkin","daily_return") and r["amount"]>0)
+    try:
+        act=con.execute("SELECT COUNT(*) FROM investments WHERE user_id=? AND active=1",(uid,)).fetchone()[0]
+    except: act=0
+    con.close()
+    def fmt(n): return "{:,}".format(int(n or 0))
+    # get name safely
+    uname = u["name"] if "name" in u.keys() else u["phone"] if "phone" in u.keys() else "User"
+    mid = u["member_id"] if "member_id" in u.keys() and u["member_id"] else f"CDX{str(uid).zfill(6)}"
+    bal = u["balance"] if "balance" in u.keys() else 0
+    return render_template("account.html",
+        user_name=uname, member_id=mid,
+        wallet_balance=fmt(bal), total_invested_f=fmt(inv),
+        total_income_f=fmt(inc), active_investments=act,
+        lang_name="English")
 
 @app.route("/api/account")
 def api_account():
