@@ -1253,8 +1253,11 @@ def confirm_buy(pid):
     try:
         user=con.execute("SELECT * FROM users WHERE id=?", (uid,)).fetchone()
         bal=user["balance"] if user else 0
-        prod_map={"J1":(3000,30,300),"J2":(6000,30,600),"J3":(12000,30,1200),"J4":(25000,30,2500),"J5":(50000,30,5000),"A1":(20000,15,2000),"A2":(100000,15,10000),"A3":(300000,15,30000),"A4":(500000,15,50000),"A5":(1000000,15,100000)}
-        prod=prod_map.get(pid) or prod_map.get(pid.upper(), (12000,30,1200))
+        prod_map={"J1":(3000,30,300),"J2":(6000,30,600),"J3":(12000,30,1200),"J4":(25000,30,2500),"J5":(50000,30,5000),"J6":(100000,30,10000),"A1":(20000,15,2000),"A2":(100000,15,10000),"A3":(300000,15,30000),"A4":(500000,15,50000),"A5":(1000000,15,100000),"K1":(3000,30,300),"K2":(6000,30,600),"K3":(12000,30,1200),"K4":(25000,30,2500),"K5":(50000,30,5000)}
+        pid=pid.strip().upper()
+ if pid not in prod_map:
+ return f"Invalid product {pid}",400
+ amount,duration_days,daily_return=prod_map[pid]
         price,dur,daily=prod
         price,dur,daily=prod
         if bal < price:
