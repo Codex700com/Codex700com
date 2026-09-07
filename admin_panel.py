@@ -103,7 +103,10 @@ def notify():
 @admin_bp.route('/deposits')
 def deposits():
     if guard(): return guard()
-    con=db(); rows=con.execute("SELECT * FROM transactions WHERE type='deposit' ORDER BY id DESC LIMIT 100").fetchall(); con.close()
+    con=db()
+    try: rows=con.execute("SELECT d.*, u.name as uname FROM deposits d LEFT JOIN users u ON u.id=d.user_id ORDER BY d.id DESC LIMIT 200").fetchall()
+    except: rows=[]
+    con.close()
     h="<div class=panel><h3>Deposits</h3><table><tr><th>ID</th><th>User</th><th>Amount</th><th>Status</th><th>Action</th></tr>"
     for r in rows: h+="<tr><td>"+str(r["id"])+"</td><td>"+str(r["user_id"])+"</td><td>"+str(r["amount"])+"</td><td>"+str(r["status"])+"</td><td><a class=btn href=/admin/dep_ok/"+str(r["id"])+">Approve</a> <a class=btn style=background:#ef4444;color:#fff href=/admin/dep_no/"+str(r["id"])+">Reject</a></td></tr>"
     return page(h+"</table></div>")
@@ -117,12 +120,19 @@ def withdrawals():
 @admin_bp.route('/dep_ok/<int:i>')
 def dep_ok(i):
     if guard(): return guard()
-    con=db(); con.execute("UPDATE transactions SET status='approved' WHERE id=?", (i,)); con.commit(); con.close()
+    con=db(); r=con.execute("SELECT * FROM deposits WHERE id=?",(i,)).fetchone()
+    con.execute("UPDATE deposits SET status='approved' WHERE id=?",(i,))
+    con.execute("INSERT INTO transactions(user_id,type,amount,status) VALUES(?,?,?,?)",(r["user_id"],"deposit",r["amount"],"approved") if r else (0,"deposit",0,"approved"))
+    con.execute("UPDATE users SET balance=balance+? WHERE id=?",(r["amount"],r["user_id"]) if r else (0,0))
+    con.commit(); con.close()
     return redirect('/admin/deposits')
 @admin_bp.route('/wd_ok/<int:i>')
 def wd_ok(i):
     if guard(): return guard()
-    con=db(); con.execute("UPDATE transactions SET status='approved' WHERE id=?", (i,)); con.commit(); con.close()
+    con=db(); con.execute("UPDATE withdrawals SET status='approved' WHERE id=?",(i,))
+    r=con.execute("SELECT * FROM withdrawals WHERE id=?",(i,)).fetchone()
+    con.execute("INSERT INTO transactions(user_id,type,amount,status) VALUES(?,?,?,?)",(r["user_id"],"withdraw",r["amount"],"approved") if r else (0,"withdraw",0,"approved"))
+    con.commit(); con.close()
     return redirect('/admin/withdrawals')
 @admin_bp.route('/plans')
 def plans():
@@ -240,3 +250,33 @@ def plans_preview():
         h+=f"<div style='border:1px solid #ddd;border-radius:12px;padding:12px;background:#fff'>{imgtag}<h4>{d.get('name')}</h4><div>Price: UGX {price}</div><div>{d.get('return_pct')}% in {d.get('duration_days')} days</div><div>Limit: {lim}</div></div>"
     h+="</div><br><a class=btn href=/admin/plans2>Back to table</a></div>"
     return page(h)
+
+@admin_bp.route('/deposits')
+def deposits_fixed():
+    if guard(): return guard()
+    con=db()
+    try:
+        rows=con.execute("SELECT d.*, u.name as uname FROM deposits d LEFT JOIN users u ON u.id=d.user_id ORDER BY d.id DESC LIMIT 200").fetchall()
+    except: rows=[]
+    con.close()
+    h="<div class=panel><h3>Deposits</h3><table><tr><th>ID</th><th>User</th><th>Amount</th><th>TxID</th><th>Status</th><th>Action</th></tr>"
+    for r in rows:
+        try:
+            h+="<tr><td>"+str(r["id"])+"</td><td>"+str(r["uname"] or r["user_id"])+"</td><td>"+str(r["amount"])+"</td><td>"+str(r["txid"] or "")+"</td><td>"+str(r["status"])+"</td><td><a class=btn href=/admin/dep_ok/"+str(r["id"])+">Approve</a> <a class=btn style=background:#ef4444;color:#fff href=/admin/dep_no/"+str(r["id"])+">Reject</a></td></tr>"
+        except: pass
+    return page(h+"</table></div>")
+
+@admin_bp.route('/withdrawals')
+def withdrawals_fixed():
+    if guard(): return guard()
+    con=db()
+    try:
+        rows=con.execute("SELECT w.*, u.name as uname FROM withdrawals w LEFT JOIN users u ON u.id=w.user_id ORDER BY w.id DESC LIMIT 200").fetchall()
+    except: rows=[]
+    con.close()
+    h="<div class=panel><h3>Withdrawals</h3><table><tr><th>ID</th><th>User</th><th>Amount</th><th>Phone</th><th>Status</th><th>Action</th></tr>"
+    for r in rows:
+        try:
+            h+="<tr><td>"+str(r["id"])+"</td><td>"+str(r["uname"] or r["user_id"])+"</td><td>"+str(r["amount"])+"</td><td>"+str(r["phone"] or "")+"</td><td>"+str(r["status"])+"</td><td><a class=btn href=/admin/wd_ok/"+str(r["id"])+">Approve</a> <a class=btn style=background:#ef4444;color:#fff href=/admin/wd_no/"+str(r["id"])+">Reject</a></td></tr>"
+        except: pass
+    return page(h+"</table></div>")
