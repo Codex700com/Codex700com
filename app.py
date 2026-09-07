@@ -1142,7 +1142,8 @@ def deposit_submit():
     try:
         uid = session.get("uid") or session.get("user_id")
         if not uid:
-            return jsonify({"ok":False,"msg":"Please login first"})
+            from flask import redirect
+            return redirect("/login")
         airtel = request.form.get("airtel_number","").strip()
         amount = request.form.get("amount","").strip()
         txid = request.form.get("txid","").strip()
@@ -1160,7 +1161,8 @@ def deposit_submit():
         con.execute("CREATE TABLE IF NOT EXISTS deposits (id INTEGER PRIMARY KEY, user_id INT, airtel TEXT, amount INT, txid TEXT, screenshot TEXT, status TEXT DEFAULT 'pending', created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
         con.execute("INSERT INTO deposits (user_id, airtel, amount, txid, screenshot) VALUES (?,?,?,?,?)",(uid,airtel,amount,txid,sp))
         con.commit(); con.close()
-        return jsonify({"ok":True,"msg":"Deposit received, wait for approval"})
+        from flask import redirect
+        return redirect("/transactions")
     except Exception as e:
         return jsonify({"ok":False,"msg":"Server error: "+str(e)})
 
