@@ -802,7 +802,7 @@ def deposit_submit():
   con.close(); return jsonify({"ok":False,"msg":"This Transaction ID already used"})
  con.execute("INSERT INTO deposits (user_id, airtel, amount, txid, screenshot, status) VALUES (?,?,?,?,?, 'pending')",(uid, airtel, amt, txid, shot_path))
  con.commit(); con.close()
- return jsonify({"ok":True,"msg":"Deposit submitted! Will be reviewed shortly."})
+ return jsonify({"ok":True,"msg":"Deposit successful, wait for approval"})
 
 
 
