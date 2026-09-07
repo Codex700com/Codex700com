@@ -9,18 +9,34 @@ def guard():
         return redirect('/admin/login')
     return None
 TOP="""<!doctype html><html><head><meta name=viewport content="width=device-width,initial-scale=1"><style>
-body{margin:0;background:#0b0f1a;color:#e2e8f0;display:flex;font-family:system-ui}
-.sidebar{width:230px;background:#111827;min-height:100vh;padding:15px;position:sticky;top:0;height:100vh}
+*{box-sizing:border-box}
+body{margin:0;background:#0b0f1a;color:#e2e8f0;font-family:system-ui;display:flex;min-height:100vh}
+.sidebar{width:230px;background:#111827;min-height:100vh;padding:15px;position:sticky;top:0;height:100vh;flex-shrink:0;transition:transform .3s}
 .sidebar a{display:block;color:#9ca3af;text-decoration:none;padding:10px;border-radius:8px;margin:3px 0}
 .sidebar a:hover{background:#1f2937;color:#fbbf24}
-.main{flex:1;padding:15px;min-width:0}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.main{flex:1;padding:15px;min-width:0;overflow-x:hidden}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .card{background:#151d2e;padding:15px;border-radius:12px;border:1px solid #1f2a44}
-.panel{background:#151d2e;border-radius:12px;padding:15px;border:1px solid #1f2a44;margin-top:12px}
-table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px;border-bottom:1px solid #1f2a44;text-align:left}
+.panel{background:#151d2e;border-radius:12px;padding:15px;border:1px solid #1f2a44;margin-top:12px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:600px}th,td{padding:8px;border-bottom:1px solid #1f2a44;text-align:left;white-space:nowrap}
 .btn{padding:7px 11px;border-radius:6px;border:0;cursor:pointer;background:#fbbf24}
 .btnr{background:#ef4444;color:#fff}.btng{background:#22c55e;color:#fff}
 input,textarea{width:100%;padding:8px;margin:5px 0;background:#0b0f1a;border:1px solid #334155;color:#fff;border-radius:8px}
-</style></head><body><div class=sidebar><h2 style="color:#fbbf24;margin:0">CODEX</h2><small>ADMIN PANEL</small>
+.topbar{display:none;background:#111827;padding:10px 15px;position:sticky;top:0;z-index:100;align-items:center;justify-content:space-between}
+.hamburger{background:none;border:0;color:#fbbf24;font-size:24px;cursor:pointer}
+@media(max-width:768px){
+body{flex-direction:column}
+.topbar{display:flex}
+.sidebar{position:fixed;left:0;top:0;z-index:99;transform:translateX(-100%);width:250px}
+.sidebar.open{transform:translateX(0)}
+.main{padding:10px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:98}
+.overlay.show{display:block}
+}
+</style></head><body>
+<div class=topbar><span style="color:#fbbf24;font-weight:800">CODEX ADMIN</span><button class=hamburger onclick="document.querySelector('.sidebar').classList.toggle('open');document.querySelector('.overlay').classList.toggle('show')">☰</button></div>
+<div class=overlay onclick="document.querySelector('.sidebar').classList.remove('open');this.classList.remove('show')"></div>
+<div class=sidebar><h2 style="color:#fbbf24;margin:0">CODEX</h2><small>ADMIN PANEL</small>
 <a href=/admin/>Dashboard</a><a href=/admin/users>Users</a><a href=/admin/deposits>Deposits</a><a href=/admin/withdrawals>Withdrawals</a><a href=/admin/plans2>Plans</a><a href=/admin/notify>Notify</a><a href=/admin/chats>Chats</a><a href=/admin/settings>Settings</a><a href=/admin/logout style="color:#ef4444">Logout</a></div><div class=main>"""
 BOT="</div></body></html>"
 def page(c): return render_template_string(TOP+c+BOT)
