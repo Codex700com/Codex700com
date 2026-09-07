@@ -139,10 +139,8 @@ def home():
     inc=c.execute("SELECT COALESCE(SUM(amount),0) s FROM transactions WHERE user_id=? AND type IN ('earn','referral','checkin','daily_return')",(u["id"],)).fetchone()["s"]
     c.close()
     def fmt(x):
-        try:
-            return f"{int(x or 0):,}"
-        except:
-            return "0"
+        try: return f"{int(x or 0):,}"
+        except: return "0"
     return render_template('home.html', user_name=u["name"].upper(), wallet_balance=fmt(u['balance']), total_invested=fmt(ti), total_income=fmt(inc), active_count=ac)
 
 @app.route("/menu")
