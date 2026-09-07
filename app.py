@@ -133,55 +133,17 @@ def login():
 @app.route("/home")
 @need
 def home():
- u=cu();c=db()
- ti=c.execute("SELECT COALESCE(SUM(amount),0) s FROM investments WHERE user_id=?",(u["id"],)).fetchone()["s"]
- ac=c.execute("SELECT COUNT(*) n FROM investments WHERE user_id=? AND active=1",(u["id"],)).fetchone()["n"]
- c.close()
- nm=u["name"].upper(); bal=f"{u['balance']:,}"; tiv=f"{ti:,}"
- h="""<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><style>
- *{box-sizing:border-box}body{margin:0;background:#000000;color:#fff;font-family:Inter,system-ui,Arial;padding-bottom:110px}
- .top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#000000;position:sticky;top:0;z-index:5}
- .logo{text-align:center;line-height:1}.logo b{font-size:32px;color:#00b0ff;letter-spacing:2px}.logo span{font-size:10px;letter-spacing:4px;color:#fff}
- .hero{margin:8px 10px;border:2px solid #00b0ff;border-radius:16px;padding:16px;background:#111,#111;position:relative;overflow:hidden;box-shadow:0 0 20px #00b0ff55}
- .hero h4{margin:0;font-weight:600;color:#dbeafe}.hero h2{margin:4px 0;color:#00cfff;font-size:28px}.hero p{margin:6px 0;color:#cbd5e1}.hero i{color:#00b0ff}
- .btn-gold{display:inline-block;background:linear-gradient(180deg,#ffdf6b,#ffb700);color:#000;font-weight:900;padding:12px 32px;border-radius:30px;text-decoration:none;margin-top:10px;box-shadow:0 4px 12px #ffb70066}
- .globe{position:absolute;right:10px;top:10px;width:110px;height:110px;background:#111;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#00b0ff;font-weight:900;text-align:center}
- .stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px}
- .sbox{background:linear-gradient(180deg,#0a2f8a,#041a5a);border:1.5px solid #00b0ff;border-radius:14px;padding:12px 4px;text-align:center;box-shadow:0 0 12px #00b0ff44}
- .sbox div{font-size:22px}.sbox b{font-size:13px}.sbox span{color:#00cfff;font-weight:800}
- .banner{margin:10px;border:1.5px solid #00b0ff;border-radius:14px;padding:12px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#0a2a7a,#000000)}
- .banner small{color:#cbd5e1}.btn-blue{background:#00b0ff;color:#fff;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:800}
- .grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px}
- .card2{background:linear-gradient(180deg,#0a2f8a,#041a5a);border:1.5px solid #00b0ff;border-radius:14px;padding:14px 6px;text-align:center;text-decoration:none;color:#fff}
- .card2 small{color:#7dd3fc;font-size:11px}.card2 b{font-size:14px}
- .card2.gold{background:linear-gradient(180deg,#8a6d00,#5a4500);border-color:#00b0ff;box-shadow:0 0 15px #00b0ff88}
- .nav{position:fixed;bottom:0;left:0;right:0;background:#000000;border-top:1px solid #00b0ff55;display:flex;padding:8px 0}
- .nav a{flex:1;text-align:center;color:#8aa0b8;text-decoration:none;font-size:10px}.nav a.on{color:#00b0ff}
- .foot{text-align:center;color:#00cfff;font-style:italic;margin:12px}
- </style></head><body>
- <div class="top"><a href="/menu" style="font-size:28px;color:#00b0ff;text-decoration:none">☰</a><div class="logo"><b>CODEX</b><br><span>INVEST • GROW • WIN</span></div><div style="font-size:22px"><a href="/notifications" style="text-decoration:none">🔔</a> <a href="/account" style="text-decoration:none">👤</a></div></div>
- <div class="hero"><h4>👑 WELCOME BACK,</h4><h2>"""+nm+"""</h2><p>Big dreams require action.<br><i>You're one step closer to freedom!</i></p><a class="btn-gold" href="/invest">↗ INVEST NOW →</a><div class="globe">INVEST<br>TODAY<br>BUILD<br>TOMORROW</div></div>
- <div class="stats">
- <div class="sbox"><div>💼</div><b>Wallet</b><br><span>UGX """+bal+"""</span></div>
- <div class="sbox"><div>🪙</div><b>Invested</b><br><span>UGX """+tiv+"""</span></div>
- <div class="sbox"><div>💰</div><b>Income</b><br><span>UGX 0</span></div>
- <div class="sbox"><div>📈</div><b>Active</b><br><span>"""+str(ac)+"""</span></div></div>
- <div class="banner"><div>🎁 <b style="color:#00b0ff">Daily Check-In</b><br><small>Log in daily and win rewards!</small></div><a class="btn-blue" href="/checkin">📅 CHECK IN →</a></div>
- <div class="grid">
- <a class="card2" href="/invest">📈<br><b>Invest</b><br><small>Start your journey</small></a>
- <a class="card2" href="/deposit">💲<br><b>Deposit</b><br><small>Fund your wallet</small></a>
- <a class="card2 gold" href="/withdraw">💼<br><b>Withdraw</b><br><small>Get your earnings</small></a>
- <a class="card2" href="/referrals">👥<br><b>Referral</b><br><small>Earn together</small></a>
- <a class="card2" href="/transactions">🧾<br><b>Transactions</b><br><small>View all records</small></a>
- <a class="card2" href="/raffle">🎁<br><b>Raffle</b><br><small>Win amazing prizes</small></a>
- <a class="card2" href="/support">🎧<br><b>Support</b><br><small>We are here to help</small></a>
- <a class="card2" href="/chat">💬<br><b>Chat</b><br><small>Talk to manager</small></a>
- </div>
- <div class="banner"><div>🏆 <b style="color:#00b0ff">RAFFLE DRAW</b><br><small>More deposits = More chances = Bigger prizes!</small></div><a class="btn-blue" href="/raffle">🎁 VIEW PRIZES →</a></div>
- <div class="foot">Your Success is Our Priority</div>
- <div class="nav"><a href="/home" class="on">🏠<br>HOME</a><a href="/invest">📊<br>INVEST</a><a href="/transactions">⇄<br>TRANSACTIONS</a><a href="/referrals">👥<br>REFERRALS</a><a href="/account">👤<br>ACCOUNT</a></div>
- </body></html>"""
- return h
+    u=cu();c=db()
+    ti=c.execute("SELECT COALESCE(SUM(amount),0) s FROM investments WHERE user_id=?",(u["id"],)).fetchone()["s"]
+    ac=c.execute("SELECT COUNT(*) n FROM investments WHERE user_id=? AND active=1",(u["id"],)).fetchone()["n"]
+    inc=c.execute("SELECT COALESCE(SUM(amount),0) s FROM transactions WHERE user_id=? AND type IN ('earn','referral','checkin','daily_return')",(u["id"],)).fetchone()["s"]
+    c.close()
+    def fmt(x):
+        try:
+            return f"{int(x or 0):,}"
+        except:
+            return "0"
+    return render_template('home.html', user_name=u["name"].upper(), wallet_balance=fmt(u['balance']), total_invested=fmt(ti), total_income=fmt(inc), active_count=ac)
 
 @app.route("/menu")
 @need
