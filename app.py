@@ -1,3 +1,13 @@
+
+PRODUCTS = {
+    "J1": {"name":"J1","price":3000,"duration":30,"daily":300,"daily_return":300},
+    "J2": {"name":"J2","price":6000,"duration":30,"daily":600,"daily_return":600},
+    "J3": {"name":"J3","price":12000,"duration":30,"daily":1200,"daily_return":1200},
+    "J4": {"name":"J4","price":25000,"duration":30,"daily":2500,"daily_return":2500},
+    "J5": {"name":"J5","price":50000,"duration":30,"daily":5000,"daily_return":5000},
+    "J6": {"name":"J6","price":100000,"duration":30,"daily":10000,"daily_return":10000},
+}
+
 from flask import Flask,request,redirect,session,render_template
 import sqlite3,datetime,uuid
 app=Flask(__name__);app.secret_key="codex700secret"
@@ -133,15 +143,55 @@ def login():
 @app.route("/home")
 @need
 def home():
-    u=cu();c=db()
-    ti=c.execute("SELECT COALESCE(SUM(amount),0) s FROM investments WHERE user_id=?",(u["id"],)).fetchone()["s"]
-    ac=c.execute("SELECT COUNT(*) n FROM investments WHERE user_id=? AND active=1",(u["id"],)).fetchone()["n"]
-    inc=c.execute("SELECT COALESCE(SUM(amount),0) s FROM transactions WHERE user_id=? AND type IN ('earn','referral','checkin','daily_return')",(u["id"],)).fetchone()["s"]
-    c.close()
-    def fmt(x):
-        try: return f"{int(x or 0):,}"
-        except: return "0"
-    return render_template('home.html', user_name=u["name"].upper(), wallet_balance=fmt(u['balance']), total_invested=fmt(ti), total_income=fmt(inc), active_count=ac)
+ u=cu();c=db()
+ ti=c.execute("SELECT COALESCE(SUM(amount),0) s FROM investments WHERE user_id=?",(u["id"],)).fetchone()["s"]
+ ac=c.execute("SELECT COUNT(*) n FROM investments WHERE user_id=? AND active=1",(u["id"],)).fetchone()["n"]
+ c.close()
+ nm=u["name"].upper(); bal=f"{u['balance']:,}"; tiv=f"{ti:,}"
+ h="""<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><style>
+ *{box-sizing:border-box}body{margin:0;background:#000000;color:#fff;font-family:Inter,system-ui,Arial;padding-bottom:110px}
+ .top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#000000;position:sticky;top:0;z-index:5}
+ .logo{text-align:center;line-height:1}.logo b{font-size:32px;color:#00b0ff;letter-spacing:2px}.logo span{font-size:10px;letter-spacing:4px;color:#fff}
+ .hero{margin:8px 10px;border:2px solid #00b0ff;border-radius:16px;padding:16px;background:#111,#111;position:relative;overflow:hidden;box-shadow:0 0 20px #00b0ff55}
+ .hero h4{margin:0;font-weight:600;color:#dbeafe}.hero h2{margin:4px 0;color:#00cfff;font-size:28px}.hero p{margin:6px 0;color:#cbd5e1}.hero i{color:#00b0ff}
+ .btn-gold{display:inline-block;background:linear-gradient(180deg,#ffdf6b,#ffb700);color:#000;font-weight:900;padding:12px 32px;border-radius:30px;text-decoration:none;margin-top:10px;box-shadow:0 4px 12px #ffb70066}
+ .globe{position:absolute;right:10px;top:10px;width:110px;height:110px;background:#111;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#00b0ff;font-weight:900;text-align:center}
+ .stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px}
+ .sbox{background:linear-gradient(180deg,#0a2f8a,#041a5a);border:1.5px solid #00b0ff;border-radius:14px;padding:12px 4px;text-align:center;box-shadow:0 0 12px #00b0ff44}
+ .sbox div{font-size:22px}.sbox b{font-size:13px}.sbox span{color:#00cfff;font-weight:800}
+ .banner{margin:10px;border:1.5px solid #00b0ff;border-radius:14px;padding:12px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#0a2a7a,#000000)}
+ .banner small{color:#cbd5e1}.btn-blue{background:#00b0ff;color:#fff;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:800}
+ .grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px}
+ .card2{background:linear-gradient(180deg,#0a2f8a,#041a5a);border:1.5px solid #00b0ff;border-radius:14px;padding:14px 6px;text-align:center;text-decoration:none;color:#fff}
+ .card2 small{color:#7dd3fc;font-size:11px}.card2 b{font-size:14px}
+ .card2.gold{background:linear-gradient(180deg,#8a6d00,#5a4500);border-color:#00b0ff;box-shadow:0 0 15px #00b0ff88}
+ .nav{position:fixed;bottom:0;left:0;right:0;background:#000000;border-top:1px solid #00b0ff55;display:flex;padding:8px 0}
+ .nav a{flex:1;text-align:center;color:#8aa0b8;text-decoration:none;font-size:10px}.nav a.on{color:#00b0ff}
+ .foot{text-align:center;color:#00cfff;font-style:italic;margin:12px}
+ </style></head><body>
+ <div class="top"><a href="/menu" style="font-size:28px;color:#00b0ff;text-decoration:none">☰</a><div class="logo"><b>CODEX</b><br><span>INVEST • GROW • WIN</span></div><div style="font-size:22px"><a href="/notifications" style="text-decoration:none">🔔</a> <a href="/account" style="text-decoration:none">👤</a></div></div>
+ <div class="hero"><h4>👑 WELCOME BACK,</h4><h2>"""+nm+"""</h2><p>Big dreams require action.<br><i>You're one step closer to freedom!</i></p><a class="btn-gold" href="/invest">↗ INVEST NOW →</a><div class="globe">INVEST<br>TODAY<br>BUILD<br>TOMORROW</div></div>
+ <div class="stats">
+ <div class="sbox"><div>💼</div><b>Wallet</b><br><span>UGX """+bal+"""</span></div>
+ <div class="sbox"><div>🪙</div><b>Invested</b><br><span>UGX """+tiv+"""</span></div>
+ <div class="sbox"><div>💰</div><b>Income</b><br><span>UGX 0</span></div>
+ <div class="sbox"><div>📈</div><b>Active</b><br><span>"""+str(ac)+"""</span></div></div>
+ <div class="banner"><div>🎁 <b style="color:#00b0ff">Daily Check-In</b><br><small>Log in daily and win rewards!</small></div><a class="btn-blue" href="/checkin">📅 CHECK IN →</a></div>
+ <div class="grid">
+ <a class="card2" href="/invest">📈<br><b>Invest</b><br><small>Start your journey</small></a>
+ <a class="card2" href="/deposit">💲<br><b>Deposit</b><br><small>Fund your wallet</small></a>
+ <a class="card2 gold" href="/withdraw">💼<br><b>Withdraw</b><br><small>Get your earnings</small></a>
+ <a class="card2" href="/referrals">👥<br><b>Referral</b><br><small>Earn together</small></a>
+ <a class="card2" href="/transactions">🧾<br><b>Transactions</b><br><small>View all records</small></a>
+ <a class="card2" href="/raffle">🎁<br><b>Raffle</b><br><small>Win amazing prizes</small></a>
+ <a class="card2" href="/support">🎧<br><b>Support</b><br><small>We are here to help</small></a>
+ <a class="card2" href="/chat">💬<br><b>Chat</b><br><small>Talk to manager</small></a>
+ </div>
+ <div class="banner"><div>🏆 <b style="color:#00b0ff">RAFFLE DRAW</b><br><small>More deposits = More chances = Bigger prizes!</small></div><a class="btn-blue" href="/raffle">🎁 VIEW PRIZES →</a></div>
+ <div class="foot">Your Success is Our Priority</div>
+ <div class="nav"><a href="/home" class="on">🏠<br>HOME</a><a href="/invest">📊<br>INVEST</a><a href="/transactions">⇄<br>TRANSACTIONS</a><a href="/referrals">👥<br>REFERRALS</a><a href="/account">👤<br>ACCOUNT</a></div>
+ </body></html>"""
+ return h
 
 @app.route("/menu")
 @need
@@ -336,99 +386,6 @@ except Exception as _e:
 # --- END MIGRATE ---
 
 
-@app.route("/confirm_buy/<pid>")
-def confirm_buy(pid):
-    from flask import session, redirect
-    import sqlite3
-    uid=str(session.get("uid") or session.get("uid") or "guest")
-    # price map
-    prices={"A1":20000,"A2":100000,"M1":50000,"M2":100000,"M3":250000,"M4":500000,"M5":1000000,"M6":2000000,"M7":5000000,"L1":500000,"L2":1000000,"L3":2000000,"GS1":600000,"GS2":1200000,"GS3":2500000,"J1":800000,"J2":1500000,"J3":3000000,"K1":100000,"K2":5000000}
-    price=prices.get(pid,0)
-    con=sqlite3.connect("codex700.db")
-    con.execute("CREATE TABLE IF NOT EXISTS investments (user_id TEXT, plan TEXT, amount INTEGER, daily INTEGER, duration INTEGER, created_at TEXT, end_at TEXT, credited INTEGER DEFAULT 0, status TEXT DEFAULT 'active', ts DATETIME DEFAULT CURRENT_TIMESTAMP)")
-    # plan purchase limits
-    limits={"A1":2,"A2":2,"M1":1,"M2":1,"M3":1,"M4":1,"M5":1,"M6":4,"M7":4,"K1":1,"K2":1}
-    cur_cnt=con.execute("SELECT COUNT(*) FROM investments WHERE user_id=? AND plan=?",(uid,pid)).fetchone()[0]
-    max_allowed=limits.get(pid, 999)
-    if cur_cnt>=max_allowed:
-        con.close()
-        return f"<h3>Limit reached: {pid} max {max_allowed} per user</h3>"
-    # strict balance check - block if no money
-    try:
-        bal_row=con.execute("SELECT balance FROM users WHERE id=?",(uid,)).fetchone()
-        bal=bal_row[0] if bal_row else 0
-    except:
-        bal=0
-    if bal < price:
-        con.close()
-        details_map={"A1":(20000,3000,16),"A2":(100000,9000,15),"M1":(50000,10000,30),"M2":(100000,20000,30),"M3":(250000,50000,30),"M4":(500000,100000,30),"M5":(1000000,200000,30),"M6":(2000000,400000,30),"M7":(5000000,1000000,30),"L1":(500000,110000,30),"L2":(1000000,220000,30),"L3":(2000000,440000,30),"GS1":(600000,132000,30),"GS2":(1200000,264000,30),"GS3":(2500000,550000,30),"J1":(500000,110000,30),"J2":(1000000,220000,30),"J3":(2000000,440000,30)}
-        _pr,_da,_du=details_map.get(pid,(price,0,30))
-        _total=_da*_du
-        return render_template('invest_fail.html', plan_name=pid, amount=f"{price:,}", balance=f"{bal:,}", daily=f"UGX {_da:,}", duration=str(_du), total=f"UGX {_total:,}", current_balance=bal)
-    try:
-        con.execute("UPDATE users SET balance=balance-? WHERE id=?",(price,uid))
-    except:
-        pass
-    from datetime import datetime; _pr,_da,_du=DETAILS.get(pid,(price,0,30)); con.execute("INSERT INTO investments (user_id, plan, amount, daily, duration, created_at, credited) VALUES (?,?,?,?,?,?,0)",(uid,pid,price,_da,_du,datetime.utcnow().isoformat()))
-    con.commit(); con.close()
-    # plan details for confirmation
-    details={"A1":(20000,3000,16,"CODEX A1 PLAN"),"A2":(100000,9000,15,"CODEX A2 PLAN"),
-    "M1":(50000,10000,30,"CODEX M1 PLAN"),"M2":(100000,20000,30,"CODEX M2 PLAN"),
-    "M3":(250000,50000,30,"CODEX M3 PLAN"),"M4":(500000,100000,30,"CODEX M4 PLAN"),
-    "M5":(1000000,200000,30,"CODEX M5 PLAN"),"M6":(2000000,400000,30,"CODEX M6 PLAN"),
-    "M7":(5000000,1000000,30,"CODEX M7 PLAN"),
-    "L1":(500000,110000,30,"CODEX L1 PLAN LOCK"),"L2":(1000000,220000,30,"CODEX L2 PLAN LOCK"),"L3":(2000000,440000,30,"CODEX L3 PLAN LOCK"),
-    "GS1":(600000,132000,30,"CODEX GS1 PLAN"),"GS2":(1200000,264000,30,"CODEX GS2 PLAN"),"GS3":(2500000,550000,30,"CODEX GS3 PLAN"),
-    "J1":(800000,176000,30,"CODEX J1 PLAN"),"J2":(1500000,330000,30,"CODEX J2 PLAN"),"K1":(1000000,500000,3,"CODEX K1 PLAN"),"K2":(5000000,2500000,3,"CODEX K2 PLAN"),"J3":(3000000,660000,30,"CODEX J3 PLAN")}
-    p_price,p_daily,p_dur,p_name=details.get(pid,(price,0,30,pid))
-    p_total=p_daily*p_dur
-    return f"""<html><head><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-/* SHINING GOLD THEME */
-body{background:#000!important;color:#f5d67b!important}
-.card,.gbox{
-  background:#0a0a0a!important;
-  border:1px solid #1da1f2!important;
-  border-radius:14px!important;
-  box-shadow:0 0 12px rgba(251,191,36,0.55),0 0 28px rgba(251,191,36,0.18),inset 0 0 8px rgba(251,191,36,0.12)!important;
-  color:#ffffff!important;
-}
-.gbox b,.card b{
-  color:#1da1f2!important;
-  text-shadow:0 0 8px rgba(251,191,36,0.9)!important;
-  font-weight:800!important;
-}
-a{color:#1da1f2!important}
-button,.btn{
-  background:linear-gradient(180deg,#ffffff,#1da1f2)!important;
-  color:#000!important;
-  border:none!important;
-  box-shadow:0 0 15px rgba(251,191,36,0.7)!important;
-  font-weight:800!important;
-  border-radius:10px!important;
-}
-h1,h2,h3{color:#ffffff!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!important}
-.grid4 .gbox{height:88px;min-height:88px}
-</style>
-</head>
-    <body style="margin:0;background:#000;color:#fff;font-family:sans-serif">
-    <div style="padding:12px;display:flex;align-items:center;gap:12px"><a href="/home" style="color:#fff;text-decoration:none;font-size:22px">‹</a><div style="flex:1;text-align:center;font-weight:700;letter-spacing:1px">INVESTMENT CONFIRMATION</div><div style="width:22px"></div></div>
-    <div style="margin:12px;border:1px solid #333;border-radius:16px;padding:24px;text-align:center;background:#0a0a0a">
-    <div style="font-size:80px;color:#22c55e;border:4px solid #22c55e;width:110px;height:110px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto">✓</div>
-    <div style="color:#22c55e;font-weight:800;font-size:22px;margin-top:16px">INVESTMENT SUBMITTED!</div>
-    <div style="color:#ccc;margin-top:8px">Your investment has been successfully submitted.</div>
-    <div style="margin-top:20px;background:#111;border:1px solid #222;border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center;text-align:left">
-    <div style="width:90px;height:70px;background:#222;border-radius:8px;display:flex;align-items:center;justify-content:center">⛏️</div>
-    <div><div style="color:#1da1f2;font-weight:800">{p_name} 🔒</div><div style="color:#aaa;font-size:13px">High Performance Mining Machine</div></div>
-    </div>
-    <div style="margin-top:16px;background:#111;border:1px solid #222;border-radius:12px;padding:6px 16px;text-align:left">
-    <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #222"><span>💰 Investment Amount</span><b style="color:#1da1f2">UGX {p_price:,}</b></div>
-    <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #222"><span>📈 Daily Return</span><b style="color:#1da1f2">UGX {p_daily:,}</b></div>
-    <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #222"><span>📅 Duration</span><b style="color:#1da1f2">{p_dur} Days</b></div>
-    <div style="display:flex;justify-content:space-between;padding:12px 0"><span>◑ Total Return</span><b style="color:#1da1f2">UGX {p_total:,}</b></div>
-    </div>
-    <a href="/home" style="display:block;margin-top:20px;background:#1da1f2;color:#fff;padding:14px;border-radius:10px;text-decoration:none;font-weight:700">Back Home</a>
-    </div></body></html>"""
 
 @app.route("/buy/<pid>")
 def buy_detail(pid):
@@ -940,40 +897,6 @@ def process_maturities(user_id=None):
     except: pass
 
 
-@app.route('/invest/confirm', methods=['POST'])
-def invest_confirm():
-    import sqlite3, time
-    from flask import request, session, redirect
-    if 'user_id' not in session: return redirect('/login')
-    uid = session['user_id']
-    pid = request.form.get('product_id','J1')
-    try: qty = int(request.form.get('quantity',1))
-    except: qty = 1
-    if qty<1 or qty>10: return "Invalid quantity",400
-    if pid not in PRODUCTS: return "Invalid product",400
-    pr = PRODUCTS[pid]
-    amount = pr['price']*qty
-    db = sqlite3.connect('codex700.db')
-    db.row_factory = sqlite3.Row
-    cur = db.cursor()
-    cur.execute("BEGIN IMMEDIATE")
-    row = cur.execute("SELECT balance FROM users WHERE id=?", (uid,)).fetchone()
-    if not row or row[0] < amount:
-        db.rollback()
-        return render_template('invest_success.html', success=False, plan_name=pid, amount=f"{amount:,}", balance=f"{row[0] if row else 0:,}", daily_pct=int(pr.get('daily_rate',20)*100) if 'daily_rate' in pr else 20, duration_days=pr.get('days',45)), 400
-    now = int(time.time())
-    maturity = now + pr['days']*86400
-    daily = pr['daily']*qty
-    total = daily*pr['days']
-    cur.execute("UPDATE users SET balance=balance-? WHERE id=?", (amount, uid))
-    cur.execute("""INSERT INTO investments (user_id,product_id,product_name,quantity,amount,start_ts,maturity_ts,daily_income,total_expected,status)
-                   VALUES (?,?,?,?,?,?,?,?,?,'ACTIVE')""", (uid,pid,pid,qty,amount,now,maturity,daily,total))
-    inv_id = cur.lastrowid
-    cur.execute("INSERT INTO transactions (user_id,type,amount,desc,created_ts) VALUES (?,?,?,?,?)",
-                (uid,'invest',-amount,f"{pid} x{qty} invested",now))
-    db.commit()
-    return redirect(f'/invest/success/{inv_id}')
-
 @app.route('/invest/success/<int:inv_id>')
 def invest_success(inv_id):
     import sqlite3
@@ -987,34 +910,51 @@ def invest_success(inv_id):
 
 @app.route('/my-investments')
 def my_investments():
-    import time, sqlite3
+    import time, sqlite3, datetime
     uid=session.get('uid') or session.get('user_id')
     if not uid: return redirect('/login')
     now=int(time.time())
     con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
-    # credit daily returns
-    for inv in list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=1", (uid,))):
-        try:
-            start=inv["purchase_ts"] or now
-            daily=inv["daily_return"] or 0
-            credited=inv["credited_days"] or 0
-            duration=inv["duration_days"] or 30
-            expiry=inv["expiry_ts"] or (start+duration*86400)
-            total_days=int((expiry-start)//86400)
-            days_passed=min(total_days, (now-start)//86400)
-            claimable=int(days_passed-credited)
-            if claimable>0 and daily>0:
-                con.execute("UPDATE users SET balance=balance+? WHERE id=?", (claimable*daily, uid))
-                con.execute("UPDATE investments SET credited_days=? WHERE id=?", (credited+claimable, inv["id"]))
-                con.execute("INSERT INTO transactions(user_id,type,amount,desc,created_ts) VALUES(?,?,?,?,?)",(uid,'daily_return',claimable*daily,f"Daily return {inv['product_name']}",now))
-            if now>=expiry:
-                con.execute("UPDATE investments SET active=0 WHERE id=?", (inv["id"],))
-        except Exception as e: print("credit err",e)
-    con.commit()
+    try:
+        for inv in list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=1", (uid,))):
+            try:
+                start=inv["purchase_ts"] or now
+                daily=inv["daily_return"] or 0
+                credited=inv["credited_days"] or 0
+                duration=inv["duration_days"] or 30
+                expiry=inv["expiry_ts"] or (start+duration*86400)
+                total_days=int((expiry-start)//86400) if expiry>start else duration
+                days_passed=min(total_days, int((now-start)//86400))
+                claimable=int(days_passed-credited)
+                if claimable>0 and daily>0:
+                    con.execute("UPDATE users SET balance=balance+? WHERE id=?", (claimable*daily, uid))
+                    con.execute("UPDATE investments SET credited_days=? WHERE id=?", (credited+claimable, inv["id"]))
+                    con.execute("INSERT INTO transactions(user_id,type,amount,desc,created_ts) VALUES(?,?,?,?,?)",(uid,'daily_return',claimable*daily,f"Daily {inv['product_name']}",now))
+                if now>=expiry: con.execute("UPDATE investments SET active=0 WHERE id=?", (inv["id"],))
+            except Exception as e: print("credit err",e)
+        con.commit()
+    except Exception as e: print("credit loop",e)
     active=list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=1 ORDER BY expiry_ts DESC", (uid,)))
     done=list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=0 ORDER BY id DESC LIMIT 20", (uid,)))
+    def _map(inv):
+        try: d=dict(inv)
+        except: d={}
+        try:
+            for k in inv.keys(): d[k]=inv[k]
+        except: pass
+        et=d.get('expiry_ts') or 0
+        st=d.get('purchase_ts') or 0
+        try:
+            d['end_time']=datetime.datetime.fromtimestamp(et).isoformat() if isinstance(et,(int,float)) and et>1e6 else str(et)
+            d['start_time']=datetime.datetime.fromtimestamp(st).isoformat() if isinstance(st,(int,float)) and st>1e6 else str(st)
+        except: d['end_time']=str(et); d['start_time']=str(st)
+        d['plan_name']=d.get('product_name') or 'Plan'
+        return d
+    active=[_map(x) for x in active]; done=[_map(x) for x in done]
+    investments=active+done
     con.close()
-    return render_template('my_investments.html', active=active, done=done, now=now)
+    return render_template('my_investments.html', investments=investments, active=active, done=done, now=now)
+
 
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
@@ -1302,3 +1242,30 @@ def deposit_submit():
     except Exception as e:
         return jsonify({"ok":False,"msg":"Server error: "+str(e)})
 
+
+@app.route("/confirm_buy/<pid>", methods=["GET","POST"])
+def confirm_buy(pid):
+    import sqlite3, time, traceback
+    from flask import session, redirect
+    uid=session.get('uid') or session.get('user_id')
+    if not uid: return redirect('/login')
+    con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
+    try:
+        user=con.execute("SELECT * FROM users WHERE id=?", (uid,)).fetchone()
+        bal=user["balance"] if user else 0
+        prod={"J1":(3000,30,300),"J2":(6000,30,600),"J3":(12000,30,1200),"J4":(25000,30,2500),"J5":(50000,30,5000)}.get(pid,(12000,30,1200))
+        price,dur,daily=prod
+        if bal < price:
+            con.close()
+            return f'<h2 style="text-align:center;margin-top:50px">Insufficient balance: have {bal} need {price}<br><a href="/buy/{pid}">Back</a></h2>'
+        now=int(time.time()); expiry=now+dur*86400
+        con.execute("UPDATE users SET balance=balance-? WHERE id=?", (int(price), uid))
+        con.execute("INSERT OR IGNORE INTO investments(user_id,product_name,amount,purchase_ts,expiry_ts,daily_return,credited_days,active,duration_days) VALUES(?,?,?,?,?,?,?,?,?)",(uid, pid, price, now, expiry, daily, 0, 1, dur))
+        con.execute("INSERT INTO transactions(user_id,type,amount,status,date,ref) VALUES(?,?,?,?,?,?)",(uid,'invest',-price,'completed',now,pid))
+        con.commit(); con.close()
+        return redirect('/my-investments')
+    except Exception as e:
+        traceback.print_exc()
+        try: con.close()
+        except: pass
+        return f"Error: {e}", 500
