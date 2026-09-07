@@ -19,3 +19,10 @@ chats cols: ['id', 'user_id', 'who', 'msg', 'date', 'sender', 'uid', 'created']
 127.0.0.1 - - [07/Sep/2026 18:45:21] "GET /home HTTP/1.1" 200 -
 127.0.0.1 - - [07/Sep/2026 18:45:23] "GET /deposit HTTP/1.1" 200 -
 127.0.0.1 - - [07/Sep/2026 18:45:44] "[33mPOST /deposit-submit HTTP/1.1[0m" 404 -
+ * Detected change in '/data/data/com.termux/files/home/codex700/app.py', reloading
+admin wired
+chats cols: ['id', 'user_id', 'who', 'msg', 'date', 'sender', 'uid', 'created']
+ * Restarting with stat
+  File "/data/data/com.termux/files/home/codex700/app.py", line 16
+    con=sqlite3.connect("codex700.db")
+IndentationError: unexpected indent
