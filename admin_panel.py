@@ -223,3 +223,20 @@ def reply(mid):
     if guard(): return guard()
     con=db(); con.execute("UPDATE messages SET admin_reply=? WHERE id=?", (request.form.get('reply',''), mid)); con.commit(); con.close()
     return redirect('/admin/chats')
+
+@admin_bp.route('/plans_preview')
+def plans_preview():
+    if guard(): return guard()
+    con=db()
+    rows=con.execute("SELECT * FROM plans ORDER BY min_amount").fetchall()
+    con.close()
+    h="<div class=panel><h3>Preview - As Users See</h3><div style='display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px'>"
+    for r in rows:
+        d=dict(r)
+        img=d.get('image','')
+        price=d.get('price') or d.get('min_amount')
+        lim=d.get('limit_qty') or '-'
+        imgtag=f"<img src='{img}' style='width:100%;height:140px;object-fit:cover;border-radius:12px'>" if img else "<div style='width:100%;height:140px;background:#eee;border-radius:12px;display:flex;align-items:center;justify-content:center'>no image</div>"
+        h+=f"<div style='border:1px solid #ddd;border-radius:12px;padding:12px;background:#fff'>{imgtag}<h4>{d.get('name')}</h4><div>Price: UGX {price}</div><div>{d.get('return_pct')}% in {d.get('duration_days')} days</div><div>Limit: {lim}</div></div>"
+    h+="</div><br><a class=btn href=/admin/plans2>Back to table</a></div>"
+    return page(h)
