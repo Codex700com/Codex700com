@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block content %}
+<div style="max-width:600px;margin:20px auto;padding:12px">
+<h2>Ongoing</h2>
+{% for inv in active %}
+<div style="background:#fff;padding:14px;border-radius:12px;margin-bottom:10px">
+<b>{{inv['product_name']}} × {{inv['quantity']}}</b> - ACTIVE<br>
+Daily: {{ "{:,}".format(inv['daily_income']) }} | Total: {{ "{:,}".format(inv['total_expected']) }}<br>
+<small>Matures in {{ ((inv['maturity_ts']-now)//86400) }} days</small>
+</div>
+{% else %}<p>No active investments</p>{% endfor %}
+<h2>Completed</h2>
+{% for inv in done %}
+<div style="background:#f0fdf4;padding:14px;border-radius:12px;margin-bottom:10px">
+<b>{{inv['product_name']}} × {{inv['quantity']}}</b> - COMPLETED ✅<br>
+Credited: {{ "{:,}".format(inv['total_expected']) }}
+</div>
+{% else %}<p>No completed yet</p>{% endfor %}
+</div>{% endblock %}
