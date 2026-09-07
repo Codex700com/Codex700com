@@ -836,7 +836,7 @@ def invest_confirm():
     row = cur.execute("SELECT balance FROM users WHERE id=?", (uid,)).fetchone()
     if not row or row[0] < amount:
         db.rollback()
-        return "Insufficient balance. Please deposit funds before investing.",400
+        return render_template('invest_success.html', success=False, plan_name=pid, amount=f"{amount:,}", balance=f"{row[0] if row else 0:,}", daily_pct=int(pr.get('daily_rate',20)*100) if 'daily_rate' in pr else 20, duration_days=pr.get('days',45)), 400
     now = int(time.time())
     maturity = now + pr['days']*86400
     daily = pr['daily']*qty
@@ -858,7 +858,12 @@ def invest_success(inv_id):
     db = sqlite3.connect('codex700.db')
     db.row_factory = sqlite3.Row
     inv = db.execute("SELECT * FROM investments WHERE id=?", (inv_id,)).fetchone()
-    return render_template('invest_success.html', inv=inv)
+    if not inv:
+        return render_template('invest_success.html', success=False, plan_name='J2', amount='0', balance='0'), 404
+    # inv has product_name, amount etc
+    plan = inv['product_name'] if 'product_name' in inv.keys() else inv['product_id']
+    amt = f"{inv['amount']:,}" if 'amount' in inv.keys() else '0'
+    return render_template('invest_success.html', success=True, plan_name=plan, amount=amt, inv=inv)
 
 @app.route('/my-investments')
 def my_investments():
@@ -1012,7 +1017,7 @@ def invest_confirm_v2():
     row = cur.execute("SELECT balance FROM users WHERE id=?", (uid,)).fetchone()
     if not row or row[0] < amount:
         db.rollback()
-        return "Insufficient balance. Please deposit funds before investing.",400
+        return render_template('invest_success.html', success=False, plan_name=pid, amount=f"{amount:,}", balance=f"{row[0] if row else 0:,}", daily_pct=int(pr.get('daily_rate',20)*100) if 'daily_rate' in pr else 20, duration_days=pr.get('days',45)), 400
     now = int(time.time())
     maturity = now + pr['days']*86400
     daily = pr['daily']*qty
@@ -1034,7 +1039,12 @@ def invest_success_v1(inv_id):
     db = sqlite3.connect('codex700.db')
     db.row_factory = sqlite3.Row
     inv = db.execute("SELECT * FROM investments WHERE id=?", (inv_id,)).fetchone()
-    return render_template('invest_success.html', inv=inv)
+    if not inv:
+        return render_template('invest_success.html', success=False, plan_name='J2', amount='0', balance='0'), 404
+    # inv has product_name, amount etc
+    plan = inv['product_name'] if 'product_name' in inv.keys() else inv['product_id']
+    amt = f"{inv['amount']:,}" if 'amount' in inv.keys() else '0'
+    return render_template('invest_success.html', success=True, plan_name=plan, amount=amt, inv=inv)
 
 @app.route('/my-investments', endpoint='my_investments_v1')
 def my_investments_v1():
