@@ -427,30 +427,30 @@ body{{font-family:sans-serif;margin:0;background:#fff;padding-bottom:80px}}
 </style>
 <style>
 /* SHINING GOLD THEME */
-body{background:#000!important;color:#f5d67b!important}
-.card,.gbox{
-  background:#0a0a0a!important;
-  border:1px solid #1da1f2!important;
-  border-radius:14px!important;
-  box-shadow:0 0 12px rgba(251,191,36,0.55),0 0 28px rgba(251,191,36,0.18),inset 0 0 8px rgba(251,191,36,0.12)!important;
-  color:#ffffff!important;
-}
-.gbox b,.card b{
-  color:#1da1f2!important;
-  text-shadow:0 0 8px rgba(251,191,36,0.9)!important;
-  font-weight:800!important;
-}
-a{color:#1da1f2!important}
-button,.btn{
-  background:linear-gradient(180deg,#ffffff,#1da1f2)!important;
-  color:#000!important;
-  border:none!important;
-  box-shadow:0 0 15px rgba(251,191,36,0.7)!important;
-  font-weight:800!important;
-  border-radius:10px!important;
-}
-h1,h2,h3{color:#ffffff!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!important}
-.grid4 .gbox{height:88px;min-height:88px}
+ 'body{{background:#000!important;color:#f5d67b!important}}'
+'.card,.gbox{{'
+'background:#0a0a0a!important;'
+'border:1px solid #1da1f2!important;'
+'border-radius:14px!important;'
+'box-shadow:0 0 12px rgba(251,191,36,0.55),0 0 28px rgba(251,191,36,0.18),inset 0 0 8px rgba(251,191,36,0.12)!important;'
+'color:#ffffff!important;'
+'}}'
+'.gbox b,.card b{{'
+'color:#1da1f2!important;'
+'text-shadow:0 0 8px rgba(251,191,36,0.9)!important;'
+'font-weight:800!important;'
+'}}'
+'a{{color:#1da1f2!important}}'
+'button,.btn{{'
+'background:linear-gradient(180deg,#ffffff,#1da1f2)!important;'
+'color:#000!important;'
+'border:none!important;'
+'box-shadow:0 0 15px rgba(251,191,36,0.7)!important;'
+'font-weight:800!important;'
+'border-radius:10px!important;'
+'}}'
+'h1,h2,h3{{color:#ffffff!important;text-shadow:0 0 12px rgba(251,191,36,0.6)!important}}'
+'.grid4 .gbox{{height:88px;min-height:88px}}'
 </style>
 </head><body>
 <div class="top" style="height:210px;overflow:hidden;background:#111"><img src="/static/miner.jpg" style="width:100%;height:300px;object-fit:cover;object-position:bottom;margin-top:-80px;display:block"></div>
@@ -770,6 +770,109 @@ def deposit_submit():
 
 
 # --- ADMIN PANEL Deep Blue / White ---
+
+def init_invest_tables():
+    import sqlite3
+    db = sqlite3.connect('codex700.db')
+    db.execute("""CREATE TABLE IF NOT EXISTS investments
+    (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, product_id TEXT,
+     product_name TEXT, quantity INTEGER, amount INTEGER,
+     start_ts INTEGER, maturity_ts INTEGER,
+     daily_income INTEGER, total_expected INTEGER,
+     status TEXT DEFAULT 'ACTIVE', credited INTEGER DEFAULT 0)""")
+    db.execute("""CREATE TABLE IF NOT EXISTS transactions
+    (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, type TEXT,
+     amount INTEGER, desc TEXT, created_ts INTEGER)""")
+    db.execute("""CREATE TABLE IF NOT EXISTS notifications
+    (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, title TEXT, msg TEXT, created_ts INTEGER)""")
+    db.commit()
+
+def process_maturities(user_id=None):
+    import sqlite3, time
+    db = sqlite3.connect('codex700.db')
+    db.row_factory = sqlite3.Row
+    now = int(time.time())
+    q = "SELECT * FROM investments WHERE status='ACTIVE' AND maturity_ts<=? AND credited=0"
+    args = [now]
+    if user_id:
+        q += " AND user_id=?"
+        args.append(user_id)
+    rows = db.execute(q, args).fetchall()
+    for inv in rows:
+        cur = db.cursor()
+        cur.execute("BEGIN IMMEDIATE")
+        r = cur.execute("SELECT status, credited FROM investments WHERE id=?", (inv["id"],)).fetchone()
+        if not r or r[0]!='ACTIVE' or r[1]!=0:
+            db.rollback(); continue
+        cur.execute("UPDATE users SET balance=balance+? WHERE id=?", (inv["total_expected"], inv["user_id"]))
+        cur.execute("UPDATE investments SET status='COMPLETED', credited=1 WHERE id=?", (inv["id"],))
+        cur.execute("INSERT INTO transactions (user_id,type,amount,desc,created_ts) VALUES (?,?,?,?,?)",
+            (inv["user_id"], "maturity", inv["total_expected"], f"{inv['product_name']} matured", now))
+        cur.execute("INSERT INTO notifications (user_id,title,msg,created_ts) VALUES (?,?,?,?)",
+            (inv["user_id"], f"{inv['product_name']} Investment Completed",
+             f"Your {inv['product_name']} investment has matured. Your account balance has been updated.", now))
+        db.commit()
+    try: init_invest_tables()
+    except: pass
+
+
+@app.route('/invest/confirm', methods=['POST'])
+def invest_confirm():
+    import sqlite3, time
+    from flask import request, session, redirect
+    if 'user_id' not in session: return redirect('/login')
+    uid = session['user_id']
+    pid = request.form.get('product_id','J1')
+    try: qty = int(request.form.get('quantity',1))
+    except: qty = 1
+    if qty<1 or qty>10: return "Invalid quantity",400
+    if pid not in PRODUCTS: return "Invalid product",400
+    pr = PRODUCTS[pid]
+    amount = pr['price']*qty
+    db = sqlite3.connect('codex700.db')
+    db.row_factory = sqlite3.Row
+    cur = db.cursor()
+    cur.execute("BEGIN IMMEDIATE")
+    row = cur.execute("SELECT balance FROM users WHERE id=?", (uid,)).fetchone()
+    if not row or row[0] < amount:
+        db.rollback()
+        return "Insufficient balance. Please deposit funds before investing.",400
+    now = int(time.time())
+    maturity = now + pr['days']*86400
+    daily = pr['daily']*qty
+    total = daily*pr['days']
+    cur.execute("UPDATE users SET balance=balance-? WHERE id=?", (amount, uid))
+    cur.execute("""INSERT INTO investments (user_id,product_id,product_name,quantity,amount,start_ts,maturity_ts,daily_income,total_expected,status)
+                   VALUES (?,?,?,?,?,?,?,?,?,'ACTIVE')""", (uid,pid,pid,qty,amount,now,maturity,daily,total))
+    inv_id = cur.lastrowid
+    cur.execute("INSERT INTO transactions (user_id,type,amount,desc,created_ts) VALUES (?,?,?,?,?)",
+                (uid,'invest',-amount,f"{pid} x{qty} invested",now))
+    db.commit()
+    return redirect(f'/invest/success/{inv_id}')
+
+@app.route('/invest/success/<int:inv_id>')
+def invest_success(inv_id):
+    import sqlite3
+    from flask import session, redirect
+    if 'user_id' not in session: return redirect('/login')
+    db = sqlite3.connect('codex700.db')
+    db.row_factory = sqlite3.Row
+    inv = db.execute("SELECT * FROM investments WHERE id=?", (inv_id,)).fetchone()
+    return render_template('invest_success.html', inv=inv)
+
+@app.route('/my-investments')
+def my_investments():
+    import sqlite3, time
+    from flask import session, redirect
+    if 'user_id' not in session: return redirect('/login')
+    uid = session['user_id']
+    process_maturities(uid)
+    db = sqlite3.connect('codex700.db')
+    db.row_factory = sqlite3.Row
+    active = db.execute("SELECT * FROM investments WHERE user_id=? AND status='ACTIVE' ORDER BY id DESC", (uid,)).fetchall()
+    done = db.execute("SELECT * FROM investments WHERE user_id=? AND status='COMPLETED' ORDER BY id DESC", (uid,)).fetchall()
+    return render_template('my_investments.html', active=active, done=done, now=int(time.time()))
+
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
 
@@ -842,6 +945,109 @@ def set_language():
             con.commit(); con.close()
         except Exception as e: print(e)
     return jsonify(ok=True)
+
+
+def init_invest_tables():
+    import sqlite3
+    db = sqlite3.connect('codex700.db')
+    db.execute("""CREATE TABLE IF NOT EXISTS investments
+    (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, product_id TEXT,
+     product_name TEXT, quantity INTEGER, amount INTEGER,
+     start_ts INTEGER, maturity_ts INTEGER,
+     daily_income INTEGER, total_expected INTEGER,
+     status TEXT DEFAULT 'ACTIVE', credited INTEGER DEFAULT 0)""")
+    db.execute("""CREATE TABLE IF NOT EXISTS transactions
+    (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, type TEXT,
+     amount INTEGER, desc TEXT, created_ts INTEGER)""")
+    db.execute("""CREATE TABLE IF NOT EXISTS notifications
+    (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, title TEXT, msg TEXT, created_ts INTEGER)""")
+    db.commit()
+
+def process_maturities(user_id=None):
+    import sqlite3, time
+    db = sqlite3.connect('codex700.db')
+    db.row_factory = sqlite3.Row
+    now = int(time.time())
+    q = "SELECT * FROM investments WHERE status='ACTIVE' AND maturity_ts<=? AND credited=0"
+    args = [now]
+    if user_id:
+        q += " AND user_id=?"
+        args.append(user_id)
+    rows = db.execute(q, args).fetchall()
+    for inv in rows:
+        cur = db.cursor()
+        cur.execute("BEGIN IMMEDIATE")
+        r = cur.execute("SELECT status, credited FROM investments WHERE id=?", (inv["id"],)).fetchone()
+        if not r or r[0]!='ACTIVE' or r[1]!=0:
+            db.rollback(); continue
+        cur.execute("UPDATE users SET balance=balance+? WHERE id=?", (inv["total_expected"], inv["user_id"]))
+        cur.execute("UPDATE investments SET status='COMPLETED', credited=1 WHERE id=?", (inv["id"],))
+        cur.execute("INSERT INTO transactions (user_id,type,amount,desc,created_ts) VALUES (?,?,?,?,?)",
+            (inv["user_id"], "maturity", inv["total_expected"], f"{inv['product_name']} matured", now))
+        cur.execute("INSERT INTO notifications (user_id,title,msg,created_ts) VALUES (?,?,?,?)",
+            (inv["user_id"], f"{inv['product_name']} Investment Completed",
+             f"Your {inv['product_name']} investment has matured. Your account balance has been updated.", now))
+        db.commit()
+    try: init_invest_tables()
+    except: pass
+
+
+@app.route('/invest/confirm', methods=['POST'])
+def invest_confirm():
+    import sqlite3, time
+    from flask import request, session, redirect
+    if 'user_id' not in session: return redirect('/login')
+    uid = session['user_id']
+    pid = request.form.get('product_id','J1')
+    try: qty = int(request.form.get('quantity',1))
+    except: qty = 1
+    if qty<1 or qty>10: return "Invalid quantity",400
+    if pid not in PRODUCTS: return "Invalid product",400
+    pr = PRODUCTS[pid]
+    amount = pr['price']*qty
+    db = sqlite3.connect('codex700.db')
+    db.row_factory = sqlite3.Row
+    cur = db.cursor()
+    cur.execute("BEGIN IMMEDIATE")
+    row = cur.execute("SELECT balance FROM users WHERE id=?", (uid,)).fetchone()
+    if not row or row[0] < amount:
+        db.rollback()
+        return "Insufficient balance. Please deposit funds before investing.",400
+    now = int(time.time())
+    maturity = now + pr['days']*86400
+    daily = pr['daily']*qty
+    total = daily*pr['days']
+    cur.execute("UPDATE users SET balance=balance-? WHERE id=?", (amount, uid))
+    cur.execute("""INSERT INTO investments (user_id,product_id,product_name,quantity,amount,start_ts,maturity_ts,daily_income,total_expected,status)
+                   VALUES (?,?,?,?,?,?,?,?,?,'ACTIVE')""", (uid,pid,pid,qty,amount,now,maturity,daily,total))
+    inv_id = cur.lastrowid
+    cur.execute("INSERT INTO transactions (user_id,type,amount,desc,created_ts) VALUES (?,?,?,?,?)",
+                (uid,'invest',-amount,f"{pid} x{qty} invested",now))
+    db.commit()
+    return redirect(f'/invest/success/{inv_id}')
+
+@app.route('/invest/success/<int:inv_id>')
+def invest_success(inv_id):
+    import sqlite3
+    from flask import session, redirect
+    if 'user_id' not in session: return redirect('/login')
+    db = sqlite3.connect('codex700.db')
+    db.row_factory = sqlite3.Row
+    inv = db.execute("SELECT * FROM investments WHERE id=?", (inv_id,)).fetchone()
+    return render_template('invest_success.html', inv=inv)
+
+@app.route('/my-investments')
+def my_investments():
+    import sqlite3, time
+    from flask import session, redirect
+    if 'user_id' not in session: return redirect('/login')
+    uid = session['user_id']
+    process_maturities(uid)
+    db = sqlite3.connect('codex700.db')
+    db.row_factory = sqlite3.Row
+    active = db.execute("SELECT * FROM investments WHERE user_id=? AND status='ACTIVE' ORDER BY id DESC", (uid,)).fetchall()
+    done = db.execute("SELECT * FROM investments WHERE user_id=? AND status='COMPLETED' ORDER BY id DESC", (uid,)).fetchall()
+    return render_template('my_investments.html', active=active, done=done, now=int(time.time()))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
