@@ -370,7 +370,7 @@ def confirm_buy(pid):
     prices={"A1":20000,"A2":100000,"M1":50000,"M2":100000,"M3":250000,"M4":500000,"M5":1000000,"M6":2000000,"M7":5000000,"L1":500000,"L2":1000000,"L3":2000000,"GS1":600000,"GS2":1200000,"GS3":2500000,"J1":800000,"J2":1500000,"J3":3000000,"K1":100000,"K2":5000000}
     price=prices.get(pid,0)
     con=sqlite3.connect("codex700.db")
-    con.execute("CREATE TABLE IF NOT EXISTS investments (user_id TEXT, plan TEXT, amount INTEGER, ts DATETIME DEFAULT CURRENT_TIMESTAMP)")
+    con.execute("CREATE TABLE IF NOT EXISTS investments (user_id TEXT, plan TEXT, amount INTEGER, daily INTEGER, duration INTEGER, created_at TEXT, end_at TEXT, credited INTEGER DEFAULT 0, status TEXT DEFAULT 'active', ts DATETIME DEFAULT CURRENT_TIMESTAMP)")
     # plan purchase limits
     limits={"A1":2,"A2":2,"M1":1,"M2":1,"M3":1,"M4":1,"M5":1,"M6":4,"M7":4,"K1":1,"K2":1}
     cur_cnt=con.execute("SELECT COUNT(*) FROM investments WHERE user_id=? AND plan=?",(uid,pid)).fetchone()[0]
@@ -389,7 +389,7 @@ def confirm_buy(pid):
         details_map={"A1":(20000,3000,16),"A2":(100000,9000,15),"M1":(50000,10000,30),"M2":(100000,20000,30),"M3":(250000,50000,30),"M4":(500000,100000,30),"M5":(1000000,200000,30),"M6":(2000000,400000,30),"M7":(5000000,1000000,30),"L1":(500000,110000,30),"L2":(1000000,220000,30),"L3":(2000000,440000,30),"GS1":(600000,132000,30),"GS2":(1200000,264000,30),"GS3":(2500000,550000,30),"J1":(500000,110000,30),"J2":(1000000,220000,30),"J3":(2000000,440000,30)}
         _pr,_da,_du=details_map.get(pid,(price,0,30))
         _total=_da*_du
-        return render_template('invest_success.html', success=False, plan_name=pid, amount=f"{price:,}", balance=f"{bal:,}", daily=f"UGX {_da:,}", duration=str(_du), total=f"UGX {_total:,}"), 400
+        return render_template('invest_fail.html', plan_name=pid, amount=f"{price:,}", balance=f"{bal:,}", daily=f"UGX {_da:,}", duration=str(_du), total=f"UGX {_total:,}", current_balance=bal)
     try:
         con.execute("UPDATE users SET balance=balance-? WHERE id=?",(price,uid))
     except:
@@ -1204,6 +1204,69 @@ def invest_success_v1(inv_id):
     inv = db.execute("SELECT * FROM investments WHERE id=?", (inv_id,)).fetchone()
     if not inv:
         return 'not found',404
+
+
+@app.route("/api/daily-status")
+def api_daily_status():
+    import sqlite3
+    from datetime import datetime, timedelta
+    from flask import session, jsonify
+    uid=str(session.get("uid") or session.get("user_id") or "guest")
+    if uid=="guest":
+        return jsonify({"claimed":False})
+    con=sqlite3.connect("codex700.db")
+    con.row_factory=sqlite3.Row
+    con.execute("CREATE TABLE IF NOT EXISTS daily_checkins (user_id TEXT PRIMARY KEY, last_claim TEXT, streak INTEGER DEFAULT 0)")
+    row=con.execute("SELECT * FROM daily_checkins WHERE user_id=?",(uid,)).fetchone()
+    con.close()
+    now=datetime.utcnow()
+    if not row:
+        return jsonify({"claimed":False,"streak":0})
+    last=row["last_claim"][:10]
+    today=now.date().isoformat()
+    if last==today:
+        tomorrow=datetime.combine(now.date()+timedelta(days=1), datetime.min.time())
+        diff=tomorrow-now
+        return jsonify({"claimed":True,"next_in":int(diff.total_seconds()),"streak":row["streak"]})
+    else:
+        return jsonify({"claimed":False,"streak":row["streak"]})
+
+@app.route("/api/daily-checkin", methods=["POST"])
+def api_daily_checkin():
+    import sqlite3
+    from datetime import datetime, timedelta
+    from flask import session, jsonify
+    uid=str(session.get("uid") or session.get("user_id") or "guest")
+    if uid=="guest":
+        return jsonify({"ok":False,"msg":"Login first"})
+    con=sqlite3.connect("codex700.db")
+    con.row_factory=sqlite3.Row
+    con.execute("CREATE TABLE IF NOT EXISTS daily_checkins (user_id TEXT PRIMARY KEY, last_claim TEXT, streak INTEGER DEFAULT 0)")
+    row=con.execute("SELECT * FROM daily_checkins WHERE user_id=?",(uid,)).fetchone()
+    now=datetime.utcnow()
+    today=now.date().isoformat()
+    if row:
+        last=row["last_claim"][:10]
+        if last==today:
+            tomorrow=datetime.combine(now.date()+timedelta(days=1), datetime.min.time())
+            diff=tomorrow-now
+            con.close()
+            return jsonify({"ok":False,"msg":"Already claimed today","next_in":int(diff.total_seconds()),"streak":row["streak"]})
+        yesterday=(now.date()-timedelta(days=1)).isoformat()
+        new_streak=row["streak"]+1 if last==yesterday else 1
+        reward=500*new_streak
+        con.execute("UPDATE daily_checkins SET last_claim=?, streak=? WHERE user_id=?",(now.isoformat(), new_streak, uid))
+        con.execute("UPDATE users SET balance=balance+? WHERE id=?",(reward, uid))
+        con.commit()
+        con.close()
+        return jsonify({"ok":True,"msg":f"Checked in! +{reward} UGX","streak":new_streak,"reward":reward})
+    else:
+        con.execute("INSERT INTO daily_checkins (user_id, last_claim, streak) VALUES (?,?,?)",(uid, now.isoformat(), 1))
+        con.execute("UPDATE users SET balance=balance+? WHERE id=?",(500, uid))
+        con.commit()
+        con.close()
+        return jsonify({"ok":True,"msg":"First check-in! +500 UGX","streak":1,"reward":500})
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
