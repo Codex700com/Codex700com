@@ -637,6 +637,16 @@ def chat_page():
     from flask import render_template
     return render_template("chat.html")
 
+@app.route("/api/my-chat")
+def api_my_chat():
+ from flask import session, jsonify
+ uid=session.get("user_id") or session.get("uid") or session.get("id")
+ if not uid: return jsonify([])
+ con=db()
+ rows=con.execute("SELECT id, message as text, admin_reply, created_at FROM messages WHERE user_id=? ORDER BY id ASC",(uid,)).fetchall()
+ con.close()
+ return jsonify([dict(r) for r in rows])
+
 @app.route("/api/chat", methods=["GET","POST"])
 def api_chat():
     from flask import request, jsonify, session
@@ -660,6 +670,18 @@ def api_chat():
         except Exception as e:
             print("msg save error", e)
         return jsonify({"ok":True})
+    # private inbox for logged-in user
+    try:
+        from flask import session
+        uid=session.get("user_id") or session.get("uid") or session.get("id")
+        if uid:
+            con=db()
+            con.execute("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, message TEXT, admin_reply TEXT, created_at TEXT)")
+            rows=con.execute("SELECT id, message, admin_reply, created_at FROM messages WHERE user_id=? ORDER BY id ASC LIMIT 100",(uid,)).fetchall()
+            con.close()
+            return {"private":[dict(r) for r in rows]}
+    except Exception as e:
+        print("private inbox error",e)
     return json.load(open(CHAT_FILE))
 
 
