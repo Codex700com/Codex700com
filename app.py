@@ -340,7 +340,10 @@ def confirm_buy(pid):
         bal=0
     if bal < price:
         con.close()
-        return render_template('invest_success.html', success=False, plan_name=pid, amount=f"{price:,}", balance=f"{bal:,}"), 400
+        details_map={"A1":(16000,3000,16),"A2":(100000,9000,15),"M1":(50000,10000,30),"M2":(100000,20000,30),"M3":(250000,50000,30),"M4":(500000,100000,30),"M5":(1000000,200000,30),"M6":(2000000,400000,30),"M7":(5000000,1000000,30)}
+        _pr,_da,_du=details_map.get(pid,(price,0,30))
+        _total=_da*_du
+        return render_template('invest_success.html', success=False, plan_name=pid, amount=f"{price:,}", balance=f"{bal:,}", daily=f"UGX {_da:,}", duration=str(_du), total=f"UGX {_total:,}"), 400
     try:
         con.execute("UPDATE users SET balance=balance-? WHERE id=?",(price,uid))
     except:
