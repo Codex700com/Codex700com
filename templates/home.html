@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020a18 url('https://i.ibb.co/3m5rLqB/tech-bg.jpg');background-size:cover;background-attachment:fixed;color:#fff;font-family:'Segoe UI',sans-serif;padding-bottom:80px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:rgba(0,0,0,0.6);backdrop-filter:blur(10px)}
+.logo{font-weight:900;letter-spacing:2px;text-align:center}
+.logo b{background:linear-gradient(90deg,#00f2ff,#00ff88);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:28px}
+.logo small{display:block;font-size:10px;letter-spacing:3px;color:#7dd3ff}
+.welcome{margin:10px;border:1px solid #00e5ff;border-radius:20px;padding:16px;background:linear-gradient(135deg,rgba(0,20,60,0.9),rgba(0,40,80,0.7));box-shadow:0 0 20px rgba(0,229,255,0.3);position:relative;overflow:hidden}
+.welcome:after{content:'';position:absolute;right:10px;top:20px;width:90px;height:70px;background:url('https://i.ibb.co/5h2S7p2/chip.png') no-repeat center/contain;opacity:0.8}
+.welcome h3{color:#7dd3ff;font-size:13px}.welcome h1{font-size:26px;color:#00f2ff;margin:4px 0;text-transform:uppercase}
+.welcome p{font-size:13px;color:#cbd5e1}.welcome p b{color:#22ff88}
+.btn-invest{margin-top:12px;display:inline-block;background:linear-gradient(90deg,#00ff88,#00e5ff);color:#000;font-weight:900;padding:12px 24px;border-radius:30px;width:80%;text-align:center;text-decoration:none;box-shadow:0 0 15px #00ff88}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px}
+.sbox{background:linear-gradient(180deg,rgba(5,30,70,0.9),rgba(2,15,40,0.9));border:1px solid #00b0ff;border-radius:14px;padding:10px 4px;text-align:center;box-shadow:0 0 10px rgba(0,176,255,0.3)}
+.sbox b{display:block;color:#00e5ff;font-size:13px;margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:10px}
+.banner{margin:10px;border:1px solid #00ff88;border-radius:14px;padding:12px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(90deg,rgba(0,50,30,0.6),rgba(0,30,80,0.6))}
+.btn-blue{background:linear-gradient(90deg,#00b0ff,#00e5ff);color:#fff;font-weight:800;padding:8px 14px;border-radius:20px;text-decoration:none;font-size:12px}
+.card{background:linear-gradient(180deg,rgba(10,40,90,0.9),rgba(5,20,50,0.9));border:1px solid #0a84ff;border-radius:14px;padding:14px 6px;text-align:center;box-shadow:0 0 12px rgba(10,132,255,0.3)}
+.card.active{border-color:#00ff88;background:linear-gradient(180deg,rgba(10,70,40,0.9),rgba(5,40,30,0.9))}
+.card b{display:block;margin:4px 0}.card small{color:#94a3b8;font-size:11px}
+.nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:rgba(0,15,40,0.95);border-top:1px solid #0a84ff;padding:8px 0;backdrop-filter:blur(10px)}
+.nav a{color:#7dd3ff;text-decoration:none;text-align:center;font-size:11px}.nav a.on{color:#00ff88}
+</style></head><body>
+
+<div class="top">
+<a href="/menu" style="color:#fff;font-size:24px;text-decoration:none">☰</a>
+<div class="logo"><b>CODEX</b><small>INVEST • GROW • WIN</small></div>
+<div><a href="/notifications" style="text-decoration:none">🔔</a> <a href="/account" style="text-decoration:none">👤</a></div>
+</div>
+
+<div class="welcome">
+<h3>👑 WELCOME BACK,</h3>
+<h1>{{ user_name or 'TAMALE IMRAN' }}</h1>
+<p>Big dreams require action.<br><b>You're one step closer to freedom!</b></p>
+<div style="text-align:right;font-size:10px;color:#7dd3ff;margin-top:4px">INVEST<br>TODAY<br>BUILD<br>TOMORROW</div>
+<a class="btn-invest" href="/invest">↗ INVEST NOW →</a>
+</div>
+
+<div class="stats">
+<div class="sbox">💼<br>Wallet<b>UGX {{ wallet_balance or '0' }}</b></div>
+<div class="sbox">💰<br>Invested<b>UGX {{ total_invested or '0' }}</b></div>
+<div class="sbox">💲<br>Income<b>UGX {{ total_income or '0' }}</b></div>
+<div class="sbox">📈<br>Active<b>{{ active_count or '0' }}</b></div>
+</div>
+
+<div class="banner">
+<div>🎁 <b style="color:#7CFF00">Daily Check-In</b><br><small>Log in daily and win rewards!</small></div>
+<a class="btn-blue" href="/checkin">📅 CHECK IN →</a>
+</div>
+
+<div class="grid">
+<a class="card" href="/invest" style="text-decoration:none;color:#fff">📈<br><b>Invest</b><br><small>Start your journey</small></a>
+<a class="card" href="/deposit" style="text-decoration:none;color:#fff">💲<br><b>Deposit</b><br><small>Fund your wallet</small></a>
+<a class="card active" href="/withdraw" style="text-decoration:none;color:#fff">💼<br><b>Withdraw</b><br><small>Get your earnings</small></a>
+<a class="card" href="/referrals" style="text-decoration:none;color:#fff">👥<br><b>Referral</b><br><small>Earn together</small></a>
+<a class="card" href="/transactions" style="text-decoration:none;color:#fff">📋<br><b>Transactions</b><br><small>View all records</small></a>
+<a class="card" href="/raffle" style="text-decoration:none;color:#fff">🎁<br><b>Raffle</b><br><small>Win amazing prizes</small></a>
+<a class="card" href="/support" style="text-decoration:none;color:#fff">🎧<br><b>Support</b><br><small>We are here to help</small></a>
+<a class="card" href="/chat" style="text-decoration:none;color:#fff">💬<br><b>Chat</b><br><small>Talk to manager</small></a>
+</div>
+
+<div class="nav">
+<a href="/home" class="on">🏠<br>HOME</a>
+<a href="/invest">📊<br>INVEST</a>
+<a href="/transactions">⇄<br>TRANSACTIONS</a>
+<a href="/referrals">👥<br>REFERRALS</a>
+<a href="/account">👤<br>ACCOUNT</a>
+</div>
+
+</body></html>
