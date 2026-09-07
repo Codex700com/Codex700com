@@ -91,4 +91,29 @@ setInterval(async()=>{
  }catch(e){}
 },5000);
 </script>
+
+<script>
+async function loadPrivate(){
+ try{
+  let r=await fetch('/api/my-chat'); let j=await r.json();
+  let c=document.getElementById('chat'); c.innerHTML='';
+  if(!j.length){c.innerHTML='<div class="empty">No messages yet. Start a conversation!</div>';return;}
+  j.forEach(m=>{
+   let d=document.createElement('div'); d.className='msg me';
+   d.textContent=m.text; c.appendChild(d);
+   if(m.admin_reply){
+    let a=document.createElement('div'); a.className='msg bot';
+    a.textContent='Support: '+m.admin_reply; c.appendChild(a);
+   }
+  });
+  c.scrollTop=c.scrollHeight;
+ }catch(e){}
+}
+async function sendMsg(){
+ let inp=document.getElementById('tin'); let txt=inp.value.trim(); if(!txt) return;
+ await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:txt})});
+ inp.value=''; loadPrivate();
+}
+loadPrivate(); setInterval(loadPrivate,3000);
+</script>
 </body></html>
