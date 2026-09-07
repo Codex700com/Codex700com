@@ -1128,31 +1128,3 @@ def deposit_submit():
     except Exception as e:
         return jsonify({"ok":False,"msg":"Server error: "+str(e)})
 
-@app.route("/deposit-submit", methods=["POST"])
-def deposit_submit():
-    from flask import request, session, jsonify
-    import sqlite3, os, time
-    try:
-        uid = session.get("uid") or session.get("user_id")
-        if not uid:
-            return jsonify({"ok": False, "msg": "Please login first"})
-        airtel = request.form.get("airtel_number","").strip()
-        amount = request.form.get("amount","").strip()
-        txid = request.form.get("txid","").strip()
-        if not airtel or not amount or not txid:
-            return jsonify({"ok": False, "msg": "Fill all fields"})
-        os.makedirs("static/shots", exist_ok=True)
-        sp = ""
-        f = request.files.get("screenshot")
-        if f and f.filename:
-            fn = f"{uid}_{int(time.time())}_{f.filename.replace('/','_')}"
-            fp = os.path.join("static/shots", fn)
-            f.save(fp)
-            sp = "/"+fp
-        con = sqlite3.connect("codex700.db")
-        con.execute("CREATE TABLE IF NOT EXISTS deposits (id INTEGER PRIMARY KEY, user_id INT, airtel TEXT, amount INT, txid TEXT, screenshot TEXT, status TEXT DEFAULT 'pending', created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
-        con.execute("INSERT INTO deposits (user_id, airtel, amount, txid, screenshot, status) VALUES (?,?,?,?,?,'pending')", (uid, airtel, amount, txid, sp))
-        con.commit(); con.close()
-        return jsonify({"ok": True, "msg": "Deposit received, wait for approval"})
-    except Exception as e:
-        return jsonify({"ok": False, "msg": "Server error: "+str(e)})
