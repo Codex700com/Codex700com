@@ -8,6 +8,23 @@ try:
 except Exception as e:
  print('admin wire fail',e)
 
+
+def ensure_invest_columns():
+    import sqlite3, time
+    con=sqlite3.connect("codex700.db")
+    try:
+        cols=[r[1] for r in con.execute("PRAGMA table_info(investments)")]
+        for col, typ in [("daily_return","INTEGER DEFAULT 0"),("duration_days","INTEGER DEFAULT 30"),
+                         ("purchase_ts","INTEGER DEFAULT 0"),("expiry_ts","INTEGER DEFAULT 0"),
+                         ("img","TEXT DEFAULT ''"),("product_name","TEXT DEFAULT ''"),
+                         ("credited_days","INTEGER DEFAULT 0"),("total_expected","INTEGER DEFAULT 0")]:
+            if col not in cols:
+                con.execute(f"ALTER TABLE investments ADD COLUMN {col} {typ}")
+        con.commit()
+    except Exception as e: print("migrate invest fail",e)
+    con.close()
+ensure_invest_columns()
+
 def ensure_admin_column():
     import sqlite3
     try:
@@ -859,24 +876,43 @@ def invest_success(inv_id):
     db.row_factory = sqlite3.Row
     inv = db.execute("SELECT * FROM investments WHERE id=?", (inv_id,)).fetchone()
     if not inv:
-        return render_template('invest_success.html', success=False, plan_name='J2', amount='0', balance='0'), 404
-    # inv has product_name, amount etc
-    plan = inv['product_name'] if 'product_name' in inv.keys() else inv['product_id']
-    amt = f"{inv['amount']:,}" if 'amount' in inv.keys() else '0'
-    return render_template('invest_success.html', success=True, plan_name=plan, amount=amt, inv=inv)
+        return 'not found',404
 
 @app.route('/my-investments')
 def my_investments():
-    import sqlite3, time
-    from flask import session, redirect
-    if 'user_id' not in session: return redirect('/login')
-    uid = session['user_id']
-    process_maturities(uid)
-    db = sqlite3.connect('codex700.db')
-    db.row_factory = sqlite3.Row
-    active = db.execute("SELECT * FROM investments WHERE user_id=? AND status='ACTIVE' ORDER BY id DESC", (uid,)).fetchall()
-    done = db.execute("SELECT * FROM investments WHERE user_id=? AND status='COMPLETED' ORDER BY id DESC", (uid,)).fetchall()
-    return render_template('my_investments.html', active=active, done=done, now=int(time.time()))
+    import time, sqlite3
+    uid=session.get('uid') or session.get('user_id')
+    if not uid: return redirect('/login')
+    now=int(time.time())
+    con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
+    # ensure credited_days column exists for systematic credit
+    try:
+        cols=[r[1] for r in con.execute("PRAGMA table_info(investments)")]
+        if "credited_days" not in cols:
+            con.execute("ALTER TABLE investments ADD COLUMN credited_days INTEGER DEFAULT 0")
+            con.commit()
+    except: pass
+    for inv in list(con.execute("SELECT * FROM investments WHERE user_id=? AND status='ACTIVE'", (uid,))):
+        try:
+            start=inv["start_ts"] or now
+            daily=inv["daily_income"] or 0
+            credited=inv["credited_days"] if "credited_days" in inv.keys() and inv["credited_days"] else 0
+            # systematic: days passed since purchase, capped by duration
+            total_days=int((inv["maturity_ts"]-start)//86400) if inv["maturity_ts"] else 30
+            days_passed=min(total_days, (now-start)//86400)
+            claimable=int(days_passed-credited)
+            if claimable>0 and daily>0:
+                con.execute("UPDATE users SET balance=balance+? WHERE id=?", (claimable*daily, uid))
+                con.execute("UPDATE investments SET credited_days=? WHERE id=?", (credited+claimable, inv["id"]))
+                con.execute("INSERT INTO transactions(user_id,type,amount,desc,created_ts) VALUES(?,?,?,?,?)",(uid,'daily_return',claimable*daily,f"Daily return {inv['product_name']}",now))
+            if now>=inv["maturity_ts"]:
+                con.execute("UPDATE investments SET status='COMPLETED' WHERE id=?", (inv["id"],))
+        except Exception as e: print("credit err",e)
+    con.commit()
+    active=list(con.execute("SELECT * FROM investments WHERE user_id=? AND status='ACTIVE' ORDER BY maturity_ts", (uid,)))
+    done=list(con.execute("SELECT * FROM investments WHERE user_id=? AND status='COMPLETED' ORDER BY id DESC LIMIT 20", (uid,)))
+    con.close()
+    return render_template('my_investments.html', active=active, done=done, now=now, PRODUCTS=PRODUCTS)
 
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
@@ -1040,24 +1076,10 @@ def invest_success_v1(inv_id):
     db.row_factory = sqlite3.Row
     inv = db.execute("SELECT * FROM investments WHERE id=?", (inv_id,)).fetchone()
     if not inv:
-        return render_template('invest_success.html', success=False, plan_name='J2', amount='0', balance='0'), 404
-    # inv has product_name, amount etc
-    plan = inv['product_name'] if 'product_name' in inv.keys() else inv['product_id']
-    amt = f"{inv['amount']:,}" if 'amount' in inv.keys() else '0'
-    return render_template('invest_success.html', success=True, plan_name=plan, amount=amt, inv=inv)
-
-@app.route('/my-investments', endpoint='my_investments_v1')
-def my_investments_v1():
-    import sqlite3, time
-    from flask import session, redirect
-    if 'user_id' not in session: return redirect('/login')
-    uid = session['user_id']
-    process_maturities(uid)
-    db = sqlite3.connect('codex700.db')
-    db.row_factory = sqlite3.Row
-    active = db.execute("SELECT * FROM investments WHERE user_id=? AND status='ACTIVE' ORDER BY id DESC", (uid,)).fetchall()
-    done = db.execute("SELECT * FROM investments WHERE user_id=? AND status='COMPLETED' ORDER BY id DESC", (uid,)).fetchall()
-    return render_template('my_investments.html', active=active, done=done, now=int(time.time()))
+        return 'not found',404
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
+
+

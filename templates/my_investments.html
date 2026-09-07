@@ -1,18 +1,40 @@
-{% extends "base.html" %}{% block content %}
-<div style="max-width:600px;margin:20px auto;padding:12px">
-<h2>Ongoing</h2>
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Investments</title>
+<style>body{background:#0a1230;color:#fff;font-family:Arial;margin:0;padding:12px}.card{background:linear-gradient(135deg,#14286b,#0a1a4a);border-radius:16px;padding:16px;margin-bottom:12px} img{width:80px;height:80px;border-radius:12px;object-fit:cover;background:#222}.bottomnav{position:fixed;bottom:0;left:0;right:0;background:#0d1b4d;display:flex;justify-content:space-around;padding:10px}.bottomnav a{color:#aaa;text-decoration:none;font-size:12px;text-align:center}.bottomnav a.active{color:#00d4ff}</style>
+</head><body>
+<div style="max-width:600px;margin:0 auto 80px">
+<h2>My Investments</h2>
+<h3>Ongoing</h3>
 {% for inv in active %}
-<div style="background:#fff;padding:14px;border-radius:12px;margin-bottom:10px">
-<b>{{inv['product_name']}} × {{inv['quantity']}}</b> - ACTIVE<br>
-Daily: {{ "{:,}".format(inv['daily_income']) }} | Total: {{ "{:,}".format(inv['total_expected']) }}<br>
-<small>Matures in {{ ((inv['maturity_ts']-now)//86400) }} days</small>
+<div class="card">
+<div style="display:flex;gap:12px">
+<img src="{{ PRODUCTS[inv['product_id']]['img'] if inv['product_id'] in PRODUCTS else '/static/default.png' }}">
+<div><b>{{inv['product_name']}} × {{inv['quantity']}}</b><br>
+<small>UGX {{ "{:,}".format(inv['amount']) }} | Daily UGX {{ "{:,}".format(inv['daily_income']) }}</small><br>
+<span style="background:#ff9800;padding:3px 10px;border-radius:20px;font-size:12px">🔒 LOCKED</span></div>
 </div>
-{% else %}<p>No active investments</p>{% endfor %}
-<h2>Completed</h2>
+<div class="countdown" data-expiry="{{inv['maturity_ts']}}" style="margin-top:10px;font-weight:bold;color:#00ffcc">--</div>
+<div style="font-size:13px;margin-top:6px">Total expected: UGX {{ "{:,}".format(inv['total_expected']) }}</div>
+</div>
+{% else %}<p style="color:#aaa">No active investments</p>{% endfor %}
+
+<h3>Completed</h3>
 {% for inv in done %}
-<div style="background:#f0fdf4;padding:14px;border-radius:12px;margin-bottom:10px">
-<b>{{inv['product_name']}} × {{inv['quantity']}}</b> - COMPLETED ✅<br>
-Credited: {{ "{:,}".format(inv['total_expected']) }}
+<div style="background:#052e22;border:1px solid #00ff88;border-radius:12px;padding:12px;margin-bottom:8px">
+<b>{{inv['product_name']}} × {{inv['quantity']}}</b> ✅<br><small>Credited: UGX {{ "{:,}".format(inv['total_expected']) }}</small>
 </div>
-{% else %}<p>No completed yet</p>{% endfor %}
-</div>{% endblock %}
+{% else %}<p style="color:#aaa">No completed yet</p>{% endfor %}
+</div>
+
+<div class="bottomnav">
+<a href="/">🏠<br>Home</a>
+<a href="/invest">💼<br>Invest</a>
+<a href="/my-investments" class="active">📊<br>My Invest</a>
+<a href="/account">👤<br>Account</a>
+</div>
+
+<script>
+function tick(){document.querySelectorAll('.countdown').forEach(el=>{let e=el.dataset.expiry*1000-Date.now();if(e<=0){el.textContent="Matured - credited";return;}let d=Math.floor(e/86400000),h=Math.floor(e%86400000/3600000),m=Math.floor(e%3600000/60000),s=Math.floor(e%60000/1000);el.textContent="⏳ "+d+"d "+h+"h "+m+"m "+s+"s left";});}
+setInterval(tick,1000);tick();
+</script>
+</body></html>
