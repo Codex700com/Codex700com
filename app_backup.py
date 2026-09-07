@@ -1001,14 +1001,13 @@ def invest_confirm():
 
 @app.route('/invest/success/<int:inv_id>')
 def invest_success(inv_id):
-    import sqlite3
-    from flask import session, redirect
-    if 'user_id' not in session: return redirect('/login')
-    db = sqlite3.connect('codex700.db')
-    db.row_factory = sqlite3.Row
-    inv = db.execute("SELECT * FROM investments WHERE id=?", (inv_id,)).fetchone()
-    if not inv:
-        return 'not found',404
+ import sqlite3
+ if 'user_id' not in session: return redirect('/login')
+ db=sqlite3.connect('codex700.db'); db.row_factory=sqlite3.Row
+ inv=db.execute('SELECT * FROM investments WHERE id=?',(inv_id,)).fetchone()
+ if not inv: return 'not found',404
+ bal=db.execute('SELECT balance FROM users WHERE id=?',(session['user_id'],)).fetchone()[0]
+ return render_template('invest_success.html', success=True, plan_name=inv['product_id'], amount=f"{inv['amount']:,}", balance=f"{bal:,}", daily_pct=20, duration_days=45, inv_id=inv_id)
 
 @app.route('/my-investments')
 def my_investments():
@@ -1158,56 +1157,6 @@ def process_maturities_v1(user_id=None):
         db.commit()
     try: init_invest_tables()
     except: pass
-
-
-@app.route('/invest/confirm', methods=['POST'], endpoint='invest_confirm_v2')
-def invest_confirm_v2():
-    import sqlite3, time
-    from flask import request, session, redirect
-    if 'user_id' not in session: return redirect('/login')
-    uid = session['user_id']
-    pid = request.form.get('product_id','J1')
-    try: qty = int(request.form.get('quantity',1))
-    except: qty = 1
-    if qty<1 or qty>10: return "Invalid quantity",400
-    if pid not in PRODUCTS: return "Invalid product",400
-    pr = PRODUCTS[pid]
-    amount = pr['price']*qty
-    db = sqlite3.connect('codex700.db')
-    db.row_factory = sqlite3.Row
-    cur = db.cursor()
-    cur.execute("BEGIN IMMEDIATE")
-    row = cur.execute("SELECT balance FROM users WHERE id=?", (uid,)).fetchone()
-    if not row or row[0] < amount:
-        db.rollback()
-        return render_template('invest_success.html', success=False, plan_name=pid, amount=f"{amount:,}", balance=f"{row[0] if row else 0:,}", daily_pct=int(pr.get('daily_rate',20)*100) if 'daily_rate' in pr else 20, duration_days=pr.get('days',45)), 400
-    now = int(time.time())
-    maturity = now + pr['days']*86400
-    daily = pr['daily']*qty
-    total = daily*pr['days']
-    cur.execute("UPDATE users SET balance=balance-? WHERE id=?", (amount, uid))
-    cur.execute("""INSERT INTO investments (user_id,product_id,product_name,quantity,amount,start_ts,maturity_ts,daily_income,total_expected,status)
-                   VALUES (?,?,?,?,?,?,?,?,?,'ACTIVE')""", (uid,pid,pid,qty,amount,now,maturity,daily,total))
-    inv_id = cur.lastrowid
-    cur.execute("INSERT INTO transactions (user_id,type,amount,desc,created_ts) VALUES (?,?,?,?,?)",
-                (uid,'invest',-amount,f"{pid} x{qty} invested",now))
-    db.commit()
-    return redirect(f'/invest/success/{inv_id}')
-
-@app.route('/invest/success/<int:inv_id>', endpoint='invest_success_v1')
-def invest_success_v1(inv_id):
-    import sqlite3
-    from flask import session, redirect
-    if 'user_id' not in session: return redirect('/login')
-    db = sqlite3.connect('codex700.db')
-    db.row_factory = sqlite3.Row
-    inv = db.execute("SELECT * FROM investments WHERE id=?", (inv_id,)).fetchone()
-    if not inv:
-        return 'not found',404
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
-
 if __name__=='__main__':
  app.run(host='0.0.0.0', port=5000, debug=True)
 
@@ -1263,4 +1212,3 @@ def deposit_submit():
         return redirect("/transactions")
     except Exception as e:
         return jsonify({"ok":False,"msg":"Server error: "+str(e)})
-

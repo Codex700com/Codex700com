@@ -1,5 +1,6 @@
 from flask import Flask,request,redirect,session,render_template
-import sqlite3,datetime,uuid
+import sqlite3, threading, time
+from datetime import datetime, timedelta,datetime,uuid
 app=Flask(__name__);app.secret_key="codex700secret"
 try:
  from admin_panel import admin_bp
@@ -10,7 +11,8 @@ except Exception as e:
 
 
 def ensure_invest_columns():
-    import sqlite3, time
+    import sqlite3, threading, time
+from datetime import datetime, timedelta, time
     con=sqlite3.connect("codex700.db")
     try:
         cols=[r[1] for r in con.execute("PRAGMA table_info(investments)")]
@@ -26,7 +28,8 @@ def ensure_invest_columns():
 ensure_invest_columns()
 
 def ensure_admin_column():
-    import sqlite3
+    import sqlite3, threading, time
+from datetime import datetime, timedelta
     try:
         con=sqlite3.connect("codex700.db")
         cols=[r[1] for r in con.execute("PRAGMA table_info(users)")]
@@ -61,7 +64,8 @@ def hdr(): return "<div style='display:flex;justify-content:space-between;paddin
 
 def fix_chats_table():
     try:
-        import sqlite3
+        import sqlite3, threading, time
+from datetime import datetime, timedelta
         con = sqlite3.connect("codex700.db")
         cols = [r[1] for r in con.execute("PRAGMA table_info(chats)").fetchall()]
         print("chats cols:", cols)
@@ -81,7 +85,8 @@ fix_chats_table()
 
 def ensure_checkin_schema():
     try:
-        import sqlite3, time
+        import sqlite3, threading, time
+from datetime import datetime, timedelta, time
         con = sqlite3.connect("codex700.db")
         con.execute("CREATE TABLE IF NOT EXISTS checkins (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, created_at INTEGER)")
         # ensure users has balance and last_checkin
@@ -188,7 +193,8 @@ def home():
 def menu():
  ls=[("Home","/home"),("Invest","/invest"),("My Investments","/my-investments"),("Deposit","/deposit"),("Withdrawal","/withdraw"),("Transactions","/transactions"),("Referrals","/referrals"),("Raffle","/raffle"),("About Us","/about"),("Support","/support"),("Chat Manager","/chat"),("Account","/account"),("Logout","/logout")]
  try:
-  import sqlite3
+  import sqlite3, threading, time
+from datetime import datetime, timedelta
   _u=session.get("uid") or session.get("uid")
   _c=sqlite3.connect("codex700.db"); _c.row_factory=sqlite3.Row
   _me=_c.execute("SELECT is_admin FROM users WHERE id=?",(_u,)).fetchone(); _c.close()
@@ -197,7 +203,8 @@ def menu():
  h=S+hdr()+"<div class=card><h3>Menu</h3>"
  try:
   _adm=False
-  import sqlite3 as _sq
+  import sqlite3, threading, time
+from datetime import datetime, timedelta as _sq
   _cc=_sq.connect("codex700.db"); _cc.row_factory=_sq.Row
   _row=_cc.execute("SELECT is_admin FROM users WHERE id=?",(session.get("uid"),)).fetchone(); _cc.close()
   if _row and _row["is_admin"]==1: ls.insert(len(ls)-1,("Admin Panel","/admin/"))
@@ -213,7 +220,8 @@ def notif():
  return h+"</div>"+N
 @app.route("/account")
 def account_page():
-    import sqlite3, datetime
+    import sqlite3, threading, time
+from datetime import datetime, timedelta, datetime
     from flask import session, render_template
     uid=session.get('uid')
     con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
@@ -247,7 +255,8 @@ def account_page():
 
 @app.route("/api/account")
 def api_account():
-    import sqlite3, datetime
+    import sqlite3, threading, time
+from datetime import datetime, timedelta, datetime
     from flask import session, jsonify
     uid=session.get("uid") or session.get("user_id") or session.get("uid")
     con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
@@ -268,7 +277,8 @@ def api_account():
 
 @app.route("/api/account/lang", methods=["POST"])
 def api_lang():
-    import sqlite3
+    import sqlite3, threading, time
+from datetime import datetime, timedelta
     from flask import session, request, jsonify
     l=request.get_json().get("lang","en")
     con=sqlite3.connect("codex700.db")
@@ -278,7 +288,8 @@ def api_lang():
 
 @app.route("/api/account/notif", methods=["POST"])
 def api_notif():
-    import sqlite3
+    import sqlite3, threading, time
+from datetime import datetime, timedelta
     from flask import session, request, jsonify
     m=1 if request.get_json().get("muted") else 0
     con=sqlite3.connect("codex700.db")
@@ -288,7 +299,8 @@ def api_notif():
 
 @app.route("/api/account/password", methods=["POST"])
 def api_pwd():
-    import sqlite3, hashlib
+    import sqlite3, threading, time
+from datetime import datetime, timedelta, hashlib
     from flask import session, request, jsonify
     pwd=request.get_json().get("pwd","")
     if len(pwd)<4: return jsonify({"msg":"Too short"})
@@ -304,7 +316,8 @@ def api_reset():
 
 @app.route("/api/account/statement")
 def api_statement():
-    import sqlite3, csv, io
+    import sqlite3, threading, time
+from datetime import datetime, timedelta, csv, io
     from flask import session, Response
     uid=str(session.get("uid") or session.get("uid") or "guest")
     con=sqlite3.connect("codex700.db")
@@ -318,7 +331,8 @@ def api_statement():
 
 @app.route("/api/account/can-statement")
 def can_statement():
-    import sqlite3
+    import sqlite3, threading, time
+from datetime import datetime, timedelta
     from flask import session, jsonify
     uid=str(session.get("uid") or session.get("uid") or "guest")
     con=sqlite3.connect("codex700.db")
@@ -330,7 +344,8 @@ def can_statement():
 
 @app.route("/api/account/statement")
 def api_statement_guard():
-    import sqlite3
+    import sqlite3, threading, time
+from datetime import datetime, timedelta
     from flask import session, jsonify
     uid=str(session.get("uid") or session.get("uid") or "guest")
     con=sqlite3.connect("codex700.db")
@@ -364,7 +379,8 @@ def raffle_page_auto():
 @app.route("/confirm_buy/<pid>")
 def confirm_buy(pid):
     from flask import session, redirect
-    import sqlite3
+    import sqlite3, threading, time
+from datetime import datetime, timedelta
     uid=str(session.get("uid") or session.get("uid") or "guest")
     # price map
     prices={"A1":20000,"A2":100000,"M1":50000,"M2":100000,"M3":250000,"M4":500000,"M5":1000000,"M6":2000000,"M7":5000000,"L1":500000,"L2":1000000,"L3":2000000,"GS1":600000,"GS2":1200000,"GS3":2500000,"J1":800000,"J2":1500000,"J3":3000000,"K1":100000,"K2":5000000}
@@ -896,7 +912,8 @@ def investments_page():
 
 @app.route("/api/notifs")
 def api_notifs():
-    import sqlite3; con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
+    import sqlite3, threading, time
+from datetime import datetime, timedelta; con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
     ns=list(con.execute("SELECT * FROM notifications ORDER BY id DESC LIMIT 5")); con.close()
     return {"notifs":[dict(n) for n in ns]}
 
@@ -921,7 +938,8 @@ def api_notifs():
 # --- ADMIN PANEL Deep Blue / White ---
 
 def init_invest_tables():
-    import sqlite3
+    import sqlite3, threading, time
+from datetime import datetime, timedelta
     db = sqlite3.connect('codex700.db')
     db.execute("""CREATE TABLE IF NOT EXISTS investments
     (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, product_id TEXT,
@@ -937,7 +955,8 @@ def init_invest_tables():
     db.commit()
 
 def process_maturities(user_id=None):
-    import sqlite3, time
+    import sqlite3, threading, time
+from datetime import datetime, timedelta, time
     db = sqlite3.connect('codex700.db')
     db.row_factory = sqlite3.Row
     now = int(time.time())
@@ -967,7 +986,8 @@ def process_maturities(user_id=None):
 
 @app.route('/invest/confirm', methods=['POST'])
 def invest_confirm():
-    import sqlite3, time
+    import sqlite3, threading, time
+from datetime import datetime, timedelta, time
     from flask import request, session, redirect
     if 'user_id' not in session: return redirect('/login')
     uid = session['user_id']
@@ -1001,45 +1021,94 @@ def invest_confirm():
 
 @app.route('/invest/success/<int:inv_id>')
 def invest_success(inv_id):
-    import sqlite3
-    from flask import session, redirect
-    if 'user_id' not in session: return redirect('/login')
-    db = sqlite3.connect('codex700.db')
-    db.row_factory = sqlite3.Row
-    inv = db.execute("SELECT * FROM investments WHERE id=?", (inv_id,)).fetchone()
-    if not inv:
-        return 'not found',404
+ import sqlite3, threading, time
+from datetime import datetime, timedelta
+ if 'user_id' not in session: return redirect('/login')
+ db=sqlite3.connect('codex700.db'); db.row_factory=sqlite3.Row
+ inv=db.execute('SELECT * FROM investments WHERE id=?',(inv_id,)).fetchone()
+ if not inv: return 'not found',404
+ bal=db.execute('SELECT balance FROM users WHERE id=?',(session['user_id'],)).fetchone()[0]
+ return render_template('invest_success.html', success=True, plan_name=inv['product_id'], amount=f"{inv['amount']:,}", balance=f"{bal:,}", daily_pct=20, duration_days=45, inv_id=inv_id)
 
 @app.route('/my-investments')
-def my_investments():
-    import time, sqlite3
-    uid=session.get('uid') or session.get('user_id')
-    if not uid: return redirect('/login')
-    now=int(time.time())
-    con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
-    # credit daily returns
-    for inv in list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=1", (uid,))):
-        try:
-            start=inv["purchase_ts"] or now
-            daily=inv["daily_return"] or 0
-            credited=inv["credited_days"] or 0
-            duration=inv["duration_days"] or 30
-            expiry=inv["expiry_ts"] or (start+duration*86400)
-            total_days=int((expiry-start)//86400)
-            days_passed=min(total_days, (now-start)//86400)
-            claimable=int(days_passed-credited)
-            if claimable>0 and daily>0:
-                con.execute("UPDATE users SET balance=balance+? WHERE id=?", (claimable*daily, uid))
-                con.execute("UPDATE investments SET credited_days=? WHERE id=?", (credited+claimable, inv["id"]))
-                con.execute("INSERT INTO transactions(user_id,type,amount,desc,created_ts) VALUES(?,?,?,?,?)",(uid,'daily_return',claimable*daily,f"Daily return {inv['product_name']}",now))
-            if now>=expiry:
-                con.execute("UPDATE investments SET active=0 WHERE id=?", (inv["id"],))
-        except Exception as e: print("credit err",e)
-    con.commit()
-    active=list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=1 ORDER BY expiry_ts DESC", (uid,)))
-    done=list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=0 ORDER BY id DESC LIMIT 20", (uid,)))
+
+@app.route("/invest/<plan_id>")
+def invest_plan(plan_id):
+    uid = session.get("uid") or session.get("user_id")
+    if not uid:
+        return redirect("/login")
+    plan = PLANS.get(plan_id)
+    if not plan:
+        price = int(request.args.get("price", 20000))
+        daily = int(request.args.get("daily", 20))
+        days = int(request.args.get("days", 7))
+        plan = {"price": price, "daily_pct": daily, "days": days, "total": daily*days}
+    con=sqlite3.connect("codex700.db")
+    con.row_factory=sqlite3.Row
+    user=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone()
+    if not user:
+        con.close()
+        return redirect("/login")
+    balance=user["balance"]
+    if balance < plan["price"]:
+        con.close()
+        return render_template("invest_fail.html", plan_name=plan_id, amount=plan["price"], daily_pct=plan["daily_pct"], duration_days=plan["days"], total_return=plan["daily_pct"]*plan["days"], current_balance=balance)
+    else:
+        new_bal=balance-plan["price"]
+        con.execute("UPDATE users SET balance=? WHERE id=?",(new_bal, uid))
+        start=datetime.utcnow()
+        end=start+timedelta(days=plan["days"])
+        con.execute("CREATE TABLE IF NOT EXISTS investments (id INTEGER PRIMARY KEY, user_id INT, plan_name TEXT, amount INT, daily_pct INT, duration_days INT, start_time TEXT, end_time TEXT, last_credit TEXT, status TEXT DEFAULT 'active')")
+        con.execute("INSERT INTO investments (user_id, plan_name, amount, daily_pct, duration_days, start_time, end_time, last_credit, status) VALUES (?,?,?,?,?,?,?,?,?)",(uid, plan_id, plan["price"], plan["daily_pct"], plan["days"], start.isoformat(), end.isoformat(), start.isoformat(), 'active'))
+        con.commit()
+        con.close()
+        return render_template("invest_success.html", plan_name=plan_id, amount=plan["price"], daily_pct=plan["daily_pct"], duration_days=plan["days"], total_return=plan["daily_pct"]*plan["days"])
+
+@app.route("/my-investments")
+def my_investments_page():
+    uid = session.get("uid") or session.get("user_id")
+    if not uid:
+        return redirect("/login")
+    con=sqlite3.connect("codex700.db")
+    con.row_factory=sqlite3.Row
+    con.execute("CREATE TABLE IF NOT EXISTS investments (id INTEGER PRIMARY KEY, user_id INT, plan_name TEXT, amount INT, daily_pct INT, duration_days INT, start_time TEXT, end_time TEXT, last_credit TEXT, status TEXT DEFAULT 'active')")
+    invs=con.execute("SELECT * FROM investments WHERE user_id=? ORDER BY id DESC",(uid,)).fetchall()
     con.close()
-    return render_template('my_investments.html', active=active, done=done, now=now)
+    return render_template("my_investments.html", investments=invs)
+
+def robot_monitor():
+    while True:
+        try:
+            con=sqlite3.connect("codex700.db")
+            con.row_factory=sqlite3.Row
+            now=datetime.utcnow()
+            invs=con.execute("SELECT * FROM investments WHERE status='active'").fetchall()
+            for inv in invs:
+                try:
+                    last=datetime.fromisoformat(inv["last_credit"])
+                    end=datetime.fromisoformat(inv["end_time"])
+                except:
+                    continue
+                if now >= last + timedelta(hours=24):
+                    if now < end:
+                        income=inv["amount"]*inv["daily_pct"]//100
+                        con.execute("UPDATE users SET balance=balance+? WHERE id=?",(income, inv["user_id"]))
+                        con.execute("UPDATE investments SET last_credit=? WHERE id=?",(now.isoformat(), inv["id"]))
+                        con.commit()
+                        print(f"Robot credited {income} to {inv['user_id']}")
+                    else:
+                        con.execute("UPDATE investments SET status='completed' WHERE id=?",(inv["id"],))
+                        con.commit()
+            con.close()
+            time.sleep(3600)
+        except Exception as e:
+            print(f"Robot error: {e}")
+            time.sleep(60)
+
+if not hasattr(app, 'robot_started'):
+    t=threading.Thread(target=robot_monitor, daemon=True)
+    t.start()
+    app.robot_started=True
 
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
@@ -1047,7 +1116,8 @@ if __name__=='__main__':
 @app.route("/raffle-buy", methods=["POST"])
 def raffle_buy():
     from flask import request, jsonify, session
-    import sqlite3, datetime
+    import sqlite3, threading, time
+from datetime import datetime, timedelta, datetime
     data = request.get_json(force=True)
     qty = max(1, int(data.get("qty",1)))
     PRICE=5000
@@ -1060,7 +1130,8 @@ def raffle_buy():
     import glob
     maindb = "codex700.db" if os.path.exists("codex700.db") else "codex.db"
     # use main db connection for balance
-    import sqlite3 as s2
+    import sqlite3, threading, time
+from datetime import datetime, timedelta as s2
     mcon = s2.connect(maindb)
     mcon.row_factory = s2.Row
     u = mcon.execute("SELECT balance FROM users WHERE id=?", (uid,)).fetchone()
@@ -1082,7 +1153,8 @@ def raffle_buy():
 @app.route("/raffle-my")
 def raffle_my():
     from flask import jsonify, session
-    import sqlite3
+    import sqlite3, threading, time
+from datetime import datetime, timedelta
     uid=str(session.get("uid") or session.get("user_id") or 1)
     con=sqlite3.connect("codex.db")
     con.execute("CREATE TABLE IF NOT EXISTS rtickets (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, qty INT, date TEXT)")
@@ -1098,7 +1170,8 @@ def raffle_winners():
 @app.route("/set-language", methods=["POST"])
 def set_language():
     from flask import request, jsonify, session
-    import sqlite3
+    import sqlite3, threading, time
+from datetime import datetime, timedelta
     d=request.get_json(force=True)
     lang=d.get("lang","en")
     session["lang"]=lang
@@ -1116,7 +1189,8 @@ def set_language():
 
 
 def init_invest_tables_v1():
-    import sqlite3
+    import sqlite3, threading, time
+from datetime import datetime, timedelta
     db = sqlite3.connect('codex700.db')
     db.execute("""CREATE TABLE IF NOT EXISTS investments
     (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, product_id TEXT,
@@ -1132,7 +1206,8 @@ def init_invest_tables_v1():
     db.commit()
 
 def process_maturities_v1(user_id=None):
-    import sqlite3, time
+    import sqlite3, threading, time
+from datetime import datetime, timedelta, time
     db = sqlite3.connect('codex700.db')
     db.row_factory = sqlite3.Row
     now = int(time.time())
@@ -1159,54 +1234,83 @@ def process_maturities_v1(user_id=None):
     try: init_invest_tables()
     except: pass
 
+@app.route("/invest/<plan_id>")
+def invest_plan(plan_id):
+    uid = session.get("uid") or session.get("user_id")
+    if not uid:
+        return redirect("/login")
+    plan = PLANS.get(plan_id)
+    if not plan:
+        price = int(request.args.get("price", 20000))
+        daily = int(request.args.get("daily", 20))
+        days = int(request.args.get("days", 7))
+        plan = {"price": price, "daily_pct": daily, "days": days, "total": daily*days}
+    con=sqlite3.connect("codex700.db")
+    con.row_factory=sqlite3.Row
+    user=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone()
+    if not user:
+        con.close()
+        return redirect("/login")
+    balance=user["balance"]
+    if balance < plan["price"]:
+        con.close()
+        return render_template("invest_fail.html", plan_name=plan_id, amount=plan["price"], daily_pct=plan["daily_pct"], duration_days=plan["days"], total_return=plan["daily_pct"]*plan["days"], current_balance=balance)
+    else:
+        new_bal=balance-plan["price"]
+        con.execute("UPDATE users SET balance=? WHERE id=?",(new_bal, uid))
+        start=datetime.utcnow()
+        end=start+timedelta(days=plan["days"])
+        con.execute("CREATE TABLE IF NOT EXISTS investments (id INTEGER PRIMARY KEY, user_id INT, plan_name TEXT, amount INT, daily_pct INT, duration_days INT, start_time TEXT, end_time TEXT, last_credit TEXT, status TEXT DEFAULT 'active')")
+        con.execute("INSERT INTO investments (user_id, plan_name, amount, daily_pct, duration_days, start_time, end_time, last_credit, status) VALUES (?,?,?,?,?,?,?,?,?)",(uid, plan_id, plan["price"], plan["daily_pct"], plan["days"], start.isoformat(), end.isoformat(), start.isoformat(), 'active'))
+        con.commit()
+        con.close()
+        return render_template("invest_success.html", plan_name=plan_id, amount=plan["price"], daily_pct=plan["daily_pct"], duration_days=plan["days"], total_return=plan["daily_pct"]*plan["days"])
 
-@app.route('/invest/confirm', methods=['POST'], endpoint='invest_confirm_v2')
-def invest_confirm_v2():
-    import sqlite3, time
-    from flask import request, session, redirect
-    if 'user_id' not in session: return redirect('/login')
-    uid = session['user_id']
-    pid = request.form.get('product_id','J1')
-    try: qty = int(request.form.get('quantity',1))
-    except: qty = 1
-    if qty<1 or qty>10: return "Invalid quantity",400
-    if pid not in PRODUCTS: return "Invalid product",400
-    pr = PRODUCTS[pid]
-    amount = pr['price']*qty
-    db = sqlite3.connect('codex700.db')
-    db.row_factory = sqlite3.Row
-    cur = db.cursor()
-    cur.execute("BEGIN IMMEDIATE")
-    row = cur.execute("SELECT balance FROM users WHERE id=?", (uid,)).fetchone()
-    if not row or row[0] < amount:
-        db.rollback()
-        return render_template('invest_success.html', success=False, plan_name=pid, amount=f"{amount:,}", balance=f"{row[0] if row else 0:,}", daily_pct=int(pr.get('daily_rate',20)*100) if 'daily_rate' in pr else 20, duration_days=pr.get('days',45)), 400
-    now = int(time.time())
-    maturity = now + pr['days']*86400
-    daily = pr['daily']*qty
-    total = daily*pr['days']
-    cur.execute("UPDATE users SET balance=balance-? WHERE id=?", (amount, uid))
-    cur.execute("""INSERT INTO investments (user_id,product_id,product_name,quantity,amount,start_ts,maturity_ts,daily_income,total_expected,status)
-                   VALUES (?,?,?,?,?,?,?,?,?,'ACTIVE')""", (uid,pid,pid,qty,amount,now,maturity,daily,total))
-    inv_id = cur.lastrowid
-    cur.execute("INSERT INTO transactions (user_id,type,amount,desc,created_ts) VALUES (?,?,?,?,?)",
-                (uid,'invest',-amount,f"{pid} x{qty} invested",now))
-    db.commit()
-    return redirect(f'/invest/success/{inv_id}')
+@app.route("/my-investments")
+def my_investments_page():
+    uid = session.get("uid") or session.get("user_id")
+    if not uid:
+        return redirect("/login")
+    con=sqlite3.connect("codex700.db")
+    con.row_factory=sqlite3.Row
+    con.execute("CREATE TABLE IF NOT EXISTS investments (id INTEGER PRIMARY KEY, user_id INT, plan_name TEXT, amount INT, daily_pct INT, duration_days INT, start_time TEXT, end_time TEXT, last_credit TEXT, status TEXT DEFAULT 'active')")
+    invs=con.execute("SELECT * FROM investments WHERE user_id=? ORDER BY id DESC",(uid,)).fetchall()
+    con.close()
+    return render_template("my_investments.html", investments=invs)
 
-@app.route('/invest/success/<int:inv_id>', endpoint='invest_success_v1')
-def invest_success_v1(inv_id):
-    import sqlite3
-    from flask import session, redirect
-    if 'user_id' not in session: return redirect('/login')
-    db = sqlite3.connect('codex700.db')
-    db.row_factory = sqlite3.Row
-    inv = db.execute("SELECT * FROM investments WHERE id=?", (inv_id,)).fetchone()
-    if not inv:
-        return 'not found',404
+def robot_monitor():
+    while True:
+        try:
+            con=sqlite3.connect("codex700.db")
+            con.row_factory=sqlite3.Row
+            now=datetime.utcnow()
+            invs=con.execute("SELECT * FROM investments WHERE status='active'").fetchall()
+            for inv in invs:
+                try:
+                    last=datetime.fromisoformat(inv["last_credit"])
+                    end=datetime.fromisoformat(inv["end_time"])
+                except:
+                    continue
+                if now >= last + timedelta(hours=24):
+                    if now < end:
+                        income=inv["amount"]*inv["daily_pct"]//100
+                        con.execute("UPDATE users SET balance=balance+? WHERE id=?",(income, inv["user_id"]))
+                        con.execute("UPDATE investments SET last_credit=? WHERE id=?",(now.isoformat(), inv["id"]))
+                        con.commit()
+                        print(f"Robot credited {income} to {inv['user_id']}")
+                    else:
+                        con.execute("UPDATE investments SET status='completed' WHERE id=?",(inv["id"],))
+                        con.commit()
+            con.close()
+            time.sleep(3600)
+        except Exception as e:
+            print(f"Robot error: {e}")
+            time.sleep(60)
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+if not hasattr(app, 'robot_started'):
+    t=threading.Thread(target=robot_monitor, daemon=True)
+    t.start()
+    app.robot_started=True
 
 if __name__=='__main__':
  app.run(host='0.0.0.0', port=5000, debug=True)
@@ -1214,7 +1318,8 @@ if __name__=='__main__':
 
 @app.route("/withdraw-submit", methods=["POST"])
 def withdraw_submit():
-    import sqlite3
+    import sqlite3, threading, time
+from datetime import datetime, timedelta
     from flask import request, session, jsonify
     uid=session.get("uid") or session.get("user_id") or session.get("user_id")
     if not uid: return jsonify({"ok":False,"msg":"Login first"})
@@ -1247,7 +1352,8 @@ def deposit_submit():
         txid = request.form.get("txid","").strip()
         if not airtel or not amount or not txid:
             return jsonify({"ok":False,"msg":"Fill all fields"})
-        import sqlite3, os, time
+        import sqlite3, threading, time
+from datetime import datetime, timedelta, os, time
         os.makedirs("static/shots", exist_ok=True)
         f=request.files.get("screenshot")
         sp=""
@@ -1263,4 +1369,3 @@ def deposit_submit():
         return redirect("/transactions")
     except Exception as e:
         return jsonify({"ok":False,"msg":"Server error: "+str(e)})
-
