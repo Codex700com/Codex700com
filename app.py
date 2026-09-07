@@ -249,7 +249,7 @@ def account_page():
 def api_account():
     import sqlite3, datetime
     from flask import session, jsonify
-    uid=session.get("uid") or session.get("uid")
+    uid=session.get("uid") or session.get("user_id") or session.get("uid")
     con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
     u=con.execute("SELECT * FROM users WHERE id=?",(uid,)).fetchone() if uid else None
     if not u:
@@ -661,7 +661,7 @@ def ensure_daily_checkin(con):
 @app.route("/checkin", methods=["GET","POST"])
 def checkin_page():
     from datetime import datetime, timedelta
-    uid=session.get("uid")
+    uid=session.get("uid") or session.get("user_id")
     if not uid: return redirect("/login")
     con=db(); ensure_daily_checkin(con)
     row=con.execute("SELECT last_check, streak FROM daily_checkin WHERE user_id=?",(uid,)).fetchone()
@@ -776,7 +776,7 @@ def api_notifs():
 def deposit_submit():
  import sqlite3, os, time
  from flask import request, session, jsonify
- uid=session.get("uid")
+ uid=session.get("uid") or session.get("user_id")
  if not uid:
   return jsonify({"ok":False,"msg":"Please login first"})
  airtel=request.form.get("airtel_number","").strip()
@@ -999,7 +999,7 @@ def set_language():
     d=request.get_json(force=True)
     lang=d.get("lang","en")
     session["lang"]=lang
-    uid=session.get("uid") or session.get("user_id")
+    uid=session.get("uid") or session.get("user_id") or session.get("user_id")
     if uid:
         try:
             db="codex700.db" if os.path.exists("codex700.db") else "codex.db"
@@ -1113,7 +1113,7 @@ if __name__=='__main__':
 def withdraw_submit():
     import sqlite3
     from flask import request, session, jsonify
-    uid=session.get("uid") or session.get("user_id")
+    uid=session.get("uid") or session.get("user_id") or session.get("user_id")
     if not uid: return jsonify({"ok":False,"msg":"Login first"})
     amt=request.form.get("amount","").strip()
     phone=request.form.get("phone","").strip()
