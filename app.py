@@ -1054,7 +1054,29 @@ def my_investments():
     active=list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=1 ORDER BY expiry_ts DESC", (uid,)))
     done=list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=0 ORDER BY id DESC LIMIT 20", (uid,)))
     con.close()
-    return render_template('my_investments.html', active=active, done=done, now=now)
+    return 
+    # --- FIX PERSISTENT TIMER: map end_at -> end_time ---
+    fixed_investments=[]
+    for _inv in investments:
+        try: _d=dict(_inv)
+        except: _d=dict(_inv) if hasattr(_inv,'keys') else {}
+        if not _d.get('end_time'):
+            _d['end_time']=_d.get('end_at') or _d.get('end_time') or ''
+        if not _d.get('start_time'):
+            _d['start_time']=_d.get('created_at') or _d.get('start_time') or ''
+        if not _d.get('plan_name'):
+            _d['plan_name']=_d.get('plan','')
+        if 'daily_pct' not in _d:
+            _d['daily_pct']=_d.get('daily',0)
+        if 'duration_days' not in _d:
+            _d['duration_days']=_d.get('duration',30)
+        if 'status' not in _d:
+            _d['status']='active'
+        fixed_investments.append(_d)
+    investments=fixed_investments
+    # --- END FIX ---
+
+    render_template('my_investments.html', active=active, done=done, now=now)
 
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
