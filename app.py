@@ -885,34 +885,29 @@ def my_investments():
     if not uid: return redirect('/login')
     now=int(time.time())
     con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
-    # ensure credited_days column exists for systematic credit
-    try:
-        cols=[r[1] for r in con.execute("PRAGMA table_info(investments)")]
-        if "credited_days" not in cols:
-            con.execute("ALTER TABLE investments ADD COLUMN credited_days INTEGER DEFAULT 0")
-            con.commit()
-    except: pass
-    for inv in list(con.execute("SELECT * FROM investments WHERE user_id=? AND status='ACTIVE'", (uid,))):
+    # credit daily returns
+    for inv in list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=1", (uid,))):
         try:
-            start=inv["start_ts"] or now
-            daily=inv["daily_income"] or 0
-            credited=inv["credited_days"] if "credited_days" in inv.keys() and inv["credited_days"] else 0
-            # systematic: days passed since purchase, capped by duration
-            total_days=int((inv["maturity_ts"]-start)//86400) if inv["maturity_ts"] else 30
+            start=inv["purchase_ts"] or now
+            daily=inv["daily_return"] or 0
+            credited=inv["credited_days"] or 0
+            duration=inv["duration_days"] or 30
+            expiry=inv["expiry_ts"] or (start+duration*86400)
+            total_days=int((expiry-start)//86400)
             days_passed=min(total_days, (now-start)//86400)
             claimable=int(days_passed-credited)
             if claimable>0 and daily>0:
                 con.execute("UPDATE users SET balance=balance+? WHERE id=?", (claimable*daily, uid))
                 con.execute("UPDATE investments SET credited_days=? WHERE id=?", (credited+claimable, inv["id"]))
                 con.execute("INSERT INTO transactions(user_id,type,amount,desc,created_ts) VALUES(?,?,?,?,?)",(uid,'daily_return',claimable*daily,f"Daily return {inv['product_name']}",now))
-            if now>=inv["maturity_ts"]:
-                con.execute("UPDATE investments SET status='COMPLETED' WHERE id=?", (inv["id"],))
+            if now>=expiry:
+                con.execute("UPDATE investments SET active=0 WHERE id=?", (inv["id"],))
         except Exception as e: print("credit err",e)
     con.commit()
-    active=list(con.execute("SELECT * FROM investments WHERE user_id=? AND status='ACTIVE' ORDER BY maturity_ts", (uid,)))
-    done=list(con.execute("SELECT * FROM investments WHERE user_id=? AND status='COMPLETED' ORDER BY id DESC LIMIT 20", (uid,)))
+    active=list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=1 ORDER BY expiry_ts DESC", (uid,)))
+    done=list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=0 ORDER BY id DESC LIMIT 20", (uid,)))
     con.close()
-    return render_template('my_investments.html', active=active, done=done, now=now, PRODUCTS=PRODUCTS)
+    return render_template('my_investments.html', active=active, done=done, now=now)
 
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
@@ -1081,5 +1076,5 @@ def invest_success_v1(inv_id):
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
 
-
-
+if __name__=='__main__':
+ app.run(host='0.0.0.0', port=5000, debug=True)

@@ -9,11 +9,11 @@
 <div class="card">
 <div style="display:flex;gap:12px">
 <img src="{{ PRODUCTS[inv['product_id']]['img'] if inv['product_id'] in PRODUCTS else '/static/default.png' }}">
-<div><b>{{inv['product_name']}} × {{inv['quantity']}}</b><br>
+<div><b>{{inv['product_name']}} </b><br>
 <small>UGX {{ "{:,}".format(inv['amount']) }} | Daily UGX {{ "{:,}".format(inv['daily_income']) }}</small><br>
 <span style="background:#ff9800;padding:3px 10px;border-radius:20px;font-size:12px">🔒 LOCKED</span></div>
 </div>
-<div class="countdown" data-expiry="{{inv['maturity_ts']}}" style="margin-top:10px;font-weight:bold;color:#00ffcc">--</div>
+<div class="countdown" data-expiry="{{inv['expiry_ts']}}" style="margin-top:10px;font-weight:bold;color:#00ffcc">--</div>
 <div style="font-size:13px;margin-top:6px">Total expected: UGX {{ "{:,}".format(inv['total_expected']) }}</div>
 </div>
 {% else %}<p style="color:#aaa">No active investments</p>{% endfor %}
@@ -21,7 +21,7 @@
 <h3>Completed</h3>
 {% for inv in done %}
 <div style="background:#052e22;border:1px solid #00ff88;border-radius:12px;padding:12px;margin-bottom:8px">
-<b>{{inv['product_name']}} × {{inv['quantity']}}</b> ✅<br><small>Credited: UGX {{ "{:,}".format(inv['total_expected']) }}</small>
+<b>{{inv['product_name']}} </b> ✅<br><small>Credited: UGX {{ "{:,}".format(inv['total_expected']) }}</small>
 </div>
 {% else %}<p style="color:#aaa">No completed yet</p>{% endfor %}
 </div>
