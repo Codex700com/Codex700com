@@ -1,7 +1,45 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#000;color:#fff;font-family:Arial;padding:15px;font-size:14px}input{width:100%;padding:12px;margin:8px 0;background:#111;color:#fff;border:1px solid #00b0ff;border-radius:8px}button{background:#00b0ff;color:#000;padding:12px;width:100%;border:none;border-radius:8px;font-weight:700}</style></head><body>
-<h2>Deposit</h2><form method="POST" enctype="multipart/form-data">
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{background:#000;color:#fff;font-family:Arial;padding:12px;font-size:14px;margin:0}
+.card{background:#111;border:1px solid #333;border-radius:12px;padding:14px;margin-bottom:12px}
+.card h3{color:#ffb700;margin:0 0 10px;font-size:14px}
+.num{color:#ffb700;font-size:22px;font-weight:900}
+.copy{color:#ffb700;font-size:12px;float:right;text-align:center;cursor:pointer}
+ol{margin:0;padding-left:20px;color:#ddd;line-height:1.8}
+input{width:100%;padding:12px;margin:8px 0;background:#000;color:#fff;border:1px solid #00b0ff;border-radius:8px;box-sizing:border-box}
+button{background:#00b0ff;color:#000;padding:14px;width:100%;border:none;border-radius:8px;font-weight:800;font-size:15px}
+</style>
+<script>
+function copyNum(){navigator.clipboard.writeText('0758878297');alert('Number copied');}
+</script>
+</head><body>
+<h2>Deposit</h2>
+<div class="card">
+<h3>SEND MONEY TO</h3>
+<div style="display:flex;align-items:center;gap:10px">
+<div style="width:45px;height:45px;background:#333;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px">👤</div>
+<div><b>Shakira Nantongo</b><br><span class="num">0758878297</span><br><span style="color:#ff4444">🔥 airtel money</span></div>
+<div class="copy" onclick="copyNum()">📋<br>Copy Number</div>
+</div>
+</div>
+<div class="card">
+<h3>HOW TO DEPOSIT</h3>
+<ol>
+<li>Dial *185# on your Airtel line</li>
+<li>Select Send Money</li>
+<li>Send money to 0758878297</li>
+<li>Enter the amount you wish to deposit</li>
+<li>After sending, fill in the details below</li>
+<li>Upload screenshot of successful transaction</li>
+<li>Click "Confirm Deposit"</li>
+</ol>
+</div>
+<form method="POST" enctype="multipart/form-data">
 <input name="phone_number" placeholder="Number you deposited from" required>
 <input name="amount" type="number" placeholder="Amount" required>
 <input name="txid" placeholder="Transaction ID" required>
-<label>Screenshot proof:</label><input type="file" name="screenshot" accept="image/*" required>
-<button>Confirm Deposit</button></form></body></html>
+<label>Screenshot proof:</label>
+<input type="file" name="screenshot" accept="image/*" required>
+<button>Confirm Deposit</button>
+</form>
+</body></html>
