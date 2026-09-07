@@ -1137,6 +1137,29 @@ def withdraw_submit():
     return jsonify({"ok":True,"msg":"Withdrawal requested, wait for approval"})
 
 @app.route("/deposit-submit", methods=["POST"])
+def deposit_submit_fixed():
+    from flask import request, session, redirect
+    import sqlite3, os, datetime
+    uid = session.get("uid") or session.get("user_id")
+    if not uid:
+        return redirect("/login")
+    phone = request.form.get("phone_number","")
+    amount = int(request.form.get("amount",0))
+    txid = request.form.get("txid","")
+    f = request.files.get("screenshot")
+    fname=""
+    if f:
+        os.makedirs("static/proofs", exist_ok=True)
+        fname=f"static/proofs/{uid}_{int(datetime.datetime.now().timestamp())}_{f.filename}"
+        f.save(fname)
+    con=sqlite3.connect("codex700.db")
+    con.execute("CREATE TABLE IF NOT EXISTS deposits (id INTEGER PRIMARY KEY, user_id INTEGER, phone TEXT, amount INTEGER, txid TEXT, proof TEXT, status TEXT DEFAULT 'pending', date TEXT)")
+    con.execute("INSERT INTO deposits (user_id,phone,amount,txid,proof,status,date) VALUES (?,?,?,?,?,'pending',?)",
+                (uid,phone,amount,txid,fname,datetime.datetime.now().isoformat()))
+    con.commit(); con.close()
+    return redirect("/transactions")
+
+@app.route("/deposit-submit-old", methods=["POST"])
 def deposit_submit():
     from flask import request, session, jsonify
     try:
