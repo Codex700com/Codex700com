@@ -594,12 +594,12 @@ def register_page_auto():
 
 @app.route("/transactions")
 def transactions_page_auto():
-    import pathlib
-    # try template, else simple placeholder so no more 404
-    fp = pathlib.Path("templates/transactions.html")
-    if fp.exists():
-        from flask import render_template; return render_template(fp.name)
-    return "<h2 style='font-family:sans-serif;padding:20px'>"+ "transactions".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
+    from flask import render_template, session
+    con=db()
+    uid=session.get("uid")
+    rows=con.execute("SELECT * FROM transactions WHERE user_id=? ORDER BY id DESC",(uid,)).fetchall()
+    con.close()
+    return render_template("transactions.html", rows=rows)
 
 @app.route("/withdraw")
 def withdraw():

@@ -8,4 +8,4 @@ a{color:#00e5ff!important}
 input,select{background:#050a14!important;color:#fff!important;border:1px solid #00b0ff!important;border-radius:8px!important}
 </style>
 </head><body>
-<h2>Transaction History</h2>{% for r in rows %}<div class="row">{{r['type']}} - {{r['amount']}} - <b>{{r['status']}}</b><br><small>{{r['note']}}</small></div>{% endfor %}</body></html>
+<h2>Transaction History</h2>{% for r in rows %}<div class="row">{{r['type']}} - {{r['amount']}} - <b>{{r['status']}}</b><br><small>Reference: {{r['ref']}}</small></div>{% endfor %}</body></html>
