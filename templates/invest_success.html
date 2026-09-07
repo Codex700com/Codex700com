@@ -1,30 +1,5 @@
-<!DOCTYPE html>
-<html><head><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#020617;color:#fff;font-family:sans-serif;padding:12px}
-.top{background:linear-gradient(135deg,#0a1a4d,#071033);border:1px solid #1e40ff;border-radius:16px;padding:16px;position:relative}
-.top-badge{background:#1e40af;padding:6px 14px;border-radius:8px;display:inline-block;font-weight:600}
-.plan-name{font-size:48px;font-weight:800;color:#38bdf8;margin:8px 0}
-.plan-stats{display:flex;margin:12px 0;border-bottom:1px solid #1e3a8a;padding-bottom:12px}
-.stat{flex:1;border-right:1px solid #334155;padding-right:10px}.stat:last-child{border:none}
-.val{font-size:22px;font-weight:800;color:#22d3ee}.val-white{font-size:18px;font-weight:700}
-.success-card{background:#052e22;border:1px solid #10b981;border-radius:16px;padding:24px 16px;margin-top:12px;text-align:center}
-.check{width:80px;height:80px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 12px}
-.success-title{font-size:28px;font-weight:800;color:#6ee7b7;margin-bottom:8px}
-.detail-box{background:rgba(0,0,0,.3);border:1px solid #10b981;border-radius:12px;padding:16px;margin-top:16px;text-align:left}
-.detail-grid{display:flex;margin-top:14px;padding-top:14px;border-top:1px solid #065f46}
-.dcol{flex:1;text-align:center}.green{color:#22c55e}
-.btn{display:block;width:100%;padding:15px;border-radius:12px;font-weight:700;text-decoration:none;margin-top:12px;text-align:center}
-.btn-green{background:#16a34a;color:#fff}.btn-dark{background:#0a1a3a;color:#fff;border:1px solid #3b82f6}
-.active{background:#14532d;color:#86efac;padding:6px 14px;border-radius:20px;font-size:13px}
-</style></head><body>
-<div class="top"><div class="top-badge">Investment Plan</div><div class="plan-name">{{plan_name}}</div>
-<div class="plan-stats"><div class="stat"><small>Daily Return</small><div class="val">{{daily_pct}}%</div></div><div class="stat"><small>Duration</small><div class="val-white">{{duration_days}} Days</div></div><div class="stat"><small>Total Return</small><div class="val">+{{daily_pct*duration_days}}%</div></div></div>
-<div><small>Purchase Amount</small><div style="font-size:26px;font-weight:800">UGX {{amount}}</div></div></div>
-<div class="success-card"><div class="check">✓</div><div class="success-title">Successfully Purchased!</div>
-<p>Your investment in <b style="color:#22c55e">{{plan_name}}</b> has been activated.<br>You will start earning daily returns from tomorrow.</p>
-<div class="detail-box"><div style="display:flex;justify-content:space-between;align-items:center"><div><small>Investment Plan</small><div style="font-size:22px;font-weight:800">{{plan_name}}</div></div><div class="active">Active</div></div>
-<div class="detail-grid"><div class="dcol"><small>Purchase Amount</small><br><b>UGX {{amount}}</b></div><div class="dcol"><small>Daily Return</small><br><b>{{daily_pct}}%</b></div><div class="dcol"><small>Duration</small><br><b>{{duration_days}} Days</b></div><div class="dcol"><small>Total Return</small><br><b class="green">+{{daily_pct*duration_days}}%</b></div></div></div>
-<a href="/my-investments" class="btn btn-green">View My Investments</a><a href="/" class="btn btn-dark">Back to Home</a>
-<div style="margin-top:14px;color:#94a3b8;font-size:13px">Need help? Contact our support team ></div></div></body></html>
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{background:#020617;color:#fff;font-family:sans-serif;padding:12px}.top{background:#0a1a4d;border:1px solid #1e40ff;border-radius:16px;padding:16px}.plan-name{font-size:44px;font-weight:800;color:#38bdf8}.card{background:#052e22;border:1px solid #10b981;border-radius:16px;padding:20px;margin-top:12px;text-align:center}.check{width:70px;height:70px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 10px}.btn{display:block;padding:14px;border-radius:10px;margin-top:10px;text-decoration:none;text-align:center;font-weight:700}.g{background:#16a34a;color:#fff}.d{background:#0a1a3a;color:#fff;border:1px solid #3b82f6}</style></head><body>
+<div class="top"><div style="background:#1e40af;display:inline-block;padding:5px 12px;border-radius:8px">Investment Plan</div><div class="plan-name">{{ plan_name|default('J2') }}</div><div style="margin-top:10px">Purchase Amount<br><b style="font-size:24px">UGX {{ amount|default('1,000,000') }}</b></div><div style="margin-top:10px;color:#a5f3fc">Daily: {{ daily_pct|default('20') }}% | Duration: {{ duration_days|default('45') }} Days</div></div>
+<div class="card"><div class="check">✓</div><h2 style="color:#6ee7b7">Successfully Purchased!</h2><p style="margin:10px 0">Your investment in {{ plan_name|default('J2') }} has been activated.<br>You will start earning daily returns from tomorrow.</p><a href="/my-investments" class="btn g">View My Investments</a><a href="/" class="btn d">Back to Home</a></div>
+</body></html>
