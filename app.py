@@ -139,34 +139,34 @@ def home():
  c.close()
  nm=u["name"].upper(); bal=f"{u['balance']:,}"; tiv=f"{ti:,}"
  h="""<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><style>
- *{box-sizing:border-box}body{margin:0;background:#020a24;color:#fff;font-family:Inter,system-ui,Arial;padding-bottom:110px}
- .top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#020a24;position:sticky;top:0;z-index:5}
- .logo{text-align:center;line-height:1}.logo b{font-size:32px;color:#ffcc00;letter-spacing:2px}.logo span{font-size:10px;letter-spacing:4px;color:#fff}
- .hero{margin:8px 10px;border:2px solid #1e90ff;border-radius:16px;padding:16px;background:radial-gradient(circle at 80% 20%,#0a4fff33,#020a24 60%),linear-gradient(135deg,#062a7a,#020a24);position:relative;overflow:hidden;box-shadow:0 0 20px #1e90ff55}
- .hero h4{margin:0;font-weight:600;color:#dbeafe}.hero h2{margin:4px 0;color:#00cfff;font-size:28px}.hero p{margin:6px 0;color:#cbd5e1}.hero i{color:#ffcc00}
+ *{box-sizing:border-box}body{margin:0;background:#000000;color:#fff;font-family:Inter,system-ui,Arial;padding-bottom:110px}
+ .top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#000000;position:sticky;top:0;z-index:5}
+ .logo{text-align:center;line-height:1}.logo b{font-size:32px;color:#00b0ff;letter-spacing:2px}.logo span{font-size:10px;letter-spacing:4px;color:#fff}
+ .hero{margin:8px 10px;border:2px solid #00b0ff;border-radius:16px;padding:16px;background:#111,#111;position:relative;overflow:hidden;box-shadow:0 0 20px #00b0ff55}
+ .hero h4{margin:0;font-weight:600;color:#dbeafe}.hero h2{margin:4px 0;color:#00cfff;font-size:28px}.hero p{margin:6px 0;color:#cbd5e1}.hero i{color:#00b0ff}
  .btn-gold{display:inline-block;background:linear-gradient(180deg,#ffdf6b,#ffb700);color:#000;font-weight:900;padding:12px 32px;border-radius:30px;text-decoration:none;margin-top:10px;box-shadow:0 4px 12px #ffb70066}
- .globe{position:absolute;right:10px;top:10px;width:110px;height:110px;background:radial-gradient(circle,#1e90ff88,transparent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#ffcc00;font-weight:900;text-align:center}
+ .globe{position:absolute;right:10px;top:10px;width:110px;height:110px;background:#111;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#00b0ff;font-weight:900;text-align:center}
  .stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px}
- .sbox{background:linear-gradient(180deg,#0a2f8a,#041a5a);border:1.5px solid #1e90ff;border-radius:14px;padding:12px 4px;text-align:center;box-shadow:0 0 12px #1e90ff44}
+ .sbox{background:linear-gradient(180deg,#0a2f8a,#041a5a);border:1.5px solid #00b0ff;border-radius:14px;padding:12px 4px;text-align:center;box-shadow:0 0 12px #00b0ff44}
  .sbox div{font-size:22px}.sbox b{font-size:13px}.sbox span{color:#00cfff;font-weight:800}
- .banner{margin:10px;border:1.5px solid #ffcc00;border-radius:14px;padding:12px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#0a2a7a,#020a24)}
- .banner small{color:#cbd5e1}.btn-blue{background:#1e90ff;color:#fff;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:800}
+ .banner{margin:10px;border:1.5px solid #00b0ff;border-radius:14px;padding:12px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#0a2a7a,#000000)}
+ .banner small{color:#cbd5e1}.btn-blue{background:#00b0ff;color:#fff;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:800}
  .grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px}
- .card2{background:linear-gradient(180deg,#0a2f8a,#041a5a);border:1.5px solid #1e90ff;border-radius:14px;padding:14px 6px;text-align:center;text-decoration:none;color:#fff}
+ .card2{background:linear-gradient(180deg,#0a2f8a,#041a5a);border:1.5px solid #00b0ff;border-radius:14px;padding:14px 6px;text-align:center;text-decoration:none;color:#fff}
  .card2 small{color:#7dd3fc;font-size:11px}.card2 b{font-size:14px}
- .card2.gold{background:linear-gradient(180deg,#8a6d00,#5a4500);border-color:#ffcc00;box-shadow:0 0 15px #ffcc0088}
- .nav{position:fixed;bottom:0;left:0;right:0;background:#020a24;border-top:1px solid #1e90ff55;display:flex;padding:8px 0}
- .nav a{flex:1;text-align:center;color:#8aa0b8;text-decoration:none;font-size:10px}.nav a.on{color:#ffcc00}
+ .card2.gold{background:linear-gradient(180deg,#8a6d00,#5a4500);border-color:#00b0ff;box-shadow:0 0 15px #00b0ff88}
+ .nav{position:fixed;bottom:0;left:0;right:0;background:#000000;border-top:1px solid #00b0ff55;display:flex;padding:8px 0}
+ .nav a{flex:1;text-align:center;color:#8aa0b8;text-decoration:none;font-size:10px}.nav a.on{color:#00b0ff}
  .foot{text-align:center;color:#00cfff;font-style:italic;margin:12px}
  </style></head><body>
- <div class="top"><a href="/menu" style="font-size:28px;color:#ffcc00;text-decoration:none">☰</a><div class="logo"><b>CODEX</b><br><span>INVEST • GROW • WIN</span></div><div style="font-size:22px"><a href="/notifications" style="text-decoration:none">🔔</a> <a href="/account" style="text-decoration:none">👤</a></div></div>
+ <div class="top"><a href="/menu" style="font-size:28px;color:#00b0ff;text-decoration:none">☰</a><div class="logo"><b>CODEX</b><br><span>INVEST • GROW • WIN</span></div><div style="font-size:22px"><a href="/notifications" style="text-decoration:none">🔔</a> <a href="/account" style="text-decoration:none">👤</a></div></div>
  <div class="hero"><h4>👑 WELCOME BACK,</h4><h2>"""+nm+"""</h2><p>Big dreams require action.<br><i>You're one step closer to freedom!</i></p><a class="btn-gold" href="/invest">↗ INVEST NOW →</a><div class="globe">INVEST<br>TODAY<br>BUILD<br>TOMORROW</div></div>
  <div class="stats">
  <div class="sbox"><div>💼</div><b>Wallet</b><br><span>UGX """+bal+"""</span></div>
  <div class="sbox"><div>🪙</div><b>Invested</b><br><span>UGX """+tiv+"""</span></div>
  <div class="sbox"><div>💰</div><b>Income</b><br><span>UGX 0</span></div>
  <div class="sbox"><div>📈</div><b>Active</b><br><span>"""+str(ac)+"""</span></div></div>
- <div class="banner"><div>🎁 <b style="color:#ffcc00">Daily Check-In</b><br><small>Log in daily and win rewards!</small></div><a class="btn-blue" href="/checkin">📅 CHECK IN →</a></div>
+ <div class="banner"><div>🎁 <b style="color:#00b0ff">Daily Check-In</b><br><small>Log in daily and win rewards!</small></div><a class="btn-blue" href="/checkin">📅 CHECK IN →</a></div>
  <div class="grid">
  <a class="card2" href="/invest">📈<br><b>Invest</b><br><small>Start your journey</small></a>
  <a class="card2" href="/deposit">💲<br><b>Deposit</b><br><small>Fund your wallet</small></a>
@@ -177,7 +177,7 @@ def home():
  <a class="card2" href="/support">🎧<br><b>Support</b><br><small>We are here to help</small></a>
  <a class="card2" href="/chat">💬<br><b>Chat</b><br><small>Talk to manager</small></a>
  </div>
- <div class="banner"><div>🏆 <b style="color:#ffcc00">RAFFLE DRAW</b><br><small>More deposits = More chances = Bigger prizes!</small></div><a class="btn-blue" href="/raffle">🎁 VIEW PRIZES →</a></div>
+ <div class="banner"><div>🏆 <b style="color:#00b0ff">RAFFLE DRAW</b><br><small>More deposits = More chances = Bigger prizes!</small></div><a class="btn-blue" href="/raffle">🎁 VIEW PRIZES →</a></div>
  <div class="foot">Your Success is Our Priority</div>
  <div class="nav"><a href="/home" class="on">🏠<br>HOME</a><a href="/invest">📊<br>INVEST</a><a href="/transactions">⇄<br>TRANSACTIONS</a><a href="/referrals">👥<br>REFERRALS</a><a href="/account">👤<br>ACCOUNT</a></div>
  </body></html>"""
@@ -696,36 +696,36 @@ def checkin_page():
         elif i==cur_day and can:
             st='<div style="background:#f59e0b;color:#000;font-size:11px;padding:4px 8px;border-radius:12px;margin-top:6px;font-weight:800">Claim</div>'; bo="border:2px solid #f59e0b"; bg="background:#0a0a3a"
         else:
-            st='<div style="background:#334155;color:#cbd5e1;font-size:11px;padding:4px 8px;border-radius:12px;margin-top:6px">Pending</div>'; bo="border:1px solid #1e90ff55"; bg="background:#0a1440"
+            st='<div style="background:#334155;color:#cbd5e1;font-size:11px;padding:4px 8px;border-radius:12px;margin-top:6px">Pending</div>'; bo="border:1px solid #00b0ff55"; bg="background:#0a1440"
         cards+=f'<div style="flex:1;{bg};{bo};border-radius:12px;padding:8px 4px;text-align:center"><div style="color:#00cfff;font-size:12px">Day {i}</div><div style="font-size:28px">X</div><div style="font-size:11px">UGX {amt:,}</div>{st}</div>'
-    claim_html=f'<div style="margin:10px;padding:16px;background:linear-gradient(135deg,#0a3cc0,#00cfff);border-radius:16px;text-align:center"><div>UGX {reward:,}</div><form method="POST"><button style="background:#00c853;color:#fff;padding:14px 18px;border-radius:12px;font-weight:900">CLAIM REWARD</button></form></div>' if can else f'<div style="margin:10px;padding:16px;background:#001a5e;border-radius:16px;text-align:center"><div style="color:#00ff66">CLAIMED</div><div>Next reward in:</div><div id="timer" style="font-size:32px;color:#ffcc00">--:--:--</div><script>let s={secs};function tick(){{let h=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=s%60;document.getElementById("timer").innerText=String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0");if(s>0)s--;}};tick();setInterval(tick,1000);</script></div>'
+    claim_html=f'<div style="margin:10px;padding:16px;background:linear-gradient(135deg,#0a3cc0,#00cfff);border-radius:16px;text-align:center"><div>UGX {reward:,}</div><form method="POST"><button style="background:#00c853;color:#fff;padding:14px 18px;border-radius:12px;font-weight:900">CLAIM REWARD</button></form></div>' if can else f'<div style="margin:10px;padding:16px;background:#001a5e;border-radius:16px;text-align:center"><div style="color:#00ff66">CLAIMED</div><div>Next reward in:</div><div id="timer" style="font-size:32px;color:#00b0ff">--:--:--</div><script>let s={secs};function tick(){{let h=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=s%60;document.getElementById("timer").innerText=String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0");if(s>0)s--;}};tick();setInterval(tick,1000);</script></div>'
     disp_streak = streak if claimed else cur_day
     elig = "You are eligible to claim your reward!" if can else "You have claimed today. Come back tomorrow!"
     con.close()
     return f"""<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
     <style>
-    body{{margin:0;background:#020a24;color:#fff;font-family:Inter,system-ui,Arial;padding-bottom:90px}}
+    body{{margin:0;background:#000000;color:#fff;font-family:Inter,system-ui,Arial;padding-bottom:90px}}
     .top{{display:flex;align-items:center;justify-content:space-between;padding:12px}}
-    .banner{{margin:10px;border-radius:18px;padding:20px;background:linear-gradient(135deg,#0a2a9a,#020a24);border:1px solid #1e90ff55;position:relative;overflow:hidden}}
-    .card{{margin:10px;border:1px solid #1e90ff44;border-radius:14px;padding:12px;background:#041338}}
-    .bottom{{position:fixed;bottom:0;left:0;right:0;display:flex;background:#020a24;border-top:1px solid #1e90ff33;padding:8px}}
+    .banner{{margin:10px;border-radius:18px;padding:20px;background:linear-gradient(135deg,#0a2a9a,#000000);border:1px solid #00b0ff55;position:relative;overflow:hidden}}
+    .card{{margin:10px;border:1px solid #00b0ff44;border-radius:14px;padding:12px;background:#041338}}
+    .bottom{{position:fixed;bottom:0;left:0;right:0;display:flex;background:#000000;border-top:1px solid #00b0ff33;padding:8px}}
     .bottom a{{flex:1;text-align:center;color:#88aaff;text-decoration:none;font-size:12px}}
     </style></head><body>
     <div class="top"><a href="/home" style="color:#fff;font-size:26px;text-decoration:none">←</a>
     <div style="text-align:center"><b style="font-size:24px;color:#00cfff">👑 CODEX</b><div style="font-size:9px;letter-spacing:3px;color:#88aaff">INVEST • GROW • WIN</div></div><div>🔔 👤</div></div>
-    <div class="banner"><div style="font-size:38px;font-weight:900;line-height:1">DAILY<br><span style="color:#ffcc00">CHECK-IN</span></div>
+    <div class="banner"><div style="font-size:38px;font-weight:900;line-height:1">DAILY<br><span style="color:#00b0ff">CHECK-IN</span></div>
     <div style="color:#00cfff;margin-top:8px">Log in daily, stay active<br>and earn amazing rewards!</div>
     <div style="font-size:55px;margin-top:10px">🎁</div>
     <div style="position:absolute;right:14px;top:16px;text-align:right;color:#00cfff;font-style:italic;line-height:1.4">👑<br>Small Steps<br>Every Day<br>= Big Results</div></div>
     <div class="card" style="display:flex;align-items:center;justify-content:space-between">
     <div>📅 <b>Today's Check-In</b><br><small style="color:#00cfff">{elig}</small></div>
     <div><span style="background:#00c853;color:#fff;padding:6px 14px;border-radius:20px;font-size:13px">✓ Day {cur_day}</span></div>
-    <div style="text-align:center">🔥<br><b style="color:#ffcc00">{disp_streak} Day</b><br><small>Streak</small></div></div>
-    <div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b>🎁 7-DAY REWARDS</b><span style="font-size:11px;border:1px solid #ffcc00;padding:4px 8px;border-radius:12px">🔥 Keep streak!</span></div>
+    <div style="text-align:center">🔥<br><b style="color:#00b0ff">{disp_streak} Day</b><br><small>Streak</small></div></div>
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b>🎁 7-DAY REWARDS</b><span style="font-size:11px;border:1px solid #00b0ff;padding:4px 8px;border-radius:12px">🔥 Keep streak!</span></div>
     <div style="display:flex;gap:6px;margin-top:10px">"""+cards+"""</div></div>
     """+claim_html+"""
     <div class="card" style="display:flex;gap:12px;align-items:center"><div style="font-size:50px">🏆</div>
-    <div><i style="color:#ffcc00;font-size:20px">Stay Consistent!</i><br><small>The more days you check in,<br>the bigger your rewards!</small><br><i style="color:#00cfff;font-size:13px">Discipline Today = Financial Freedom Tomorrow</i></div></div>
+    <div><i style="color:#00b0ff;font-size:20px">Stay Consistent!</i><br><small>The more days you check in,<br>the bigger your rewards!</small><br><i style="color:#00cfff;font-size:13px">Discipline Today = Financial Freedom Tomorrow</i></div></div>
     <div class="bottom"><a href="/home">🏠<br>Home</a><a href="/invest">📊<br>Invest</a><a href="/my-investments">💼<br>My Invest</a><a href="/transactions">🔄<br>Transactions</a><a href="/referrals">👥<br>Referrals</a><a href="/account">👤<br>Account</a></div>
     </body></html>"""
 @app.route("/investments")
