@@ -1144,7 +1144,7 @@ def deposit_submit():
         if not uid:
             from flask import redirect
             return redirect("/login")
-        airtel = request.form.get("airtel_number","").strip()
+        airtel = request.form.get("phone_number","").strip()
         amount = request.form.get("amount","").strip()
         txid = request.form.get("txid","").strip()
         if not airtel or not amount or not txid:
