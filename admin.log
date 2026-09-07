@@ -1,0 +1,5 @@
+nohup: ignoring input
+  File "/data/data/com.termux/files/home/codex700/admin_panel.py", line 153
+    h+="<tr><td>"+(f"<img src='{r[\"image\"]}' style=width:50px;height:50px;object-fit:cover;border-radius:8px>" if "image" in r.keys() and r["image"] else "no img")+"</td><td>"+str(r["name"])+"</td><td>"+str(r["price"] if "price" in r.keys() else "")+"</td><td>"+str(r["min_amount"])+"</td><td>"+str(r["return_pct"])+"%</td><td>"+str(r["duration_days"])+"</td><td>"+str(r["limit_qty"] if "limit_qty" in r.keys() else "")+"</td><td><a class=btn href=/admin/plans2_edit/"+str(r["id"])+">Edit</a> <a class=btnr href=/admin/plans2_del/"+str(r["id"])+">Del</a></td></tr>"
+                                   ^
+SyntaxError: unexpected character after line continuation character
