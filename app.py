@@ -1026,8 +1026,8 @@ def invest_confirm_v2():
     db.commit()
     return redirect(f'/invest/success/{inv_id}')
 
-@app.route('/invest/success/<int:inv_id>')
-def invest_success(inv_id):
+@app.route('/invest/success/<int:inv_id>', endpoint='invest_success_v1')
+def invest_success_v1(inv_id):
     import sqlite3
     from flask import session, redirect
     if 'user_id' not in session: return redirect('/login')
