@@ -54,17 +54,31 @@ function render(){
  });
  c.scrollTop=c.scrollHeight;
 }
+async function loadMsgs(){
+ try{
+  let r=await fetch('/api/chat'); let j=await r.json();
+  let c=document.getElementById('chat'); c.innerHTML='';
+  if(!j.length){c.innerHTML='<div class="empty">No messages yet. Start a conversation!</div>';return;}
+  j.slice(-30).forEach(m=>{
+   let d=document.createElement('div'); d.className='msg '+(m.mine?'me':'bot');
+   d.textContent=(m.user?m.user+': ':'')+m.text;
+   c.appendChild(d);
+  });
+  c.scrollTop=c.scrollHeight;
+ }catch(e){}
+}
 function sendMsg(){
  let inp=document.getElementById('tin');let txt=inp.value.trim();if(!txt)return;
- msgs.push({text:txt,me:true});localStorage.setItem('support_msgs',JSON.stringify(msgs));inp.value='';render();
+ fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:txt,user:'me'})}).then(()=>{inp.value=''; loadMsgs();});
+
  // auto-reply removed - admin will reply via /admin/chats
 }
 document.getElementById('imgIn').onchange=function(e){
  let f=e.target.files[0];if(!f)return;let r=new FileReader();
- r.onload=function(){msgs.push({img:r.result,me:true});localStorage.setItem('support_msgs',JSON.stringify(msgs));render();};
+ r.onload=function(){msgs.push({img:r.result,me:true});localStorage.setItem('support_msgs',JSON.stringify(msgs));loadMsgs(); setInterval(loadMsgs,3000);};
  r.readAsDataURL(f);
 };
-render();
+loadMsgs(); setInterval(loadMsgs,3000);
 </script>
 <script>
 setInterval(async()=>{
