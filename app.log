@@ -13,3 +13,9 @@ chats cols: ['id', 'user_id', 'who', 'msg', 'date', 'sender', 'uid', 'created']
  * Debugger PIN: 836-343-289
 127.0.0.1 - - [07/Sep/2026 17:47:06] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
 127.0.0.1 - - [07/Sep/2026 17:47:08] "[33mGET /invest/bronze HTTP/1.1[0m" 404 -
+ * Detected change in '/data/data/com.termux/files/home/codex700/app.py', reloading
+admin wired
+chats cols: ['id', 'user_id', 'who', 'msg', 'date', 'sender', 'uid', 'created']
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 426-608-437
