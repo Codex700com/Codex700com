@@ -1,70 +1,71 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>Codex700</title>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif}
-body{background:#030b26;color:#fff;padding-bottom:90px}
-.top{padding:14px}
-.welcome{background:linear-gradient(135deg,#08133a,#0a1a4a);border:2px solid #00e5ff;border-radius:28px;padding:20px 18px 22px;position:relative;box-shadow:0 0 20px rgba(0,229,255,.25)}
-.small-title{color:#7ec8ff;font-size:11px;letter-spacing:2.5px;font-weight:700}
-.name{font-size:32px;font-weight:900;color:#00e5ff;margin:12px 0 14px;text-shadow:0 0 18px #00e5ff,0 0 35px #00e5ff}
-.sub{font-size:13px;color:#cbd5ff}
-.sub b{color:#00ff88}
-.invest-btn{display:inline-flex;background:linear-gradient(90deg,#00ff88 0%,#00e5ff 100%);color:#000;font-weight:900;font-size:14px;padding:14px 28px;border-radius:30px;margin-top:18px;text-decoration:none;box-shadow:0 0 18px #00ff88,0 0 30px #00e5ff}
-.ai-text{position:absolute;right:14px;bottom:18px;text-align:right;font-size:9px;line-height:1.15;color:#5a8bb5;font-weight:800;letter-spacing:1.2px}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 14px}
-.stat{background:radial-gradient(circle,#13307a,#0c1e4d);border:1.5px solid #1e5bff;border-radius:20px;padding:14px 6px 10px;text-align:center}
-.stat .ico{font-size:32px}
-.stat b{font-size:11px;display:block;margin-top:4px}
-.stat span{font-size:11px;color:#00e5ff;font-weight:800}
-.check{background:#0a1e2a;border:1.8px solid #00ff88;border-radius:22px;margin:0 14px;padding:14px 12px;display:flex;justify-content:space-between;align-items:center}
-.check b{color:#00ff88;font-size:14px}
-.check p{font-size:11px;color:#b8c6d6}
-.check-btn{background:linear-gradient(90deg,#2a9bff,#3ec5ff);color:#fff;font-weight:900;font-size:12px;padding:10px 18px;border-radius:22px;text-decoration:none}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 14px}
-.card{background:radial-gradient(circle at top,#1840a0,#0e2150 60%,#0a1638);border:1.5px solid #1e5bff;border-radius:22px;padding:18px 10px 14px;text-align:center;min-height:125px}
-.card.green{border-color:#00ff88;background:radial-gradient(circle at top,#0f4d2e,#0a2f1f);box-shadow:0 0 15px rgba(0,255,136,.35)}
-.card .big-ico{font-size:38px}
-.card b{font-size:17px;display:block;margin-top:6px}
-.card p{font-size:11px;color:#8ca6cc;margin-top:6px}
-.nav{position:fixed;bottom:0;left:0;right:0;background:#050e28;border-top:1px solid #1a3a7a;display:flex;justify-content:space-around;padding:8px 0 12px}
-.nav a{color:#5a739e;text-decoration:none;text-align:center;font-size:9px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:3px}
-.nav a.active{color:#00ff88;text-shadow:0 0 12px #00ff88}
-.nav .ico{font-size:26px}
-</style>
-</head>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI,Arial}
+body{background:#010a23;color:#fff;padding-bottom:90px;background-image:linear-gradient(rgba(1,10,35,0.88),rgba(1,10,35,0.92)),url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800');background-size:cover;background-attachment:fixed}
+.hdr{display:flex;justify-content:space-between;align-items:center;padding:10px 14px}
+.hdr b{font-size:26px;color:#00ffcc;letter-spacing:2px;text-shadow:0 0 15px #00ffcc}
+.hdr small{display:block;font-size:7px;letter-spacing:3px;color:#7ec8ff;text-align:center}
+.wel{margin:6px 12px;border:2px solid #00e5ff;border-radius:20px;padding:16px;position:relative;background:linear-gradient(135deg,rgba(8,19,58,0.95),rgba(10,26,74,0.95));box-shadow:0 0 25px rgba(0,229,255,0.35)}
+.crown{font-size:10px;letter-spacing:1px;color:#7ec8ff}
+.name{font-size:24px;font-weight:900;color:#00e5ff;margin:6px 0;text-shadow:0 0 12px #00e5ff}
+.sub{font-size:11px;color:#cbd5ff}
+.ai-chip{position:absolute;right:88px;top:50%;transform:translateY(-45%);width:62px;height:62px;border:2px solid #00e5ff;border-radius:8px;background:#071a3a;display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px #00e5ff,0 0 35px rgba(0,229,255,0.5)}
+.ai-chip b{color:#00e5ff;font-size:20px;font-weight:900}
+.right-txt{position:absolute;right:10px;top:22px;font-size:8px;font-weight:800;color:#5a8bb5;line-height:1.2;text-align:right}
+.btn{display:inline-flex;margin-top:12px;background:linear-gradient(90deg,#00ff88,#00e5ff);color:#000;font-weight:900;font-size:12px;padding:11px 22px;border-radius:24px;text-decoration:none;box-shadow:0 0 15px #00ff88}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px}
+.stat{background:rgba(13,30,80,0.9);border:1.5px solid #1e5bff;border-radius:16px;padding:10px 2px;text-align:center}
+.stat i{font-size:22px;color:#4da6ff;display:block}
+.stat b{font-size:9px;display:block;margin-top:4px}
+.stat span{font-size:9px;color:#00e5ff;font-weight:800}
+.check{margin:0 12px;background:rgba(10,30,42,0.9);border:1.5px solid #00ff88;border-radius:16px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center}
+.check b{color:#00ff88;font-size:12px}
+.check p{font-size:9px;color:#b8c6d6}
+.check-btn{background:linear-gradient(90deg,#2a9bff,#3ec5ff);color:#fff;font-weight:800;padding:8px 14px;border-radius:16px;font-size:10px;text-decoration:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px}
+.card{background:rgba(14,33,80,0.92);border:1.5px solid #1e5bff;border-radius:16px;padding:12px 6px;text-align:center;min-height:92px}
+.card.green{border-color:#00ff88;background:rgba(15,77,46,0.5);box-shadow:0 0 12px rgba(0,255,136,0.4)}
+.card i{font-size:22px;color:#4da6ff;display:block}
+.card b{font-size:12px;display:block;margin-top:4px}
+.card p{font-size:8px;color:#8ca6cc;margin-top:3px}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#020b26;border-top:1px solid #1a3a7a;display:flex;justify-content:space-around;padding:6px 0 8px}
+.nav a{color:#5a739e;text-decoration:none;font-size:7px;font-weight:700;text-align:center;display:flex;flex-direction:column;gap:2px}
+.nav a.active{color:#00ff88}
+.nav i{font-size:18px}
+</style></head>
 <body>
-<div class="top"><div class="welcome">
-<div class="small-title">👑 WELCOME BACK,</div>
+<div class="hdr"><div>☰</div><div><b>CODEX</b><small>INVEST • GROW • WIN</small></div><div>🔔 👤</div></div>
+<div class="wel">
+<div class="crown">👑 WELCOME BACK,</div>
 <div class="name">{{ user_name }}</div>
-<div class="sub">Big dreams require action.<br><b>You're one step closer to freedom!</b></div>
-<a href="/invest" class="invest-btn">↗ INVEST NOW →</a>
-<div class="ai-text">AI<br>INVEST<br>TODAY<br>BUILD<br>TOMORROW</div>
-</div></div>
+<div class="sub">Big dreams require action.<br><b style="color:#00ff88">You're one step closer to freedom!</b></div>
+<div class="ai-chip"><b>AI</b></div>
+<div class="right-txt">INVEST<br>TODAY<br>BUILD<br>TOMORROW</div>
+<a href="/invest" class="btn">↗ INVEST NOW →</a>
+</div>
 <div class="stats">
-<div class="stat"><div class="ico">💼</div><b>Wallet</b><span>UGX {{ wallet_balance }}</span></div>
-<div class="stat"><div class="ico">📈</div><b>Invested</b><span>UGX {{ total_invested }}</span></div>
-<div class="stat"><div class="ico">💰</div><b>Income</b><span>UGX {{ total_income }}</span></div>
-<div class="stat"><div class="ico">⚡</div><b>Active</b><span>{{ active_count }}</span></div>
+<div class="stat"><i>💼</i><b>Wallet</b><span>UGX {{ wallet_balance }}</span></div>
+<div class="stat"><i>🪙</i><b>Invested</b><span>UGX {{ total_invested }}</span></div>
+<div class="stat"><i>💰</i><b>Income</b><span>UGX {{ total_income }}</span></div>
+<div class="stat"><i>📊</i><b>Active</b><span>{{ active_count }}</span></div>
 </div>
 <div class="check"><div><b>🎁 Daily Check-In</b><p>Log in daily and win rewards!</p></div><a href="/checkin" class="check-btn">📅 CHECK IN →</a></div>
 <div class="grid">
-<a href="/invest" style="text-decoration:none;color:#fff"><div class="card"><div class="big-ico">📊</div><b>Invest</b><p>Start your journey</p></div></a>
-<a href="/deposit" style="text-decoration:none;color:#fff"><div class="card"><div class="big-ico">💲</div><b>Deposit</b><p>Fund your wallet</p></div></a>
-<a href="/withdraw" style="text-decoration:none;color:#fff"><div class="card green"><div class="big-ico">💼</div><b>Withdraw</b><p>Get your earnings</p></div></a>
-<a href="/referral" style="text-decoration:none;color:#fff"><div class="card"><div class="big-ico">👥</div><b>Referral</b><p>Earn together</p></div></a>
-<a href="/transactions" style="text-decoration:none;color:#fff"><div class="card"><div class="big-ico">📋</div><b>Transactions</b><p>View history</p></div></a>
-<a href="/bonus" style="text-decoration:none;color:#fff"><div class="card"><div class="big-ico">🎁</div><b>Bonus</b><p>Claim rewards</p></div></a>
+<div class="card"><i>📈</i><b>Invest</b><p>Start your journey</p></div>
+<div class="card"><i>💲</i><b>Deposit</b><p>Fund your wallet</p></div>
+<div class="card green"><i>💼</i><b>Withdraw</b><p>Get your earnings</p></div>
+<div class="card"><i>👥</i><b>Referral</b><p>Earn together</p></div>
+<div class="card"><i>📋</i><b>Transactions</b><p>View all records</p></div>
+<div class="card"><i>🎁</i><b>Raffle</b><p>Win amazing prizes</p></div>
+<div class="card"><i>🎧</i><b>Support</b><p>We are here to help</p></div>
+<div class="card"><i>💬</i><b>Chat</b><p>Talk to manager</p></div>
 </div>
 <div class="nav">
-<a href="/home" class="active"><span class="ico">🏠</span>HOME</a>
-<a href="/invest"><span class="ico">📊</span>INVEST</a>
-<a href="/transactions"><span class="ico">⇄</span>TRANSACTIONS</a>
-<a href="/referral"><span class="ico">👥</span>REFERRALS</a>
-<a href="/account"><span class="ico">👤</span>ACCOUNT</a>
+<a href="/home" class="active"><i>🏠</i>HOME</a>
+<a href="/invest"><i>📊</i>INVEST</a>
+<a href="/transactions"><i>⇄</i>TRANSACTIONS</a>
+<a href="/referral"><i>👥</i>REFERRALS</a>
+<a href="/account"><i>👤</i>ACCOUNT</a>
 </div>
-</body>
-</html>
+</body></html>
