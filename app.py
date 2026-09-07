@@ -69,6 +69,77 @@ N="<div class=nav><a href='/home'><div>🏠<br>Home</div></a><a href='/invest'><
 def hdr(): return "<div style='display:flex;justify-content:space-between;padding:12px;'><a href='/menu'>☰</a><div class=logo>⬣ CODEX</div><div><a href='/notifications'>🔔</a> <a href='/account'>👤</a></div></div>"
 
 
+
+@app.route('/checkin')
+def checkin_page():
+    if 'uid' not in session:
+        return redirect('/login')
+    return render_template('daily_checkin.html')
+
+@app.route('/api/daily-status')
+def daily_status():
+    if 'uid' not in session:
+        return jsonify({'claimed':True})
+    uid=str(session['uid'])
+    import sqlite3, datetime
+    con=sqlite3.connect('codex700.db')
+    con.row_factory=sqlite3.Row
+    try:
+        r=con.execute('SELECT created_at FROM checkins WHERE user_id=? ORDER BY created_at DESC LIMIT 1',(uid,)).fetchone()
+        if not r:
+            return jsonify({'claimed':False,'streak':0})
+        last=int(r['created_at'])
+        now=int(datetime.datetime.now().timestamp())
+        # check if claimed today
+        last_date=datetime.datetime.fromtimestamp(last).date()
+        today=datetime.date.today()
+        if last_date==today:
+            next_midnight = datetime.datetime.combine(today+datetime.timedelta(days=1), datetime.time.min)
+            next_in=int((next_midnight - datetime.datetime.now()).total_seconds())
+            # get streak
+            st=con.execute('SELECT COUNT(*) FROM checkins WHERE user_id=?',(uid,)).fetchone()[0]
+            return jsonify({'claimed':True,'streak':st,'next_in':next_in})
+        else:
+            st=con.execute('SELECT COUNT(*) FROM checkins WHERE user_id=?',(uid,)).fetchone()[0]
+            return jsonify({'claimed':False,'streak':st})
+    except Exception as e:
+        return jsonify({'claimed':False,'streak':0})
+    finally:
+        con.close()
+
+@app.route('/api/daily-checkin', methods=['POST'])
+def api_daily_checkin():
+    if 'uid' not in session:
+        return jsonify({'ok':False,'msg':'Login first'})
+    uid=str(session['uid'])
+    import sqlite3, datetime, time
+    con=sqlite3.connect('codex700.db')
+    try:
+        today=datetime.date.today()
+        # check already claimed today
+        rows=con.execute('SELECT created_at FROM checkins WHERE user_id=?',(uid,)).fetchall()
+        for r in rows:
+            try:
+                if datetime.datetime.fromtimestamp(int(r[0])).date()==today:
+                    return jsonify({'ok':False,'msg':'Already claimed today'})
+            except: pass
+        reward=500
+        now=int(time.time())
+        con.execute('INSERT INTO checkins (user_id, created_at) VALUES (?,?)',(uid,now))
+        con.execute('UPDATE users SET balance = COALESCE(balance,0) +? WHERE id=?',(reward, uid))
+        # log transaction so it appears in transactions page
+        try:
+            con.execute('INSERT INTO transactions (user_id,type,amount,details,created_at) VALUES (?,?,?,?,?)',(uid,'checkin',reward,'Daily Check-in Bonus', datetime.datetime.now().isoformat()))
+        except:
+            pass
+        con.commit()
+        return jsonify({'ok':True,'msg':f'Claimed {reward} UGX! Added to balance.'})
+    except Exception as e:
+        return jsonify({'ok':False,'msg':str(e)})
+    finally:
+        con.close()
+
+
 def fix_chats_table():
     try:
         import sqlite3
