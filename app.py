@@ -188,7 +188,12 @@ def home():
  <a class="card2" href="/chat">💬<br><b>Chat</b><br><small>Talk to manager</small></a>
  </div>
  <div class="banner"><div>🏆 <b style="color:#00b0ff">RAFFLE DRAW</b><br><small>More deposits = More chances = Bigger prizes!</small></div><a class="btn-blue" href="/raffle">🎁 VIEW PRIZES →</a></div>
- <div class="foot">Your Success is Our Priority</div>
+ <div style="margin:14px 12px 8px;padding:14px 16px;background:linear-gradient(135deg,rgba(10,42,107,0.92),rgba(6,25,70,0.96));border:1px solid #00e5ff;border-radius:12px;color:#cfe8ff;font-size:13px;line-height:1.5;text-align:left">
+<b style="color:#00e5ff;font-size:14px">Hello, am manager Imran, am the CEO of this company Codex</b><br>
+Located in Kampala Uganda, we do not have headquarters running in Uganda, due to governmental supervision, we at least have branches in Mbarara, Mukono, Kampala-Uganda<br><br>
+<b style="color:#ffd54f">For more information call our Airtel service number 0758878597</b><br><br>
+<span style="color:#4caf50;font-weight:bold">Drink water, save lives 💧</span>
+</div>
  <div class="nav"><a href="/home" class="on">🏠<br>HOME</a><a href="/invest">📊<br>INVEST</a><a href="/transactions">⇄<br>TRANSACTIONS</a><a href="/referrals">👥<br>REFERRALS</a><a href="/account">👤<br>ACCOUNT</a></div>
  </body></html>"""
  return h
