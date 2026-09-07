@@ -947,7 +947,7 @@ def set_language():
     return jsonify(ok=True)
 
 
-def init_invest_tables():
+def init_invest_tables_v1():
     import sqlite3
     db = sqlite3.connect('codex700.db')
     db.execute("""CREATE TABLE IF NOT EXISTS investments
@@ -963,7 +963,7 @@ def init_invest_tables():
     (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, title TEXT, msg TEXT, created_ts INTEGER)""")
     db.commit()
 
-def process_maturities(user_id=None):
+def process_maturities_v1(user_id=None):
     import sqlite3, time
     db = sqlite3.connect('codex700.db')
     db.row_factory = sqlite3.Row
@@ -1036,8 +1036,8 @@ def invest_success_v1(inv_id):
     inv = db.execute("SELECT * FROM investments WHERE id=?", (inv_id,)).fetchone()
     return render_template('invest_success.html', inv=inv)
 
-@app.route('/my-investments')
-def my_investments():
+@app.route('/my-investments', endpoint='my_investments_v1')
+def my_investments_v1():
     import sqlite3, time
     from flask import session, redirect
     if 'user_id' not in session: return redirect('/login')
