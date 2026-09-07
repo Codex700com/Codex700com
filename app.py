@@ -1,4 +1,4 @@
-from flask import Flask,request,redirect,session
+from flask import Flask,request,redirect,session,render_template
 import sqlite3,datetime,uuid
 app=Flask(__name__);app.secret_key="codex700secret"
 try:
