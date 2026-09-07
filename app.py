@@ -992,8 +992,8 @@ def process_maturities(user_id=None):
     except: pass
 
 
-@app.route('/invest/confirm', methods=['POST'])
-def invest_confirm():
+@app.route('/invest/confirm', methods=['POST'], endpoint='invest_confirm_v2')
+def invest_confirm_v2():
     import sqlite3, time
     from flask import request, session, redirect
     if 'user_id' not in session: return redirect('/login')
