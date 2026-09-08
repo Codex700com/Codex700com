@@ -220,12 +220,17 @@ def user_block(uid):
 def chats():
     if guard(): return guard()
     con=db()
-    try: rows=con.execute("SELECT m.*, u.name FROM messages m JOIN users u ON u.id=m.user_id ORDER BY m.id DESC LIMIT 100").fetchall()
-    except: rows=[]
+    con.execute("CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,message TEXT,admin_reply TEXT,image TEXT,created_at TEXT)")
+    try:
+        rows=con.execute("SELECT m.*, COALESCE(u.name, u.phone, 'User-'||m.user_id) as name FROM messages m LEFT JOIN users u ON u.id=m.user_id ORDER BY m.id DESC LIMIT 200").fetchall()
+    except Exception as e:
+        print("chats error",e)
+        rows=con.execute("SELECT id, user_id, message, admin_reply, image, created_at, 'User-'||user_id as name FROM messages ORDER BY id DESC LIMIT 200").fetchall()
     con.close()
-    h="<div class=panel><h3>User Messages</h3><table><tr><th>User</th><th>Msg</th><th>Reply</th></tr>"
+    h="<div class=panel><h3>User Messages ("+str(len(rows))+")</h3><table><tr><th>User</th><th>Msg</th><th>Image</th><th>Time</th><th>Reply</th></tr>"
     for r in rows:
-        h+=f"<tr><td>{r['name']}</td><td>{r['message']}</td><td><form action=/admin/reply/{r['id']} method=post><input name=reply value='{r['admin_reply'] or ''}'><button class=btn>Reply</button></form></td></tr>"
+        img=f"<a href=/{r['image']} target=_blank><img src=/{r['image']} style='width:60px'></a>" if r['image'] else "-"
+        h+=f"<tr><td>{r['name']}</td><td>{r['message'] or ''}</td><td>{img}</td><td>{r['created_at'] or ''}</td><td><form action=/admin/reply_chat/{r['id']} method=post><input name=reply value='{r['admin_reply'] or ''}' placeholder='Reply'><button class=btn>Reply</button></form></td></tr>"
     return page(h+"</table></div>")
 
 @admin_bp.route('/reply/<int:mid>', methods=['POST'])

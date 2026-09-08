@@ -1418,6 +1418,65 @@ def admin_chat_reply(msg_id):
     con.commit(); con.close()
     return redirect("/admin/chats")
 
+
+@app.route("/api/chat/send", methods=["POST"])
+def chat_send():
+    from flask import session, request, jsonify
+    import datetime, os, json
+    uid = session.get("uid") or session.get("user_id") or session.get("id")
+    if not uid:
+        return jsonify({"error":"not logged in"}), 401
+    data = request.get_json() or {}
+    msg = (data.get("message") or "").strip()
+    if not msg:
+        return jsonify({"error":"empty"}), 400
+    con = db()
+    con.execute("CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,message TEXT,admin_reply TEXT,image TEXT,created_at TEXT)")
+    con.execute("INSERT INTO messages(user_id,message,created_at) VALUES(?,?,?)", (uid, msg, datetime.datetime.now().isoformat()))
+    con.commit()
+    con.close()
+    print(f"CHAT SAVED uid={uid} msg={msg}")
+    return jsonify({"ok":True})
+
+@app.route("/api/chat/history")
+def chat_history():
+    from flask import session, jsonify
+    uid = session.get("uid") or session.get("user_id") or session.get("id")
+    if not uid:
+        return jsonify([])
+    con = db()
+    con.execute("CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,message TEXT,admin_reply TEXT,image TEXT,created_at TEXT)")
+    rows = con.execute("SELECT id, message, admin_reply, image, created_at FROM messages WHERE user_id=? ORDER BY id ASC", (uid,)).fetchall()
+    con.close()
+    return jsonify([dict(r) for r in rows])
+
+@app.route("/api/chat/send-image", methods=["POST"])
+def chat_send_image():
+    from flask import session, request, jsonify
+    import datetime, os, uuid
+    uid = session.get("uid") or session.get("user_id") or session.get("id")
+    if not uid:
+        return jsonify({"error":"not logged in"}), 401
+    f = request.files.get("image")
+    if not f:
+        return jsonify({"error":"no image"}), 400
+    os.makedirs("static/uploads", exist_ok=True)
+    fname = f"static/uploads/{uuid.uuid4().hex}_{f.filename}"
+    f.save(fname)
+    con = db()
+    con.execute("CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,message TEXT,admin_reply TEXT,image TEXT,created_at TEXT)")
+    con.execute("INSERT INTO messages(user_id,message,image,created_at) VALUES(?,?,?,?)", (uid, "", fname, datetime.datetime.now().isoformat()))
+    con.commit()
+    con.close()
+    return jsonify({"ok":True})
+
+@app.route("/chat")
+def chat_page():
+    from flask import session
+    if "uid" not in session and "user_id" not in session:
+        return redirect("/login")
+    return render_template("chat.html")
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
 if __name__=='__main__':
