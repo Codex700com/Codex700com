@@ -223,6 +223,15 @@ Located in Kampala Uganda, we do not have headquarters running in Uganda, due to
 <div style="text-align:center; margin:8px 10px 20px 10px; padding:10px; background:#111; border-radius:8px; border:1px solid #333;">
   <div style="color:#aaa; font-size:12px;">For more information, please WhatsApp the Manager at <a href="https://wa.me/256724018143" style="color:#00ff99; text-decoration:none; font-weight:bold;">0724018143</a></div>
   <div style="color:#666; font-size:11px; margin-top:4px;">Powered by National Freedom Cooperation</div>
+
+<div style="text-align:center; margin:10px;">
+  <a href="https://chat.whatsapp.com/L1aDECtHAbECE61pcJIkro" target="_blank" style="display:inline-block; background:#25D366; color:#fff; padding:10px 18px; border-radius:20px; text-decoration:none; font-weight:bold; font-size:13px;">
+    💬 Join Our WhatsApp Group
+  </a>
+  <div style="color:#888; font-size:10px; margin-top:6px;">https://chat.whatsapp.com/L1aDECtHAbECE61pcJIkro</div>
+</div>
+
+<div style='display:none'</div>
 </div>
 
 </body></html>"""
@@ -500,6 +509,15 @@ if(found){{
 <div style="text-align:center; margin:8px 10px 20px 10px; padding:10px; background:#111; border-radius:8px; border:1px solid #333;">
   <div style="color:#aaa; font-size:12px;">For more information, please WhatsApp the Manager at <a href="https://wa.me/256724018143" style="color:#00ff99; text-decoration:none; font-weight:bold;">0724018143</a></div>
   <div style="color:#666; font-size:11px; margin-top:4px;">Powered by National Freedom Cooperation</div>
+
+<div style="text-align:center; margin:10px;">
+  <a href="https://chat.whatsapp.com/L1aDECtHAbECE61pcJIkro" target="_blank" style="display:inline-block; background:#25D366; color:#fff; padding:10px 18px; border-radius:20px; text-decoration:none; font-weight:bold; font-size:13px;">
+    💬 Join Our WhatsApp Group
+  </a>
+  <div style="color:#888; font-size:10px; margin-top:6px;">https://chat.whatsapp.com/L1aDECtHAbECE61pcJIkro</div>
+</div>
+
+<div style='display:none'</div>
 </div>
 
 </body></html>
@@ -838,6 +856,15 @@ def checkin_page():
 <div style="text-align:center; margin:8px 10px 20px 10px; padding:10px; background:#111; border-radius:8px; border:1px solid #333;">
   <div style="color:#aaa; font-size:12px;">For more information, please WhatsApp the Manager at <a href="https://wa.me/256724018143" style="color:#00ff99; text-decoration:none; font-weight:bold;">0724018143</a></div>
   <div style="color:#666; font-size:11px; margin-top:4px;">Powered by National Freedom Cooperation</div>
+
+<div style="text-align:center; margin:10px;">
+  <a href="https://chat.whatsapp.com/L1aDECtHAbECE61pcJIkro" target="_blank" style="display:inline-block; background:#25D366; color:#fff; padding:10px 18px; border-radius:20px; text-decoration:none; font-weight:bold; font-size:13px;">
+    💬 Join Our WhatsApp Group
+  </a>
+  <div style="color:#888; font-size:10px; margin-top:6px;">https://chat.whatsapp.com/L1aDECtHAbECE61pcJIkro</div>
+</div>
+
+<div style='display:none'</div>
 </div>
 
 </body></html>"""
