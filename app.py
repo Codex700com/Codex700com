@@ -205,7 +205,18 @@ def home():
 <b style="color:#00e5ff;font-size:14px">Hello, am manager Imran, am the CEO of this company Codex</b><br>
 Located in Kampala Uganda, we do not have headquarters running in Uganda, due to governmental supervision, we at least have branches in Mbarara, Mukono, Kampala-Uganda<br><br>
 <b style="color:#ffd54f">For more information call our Airtel service number 0758878597</b><br><br>
-<span style="color:#4caf50;font-weight:bold">Drink water, save lives 💧</span>
+<span style="color:#4caf50;font-weight:bold">Drink water, save lives</div>
+
+    <div style="background: linear-gradient(135deg,#0a3d2a,#0f5a3f); border:1px solid #00ff99; border-radius:12px; padding:14px; margin:10px;">
+      <div style="color:#00ff99; font-weight:bold; font-size:15px;">🚀 CODEX Launched - Tue 8th September 2026</div>
+      <div style="color:#fff; font-size:13px; margin-top:6px; line-height:1.5;">
+        Welcome to Codex! We are starting our journey to help Ugandans grow financially.
+        For official support, please use the <b>Support</b> button or call our official Airtel line: <b>0758878597</b><br><br>
+        We are hiring system monitors - apply only via the official Support ticket, do NOT share your password or database access with anyone.
+      </div>
+    </div>
+
+<div style='display:none' 💧</span>
 </div>
  <div class="nav"><a href="/home" class="on">🏠<br>HOME</a><a href="/invest">📊<br>INVEST</a><a href="/transactions">⇄<br>TRANSACTIONS</a><a href="/referrals">👥<br>REFERRALS</a><a href="/account">👤<br>ACCOUNT</a></div>
  </body></html>"""
