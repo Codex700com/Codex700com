@@ -37,6 +37,14 @@ try:
  print('admin wired')
 except Exception as e:
  print('admin wire fail',e)
+
+try:
+ from admin_safe_controls import safe_admin
+ app.register_blueprint(safe_admin)
+ print('safe admin controls wired')
+except Exception as e:
+ print('safe admin controls wire fail:',e)
+
 def ensure_invest_columns():
     try:
         import sqlite3
