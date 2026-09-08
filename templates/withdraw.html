@@ -3,13 +3,13 @@
 .top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #1e90ff44}
 .logo b{font-size:26px;color:#00cfff}.logo span{font-size:9px;letter-spacing:3px}
 .head{padding:12px 14px}.head h1{margin:0;font-size:32px}
-.bcard{margin:10px;border:1.5px solid #1e90ff;border-radius:14px;padding:14px;background:linear-gradient(135deg,#0a3cc0,#020a24)}
+.bcard{margin:10px;border:1.5px solid #1e90ff;border-radius:14px;padding:14px;background:#111}
 .bcard h2{color:#00cfff;font-size:30px;margin:4px 0}
 .box{margin:10px;border:1.5px solid #1e90ff66;border-radius:14px;padding:14px;background:#041338}
 input{width:100%;padding:14px;border-radius:10px;border:1px solid #1e90ff88;background:#020a24;color:#fff;margin:6px 0}
 .pay{display:flex;gap:10px}.pm{flex:1;border:1px solid #1e90ff88;border-radius:12px;padding:12px;background:#020a24;cursor:pointer;text-align:center}
 .pm.sel{border-color:#00cfff;box-shadow:0 0 12px #00cfff88}
-.cbtn{display:block;margin:14px 10px;background:linear-gradient(180deg,#3aa0ff,#0a5fff);text-align:center;padding:16px;border-radius:14px;color:#fff;font-weight:900;font-size:18px;border:none;width:calc(100% - 20px)}
+.cbtn{display:block;margin:14px 10px;background:#111;text-align:center;padding:16px;border-radius:14px;color:#fff;font-weight:900;font-size:18px;border:none;width:calc(100% - 20px)}
 </style>
 <script>
 function upd(){let a=parseInt(document.getElementById('amt').value||0);let f=Math.round(a*0.097);document.getElementById('sA').innerText='UGX '+a.toLocaleString();document.getElementById('sF').innerText='UGX '+f.toLocaleString();document.getElementById('sN').innerText='UGX '+(a-f).toLocaleString();}
@@ -26,7 +26,7 @@ body{ background:#000 !important; color:#fff !important; }
 
 <style>body{font-size:14px!important;line-height:1.4!important}h1{font-size:20px!important}h2{font-size:18px!important}h3{font-size:16px!important}p,div,span,a,button{font-size:14px!important}</style><style>
 body{background:radial-gradient(ellipse at top,#0a1e3f 0%,#050a14 60%)!important;color:#e0f0ff!important;font-family:Arial,sans-serif!important}
-.card,.container,.box{background:linear-gradient(180deg,#0a1428,#070d1d)!important;border:1px solid rgba(0,229,255,0.25)!important;border-radius:12px!important;box-shadow:0 0 20px rgba(30,144,255,0.15)!important;color:#e0f0ff!important}
+.card,.container,.box{background:#111!important;border:1px solid rgba(0,229,255,0.25)!important;border-radius:12px!important;box-shadow:0 0 20px rgba(30,144,255,0.15)!important;color:#e0f0ff!important}
 h1,h2,h3{color:#00e5ff!important;text-shadow:0 0 12px rgba(0,229,255,0.6)!important}
 button,.btn{background:linear-gradient(90deg,#1e90ff,#00e5ff)!important;color:#001220!important;border:none!important;border-radius:8px!important;font-weight:800!important;box-shadow:0 0 15px rgba(0,229,255,0.4)!important}
 .num,.balance,.amount{color:#00ff88!important;text-shadow:0 0 12px rgba(0,255,136,0.6)!important}
