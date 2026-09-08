@@ -867,6 +867,21 @@ def checkin_page():
 <div style='display:none'</div>
 </div>
 
+
+<link rel="stylesheet" href="/static/css/branches.css">
+<div class="codex-branches-wrap codex-float-card">
+  <img src="/static/ai_branches.jpg" class="codex-branches-bg" onerror="this.src='https://i.imgur.com/8Km9tLL.jpg'">
+  <div class="codex-branches-ticker"><span>CODEX700 BRANCHES: Kamwenge | Ibanda | Fort Portal | Mbarara | Kasese | Kampala | Powered by National Freedom Cooperation | AI Secured | Manager 0724018143 | Join WhatsApp Group</span></div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+ var w=null;
+ var ds=document.getElementsByTagName('div');
+ for(var i=0;i<ds.length;i++){if(ds[i].innerText&&ds[i].innerText.indexOf('WELCOME BACK')>-1&&ds[i].innerText.length<250){w=ds[i];break;}}
+ if(w){w.classList.add('codex-float-card');w.style.border='2px solid #00ff99';w.style.borderRadius='15px';}
+});
+</script>
+
 </body></html>"""
 @app.route("/investments")
 def investments_page():
