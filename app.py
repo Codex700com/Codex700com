@@ -139,46 +139,89 @@ def reg():
    except: m="Wrong information due to phone already registered"
  return S+WAVE+"<div class=logo style='text-align:center;margin:20px'>👑 CODEX700</div><div class=card><h2 class=gold style='text-align:center'>REGISTER</h2>"+(f"<p>{m}</p>" if m else "")+"<form method=POST><input name=name placeholder='Enter Name' requiredred><input name=phone placeholder='Enter Phone' requiredred><input name=password type=password placeholder='Enter Password' requiredred><input name=confirm type=password placeholder='Confirm Password' requiredred><input name=invite placeholder='Invitation code'><button class=btn style='width:100%'>REGISTER</button></form><p style='text-align:center'>Have account? <a href='/login' class=gold>Login</a></p></div>"
 
+
 @app.route("/login",methods=["GET","POST"])
 def login():
  m="";ok=False
  if request.method=="POST":
-  p=request.form["phone"];pw=request.form["password"];c=db();u=c.execute("SELECT * FROM users WHERE phone=?",(p,)).fetchone()
-  uu=c.execute("SELECT * FROM users WHERE phone=? AND password=?",(p,pw)).fetchone();c.close()
-  u=uu
-  if not uu:
-   _c=db();_ex=_c.execute("SELECT id FROM users WHERE phone=?",(p,)).fetchone();_c.close()
-   m="Wrong information due to incorrect password. Please try again." if _ex else "Wrong information due to phone number not registered. Please register first."
-  else: session["uid"]=u["id"];ok=True
- if ok: return S+WAVE+"<div class=card><p>Login successful</p><script>setTimeout(()=>location.href='/home',1200)</script></div>"
- return S+WAVE+"""
+  ph=request.form.get("phone","").strip();pw=request.form.get("password","")
+  c=db();u=c.execute("SELECT * FROM users WHERE phone=? AND password=?",(ph,pw)).fetchone()
+  exists=c.execute("SELECT id FROM users WHERE phone=?",(ph,)).fetchone();c.close()
+  if u: session["uid"]=u["id"];ok=True
+  else: m="Wrong information due to incorrect password. Please try again." if exists else "Wrong information due to phone number not registered. Please register first."
+ if ok: return S+WAVE+"<div class=card><p>Login successful</p><script>setTimeout(()=>location.href='/home',900)</script></div>"
+ return S+WAVE+f"""
 <style>
-.login-wrap{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:22vh;padding-left:18px;padding-right:18px}
-.welcome-txt{font-size:38px;font-weight:800;color:#fff;letter-spacing:.5px;margin-bottom:32px;text-align:center}
-.pill-input{width:100%;max-width:360px;height:56px;background:rgba(10,10,10,0.6);border:1px solid #666;border-radius:28px;display:flex;align-items:center;padding:0 18px;margin:12px 0;backdrop-filter:blur(6px)}
-.pill-input input{border:none;background:transparent;outline:none;color:#fff;width:100%;font-size:16px;margin-left:10px}
-.pill-input input::placeholder{color:#777}
-.pill-input .ico{font-size:20px;color:#aaa;min-width:24px;text-align:center}
-.eye-btn{background:none;border:none;color:#aaa;font-size:20px;cursor:pointer}
-.login-btn{width:100%;max-width:360px;height:54px;background:transparent;border:1.5px solid #0a84ff;border-radius:28px;color:#0a84ff;font-size:20px;font-weight:600;margin-top:28px;cursor:pointer;backdrop-filter:blur(6px)}
-.login-btn:active{transform:scale(0.98)}
-.bot-links{width:100%;max-width:360px;display:flex;justify-content:space-between;margin-top:18px;font-size:14px;color:#ccc}
-.bot-links a{color:#ddd}
-.lang{color:#3a9ad9;font-size:14px;margin-top:8px;align-self:flex-end;margin-right:8px;max-width:360px;width:100%;text-align:right}
-.err{color:#ff6b6b;font-size:13px;margin:8px 0;text-align:center;max-width:360px}
+.login-wrap{{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-top:18vh;padding-left:18px;padding-right:18px}}
+.welcome{{font-size:36px;font-weight:800;color:#fff;margin-bottom:28px;letter-spacing:0.5px}}
+.pill{{width:100%;max-width:360px;height:52px;background:rgba(0,0,0,0.5);border:1px solid #555;border-radius:14px;display:flex;align-items:center;padding:0 14px;margin:10px 0;backdrop-filter:blur(6px);position:relative}}
+.pill input{{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:15px;margin-left:10px}}
+.pill input::placeholder{{color:#777}}
+.ico{{color:#aaa;font-size:16px;min-width:20px}}
+.eye{{background:none;border:none;color:#aaa;font-size:18px;cursor:pointer;position:absolute;right:12px}}
+.login-btn{{width:100%;max-width:360px;height:50px;background:transparent;border:1.5px solid #0a84ff;border-radius:12px;color:#0a84ff;font-size:18px;font-weight:600;margin-top:22px;cursor:pointer}}
+.err{{color:#ff6b6b;font-size:13px;margin:6px 0;max-width:360px;text-align:center}}
+.bot{{width:100%;max-width:360px;display:flex;justify-content:space-between;margin-top:16px;color:#bbb;font-size:13px}}
+.bot a{{color:#bbb;text-decoration:none}}
+.lang{{width:100%;max-width:360px;text-align:right;color:#4aa3d9;font-size:13px;margin:4px 0 6px 0}}
 </style>
 <div class="login-wrap">
-  <div class="welcome-txt">Welcome</div>
-  """+ (f"<div class=err>{m}</div>" if True else "") + f"""
-  <form method="POST" style="width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center">
-    <div class="pill-input"><span class="ico">📱</span><input name="phone" id="ph" placeholder="Phone Number" required></div>
-    <div class="pill-input"><span class="ico">🔑</span><input name="password" id="pw" type="password" placeholder="Login Password" required><button type="button" class="eye-btn" onclick="var i=document.getElementById('pw');i.type=i.type=='password'?'text':'password';this.textContent=i.type=='password'?'👁️‍🗨️':'👁️'">👁️‍🗨️</button></div>
-    <div class="lang">English ▼</div>
-    <button class="login-btn">Login</button>
-    <div class="bot-links"><a href="/register">‹&nbsp; Register</a><a href="/forgot">Forgot your password?</a></div>
-  </form>
+ <div class="welcome">Welcome</div>
+ <div class="err">{m}</div>
+ <form method="POST" style="width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center">
+  <div class="pill"><span class="ico">📱</span><input name="phone" placeholder="Phone Number" required></div>
+  <div class="pill"><span class="ico">🔑</span><input name="password" id="pw" type="password" placeholder="Login Password" required><button type="button" class="eye" onclick="var i=document.getElementById('pw');i.type=i.type=='password'?'text':'password';this.innerHTML=i.type=='password'?'🙈':'👁️'">🙈</button></div>
+  <div class="lang">English ▼</div>
+  <button class="login-btn">Login</button>
+  <div class="bot"><a href="/register">‹ Register</a><a href="/reset">Forgot your password?</a></div>
+ </form>
 </div>
-"""+f"<p style='display:none'>{m}</p>"
+"""
+
+
+
+@app.route("/reset",methods=["GET","POST"])
+def reset():
+ m=""
+ if request.method=="POST":
+  phone=request.form.get("phone","");name=request.form.get("name","");msg=request.form.get("msg","")
+  c=db()
+  try: c.execute("CREATE TABLE IF NOT EXISTS reset_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, phone TEXT, name TEXT, message TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+  except: pass
+  c.execute("INSERT INTO reset_requests (phone,name,message) VALUES (?,?,?)",(phone,name,msg));c.commit();c.close()
+  m="Request sent to your manager. Please wait for contact."
+ return S+WAVE+f"""
+<style>
+.reset-wrap{{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 18px 20px}}
+.rtitle{{font-size:26px;font-weight:800;color:#fff;margin-bottom:6px;text-align:center}}
+.rsub{{font-size:11px;color:#888;text-align:center;max-width:340px;margin-bottom:18px;line-height:1.4}}
+.info{{width:100%;max-width:360px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;display:flex;gap:10px;margin-bottom:16px}}
+.info .ic{{color:#4aa3d9;font-size:14px;margin-top:2px}}
+.info p{{color:#888;font-size:11px;line-height:1.4;margin:0}}
+.pill{{width:100%;max-width:360px;height:50px;background:rgba(0,0,0,0.5);border:1px solid #444;border-radius:12px;display:flex;align-items:center;padding:0 14px;margin:8px 0;backdrop-filter:blur(6px)}}
+.pill input, .pill textarea{{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:14px;margin-left:10px}}
+.pill textarea{{height:60px;resize:none;padding-top:10px}}
+.pill input::placeholder, .pill textarea::placeholder{{color:#666}}
+.ico{{color:#aaa;font-size:14px;min-width:18px}}
+.send-btn{{width:100%;max-width:360px;height:48px;background:transparent;border:1.5px solid #0a84ff;border-radius:12px;color:#0a84ff;font-size:16px;font-weight:600;margin-top:14px;cursor:pointer}}
+.back{{width:100%;max-width:360px;margin-top:14px;font-size:13px;color:#aaa}}
+.back a{{color:#aaa;text-decoration:none}}
+.ok{{color:#4ade80;font-size:13px;margin:10px 0;max-width:360px;text-align:center}}
+</style>
+<div class="reset-wrap">
+ <div class="rtitle">Reset Password</div>
+ <div class="rsub">Only HUT 9 managers can reset a password, after verifying your identity.</div>
+ <div class="info"><span class="ic">🛡️</span><p>For your safety nobody — including other users — can reset your password from this page. Send your details below and your manager receives them instantly.</p></div>
+ <div class="ok">{m}</div>
+ <form method="POST" style="width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center">
+  <div class="pill"><span class="ico">📱</span><input name="phone" placeholder="Registered Phone Number" required></div>
+  <div class="pill"><span class="ico">👤</span><input name="name" placeholder="Your Name (optional)"></div>
+  <div class="pill" style="height:80px;align-items:flex-start"><span class="ico" style="margin-top:12px">🔑</span><textarea name="msg" placeholder="I forgot my login password. Please help me reset it." required>I forgot my login password. Please help me reset it.</textarea></div>
+  <button class="send-btn">Send to my manager</button>
+  <div class="back"><a href="/login">‹ Back to Login</a></div>
+ </form>
+</div>
+"""
 
 
 @app.route("/home")
