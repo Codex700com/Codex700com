@@ -534,14 +534,6 @@ def logout_auto():
     from flask import session, redirect
     session.clear()
     return redirect("/register")
-@app.route("/register")
-def register_page_auto():
-    import pathlib
-    # try template, else simple placeholder so no more 404
-    fp = pathlib.Path("templates/register.html")
-    if fp.exists():
-        from flask import render_template; return render_template(fp.name)
-    return "<h2 style='font-family:sans-serif;padding:20px'>"+ "register".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
 @app.route("/transactions")
 def transactions_page_auto():
     from flask import render_template, session
