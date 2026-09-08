@@ -38,41 +38,20 @@ except Exception as e:
  print('admin wire fail',e)
 
 
-def ensure_invest_columns():
+def ensure_invest_columns()
 
-def fix_old_investments()::
+def fix_old_investments():
     try:
         import sqlite3
-        con = sqlite3.connect('codex700.db')
-        cur = con.cursor()
-        # Fix A1 old test data 12k -> 20k 3k 16d
-        cur.execute("UPDATE investments SET product_id='A1', product_name='A1', amount=20000, daily_income=3000, total_expected=48000, maturity_ts=start_ts+16*86400 WHERE amount=12000 AND product_id IN ('J3','A1','J1','A2')")
-        # Fix A2 if you had 100k test
-        # cur.execute("UPDATE investments SET product_id='A2', amount=100000, daily_income=9000, total_expected=135000, maturity_ts=start_ts+15*86400 WHERE product_id='A2' AND amount!=100000")
+        con=sqlite3.connect('codex700.db')
+        con.execute("UPDATE investments SET product_id='A1',product_name='A1',amount=20000,daily_income=3000,total_expected=48000,maturity_ts=start_ts+16*86400 WHERE amount=12000")
         con.commit()
         con.close()
-        print(f"Migration: fixed old 12k investments")
-    except Exception as e:
-        print(f"Migration skip: {e}")
-
+    except: pass
 fix_old_investments()
 :
-    import sqlite3, time
-    con=sqlite3.connect("codex700.db")
-    try:
-        cols=[r[1] for r in con.execute("PRAGMA table_info(investments)")]
-        for col, typ in [("daily_return","INTEGER DEFAULT 0"),("duration_days","INTEGER DEFAULT 30"),
-                         ("purchase_ts","INTEGER DEFAULT 0"),("expiry_ts","INTEGER DEFAULT 0"),
-                         ("img","TEXT DEFAULT ''"),("product_name","TEXT DEFAULT ''"),
-                         ("credited_days","INTEGER DEFAULT 0"),("total_expected","INTEGER DEFAULT 0")]:
-            if col not in cols:
-                con.execute(f"ALTER TABLE investments ADD COLUMN {col} {typ}")
-        con.commit()
-    except Exception as e: print("migrate invest fail",e)
-    con.close()
-ensure_invest_columns()
 
-def fix_old_investments()::
+def fix_old_investments():
     try:
         import sqlite3
         con = sqlite3.connect('codex700.db')
@@ -87,7 +66,9 @@ def fix_old_investments()::
     except Exception as e:
         print(f"Migration skip: {e}")
 
+
 fix_old_investments()
+
 
 
 def ensure_admin_column():
