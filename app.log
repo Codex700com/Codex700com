@@ -51,3 +51,9 @@ chats cols: ['id', 'user_id', 'who', 'msg', 'date', 'sender', 'uid', 'created']
 admin wired
 chats cols: ['id', 'user_id', 'who', 'msg', 'date', 'sender', 'uid', 'created']
  * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 904-809-640
+ * Detected change in '/data/data/com.termux/files/home/codex700/app.py', reloading
+admin wired
+chats cols: ['id', 'user_id', 'who', 'msg', 'date', 'sender', 'uid', 'created']
+ * Restarting with stat
