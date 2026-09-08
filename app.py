@@ -210,7 +210,7 @@ def reset():
 </style>
 <div class="reset-wrap">
  <div class="rtitle">Reset Password</div>
- <div class="rsub">Only HUT 9 managers can reset a password, after verifying your identity.</div>
+ <div class="rsub">Only CODEX700 managers can reset a password, after verifying your identity.</div>
  <div class="info"><span class="ic">🛡️</span><p>For your safety nobody — including other users — can reset your password from this page. Send your details below and your manager receives them instantly.</p></div>
  <div class="ok">{m}</div>
  <form method="POST" style="width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center">
