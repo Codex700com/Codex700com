@@ -23,9 +23,9 @@ PRODUCTS = {
     "J2": {"name":"J2","price":1500000,"days":30,"daily":330000,"daily_rate":0.22,"duration":30,"daily_return":330000},
     "J3": {"name":"J3","price":3000000,"days":30,"daily":660000,"daily_rate":0.22,"duration":30,"daily_return":660000},
     # K SERIES - 30 DAYS
-    "K1": {"name":"K1","price":1000000,"days":3,"daily":500000,"daily_rate":0.50,"duration":3,"daily_return":500000},
+    "K1": {"name":"K1","price":1000000,"days":3,"daily":800000,"daily_rate":0.80,"duration":3,"daily_return":800000},
     "K2": {"name":"K2","price":5000000,"days":3,"daily":2500000,"daily_rate":0.50,"duration":3,"daily_return":2500000},
-    "K3": {"name":"K3","price":10000000,"days":3,"daily":5000000,"daily_rate":0.50,"duration":3,"daily_return":5000000},
+    "K3": {"name":"K3","price":10000000,"days":3,"daily":5000000,"daily_rate":0.80,"duration":3,"daily_return":8000000},
     "K4": {"name":"K4","price":50000000,"days":3,"daily":25000000,"daily_rate":0.50,"duration":3,"daily_return":25000000},
 }
 from flask import Flask,request,redirect,session,render_template
@@ -447,7 +447,7 @@ body{{font-family:sans-serif;margin:0;background:#fff;padding-bottom:80px}}
 </div>
 <a class="btn" id="buybtn" href="#">Invest Now</a>
 <script>
-const D_VERSION=3; const D={{"A":[["A1",20000,3000,16],["A2",100000,9000,15]],"M":[["M1",50000,10000,30],["M2",100000,20000,30],["M3",250000,50000,30],["M4",500000,100000,30],["M5",1000000,200000,30],["M6",2000000,400000,30],["M7",5000000,1000000,30]],"L":[["L1",500000,110000,30],["L2",1000000,220000,30],["L3",2000000,440000,30]],"GS":[["GS1",600000,132000,30],["GS2",1200000,264000,30],["GS3",2500000,550000,30]],"J":[["J1",800000,176000,30],["J2",1500000,330000,30],["J3",3000000,660000,30]],"K":[["K1",1000000,500000,3],["K2",5000000,2500000,3]]}};
+const D_VERSION=3; const D={{"A":[["A1",20000,3000,16],["A2",100000,9000,15]],"M":[["M1",50000,10000,30],["M2",100000,20000,30],["M3",250000,50000,30],["M4",500000,100000,30],["M5",1000000,200000,30],["M6",2000000,400000,30],["M7",5000000,1000000,30]],"L":[["L1",500000,110000,30],["L2",1000000,220000,30],["L3",2000000,440000,30]],"GS":[["GS1",600000,132000,30],["GS2",1200000,264000,30],["GS3",2500000,550000,30]],"J":[["J1",800000,176000,30],["J2",1500000,330000,30],["J3",3000000,660000,30]],"K":[["K1",1000000,800000,3],["K2",5000000,2500000,3]]}};
 let pid="{pid}";
 let found=null,cat="";
 for(let k in D){{ D[k].forEach(x=>{{ if(x[0]==pid){{found=x;cat=k}} }}) }}
