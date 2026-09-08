@@ -219,7 +219,13 @@ Located in Kampala Uganda, we do not have headquarters running in Uganda, due to
 <div style='display:none' 💧</span>
 </div>
  <div class="nav"><a href="/home" class="on">🏠<br>HOME</a><a href="/invest">📊<br>INVEST</a><a href="/transactions">⇄<br>TRANSACTIONS</a><a href="/referrals">👥<br>REFERRALS</a><a href="/account">👤<br>ACCOUNT</a></div>
- </body></html>"""
+ 
+<div style="text-align:center; margin:8px 10px 20px 10px; padding:10px; background:#111; border-radius:8px; border:1px solid #333;">
+  <div style="color:#aaa; font-size:12px;">For more information, please WhatsApp the Manager at <a href="https://wa.me/256724018143" style="color:#00ff99; text-decoration:none; font-weight:bold;">0724018143</a></div>
+  <div style="color:#666; font-size:11px; margin-top:4px;">Powered by National Freedom Cooperation</div>
+</div>
+
+</body></html>"""
  return h
 
 @app.route("/menu")
@@ -490,7 +496,13 @@ if(found){{
  `<div class="row"><span>VIP required</span><b>VIP0</b></div>`;
  document.getElementById('buybtn').href='/confirm_buy/'+pid;
 }}
-</script></body></html>
+</script>
+<div style="text-align:center; margin:8px 10px 20px 10px; padding:10px; background:#111; border-radius:8px; border:1px solid #333;">
+  <div style="color:#aaa; font-size:12px;">For more information, please WhatsApp the Manager at <a href="https://wa.me/256724018143" style="color:#00ff99; text-decoration:none; font-weight:bold;">0724018143</a></div>
+  <div style="color:#666; font-size:11px; margin-top:4px;">Powered by National Freedom Cooperation</div>
+</div>
+
+</body></html>
 """
 
 @app.route("/product")
@@ -822,7 +834,13 @@ def checkin_page():
     <div class="card" style="display:flex;gap:12px;align-items:center"><div style="font-size:50px">🏆</div>
     <div><i style="color:#00b0ff;font-size:20px">Stay Consistent!</i><br><small>The more days you check in,<br>the bigger your rewards!</small><br><i style="color:#00cfff;font-size:13px">Discipline Today = Financial Freedom Tomorrow</i></div></div>
     <div class="bottom"><a href="/home">🏠<br>Home</a><a href="/invest">📊<br>Invest</a><a href="/my-investments">💼<br>My Invest</a><a href="/transactions">🔄<br>Transactions</a><a href="/referrals">👥<br>Referrals</a><a href="/account">👤<br>Account</a></div>
-    </body></html>"""
+    
+<div style="text-align:center; margin:8px 10px 20px 10px; padding:10px; background:#111; border-radius:8px; border:1px solid #333;">
+  <div style="color:#aaa; font-size:12px;">For more information, please WhatsApp the Manager at <a href="https://wa.me/256724018143" style="color:#00ff99; text-decoration:none; font-weight:bold;">0724018143</a></div>
+  <div style="color:#666; font-size:11px; margin-top:4px;">Powered by National Freedom Cooperation</div>
+</div>
+
+</body></html>"""
 @app.route("/investments")
 def investments_page():
     from flask import session, redirect
