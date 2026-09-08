@@ -1,11 +1,30 @@
-
 PRODUCTS = {
-    "J1": {"name":"J1","price":3000,"duration":30,"daily":300,"daily_return":300},
-    "J2": {"name":"J2","price":6000,"duration":30,"daily":600,"daily_return":600},
-    "J3": {"name":"J3","price":12000,"duration":30,"daily":1200,"daily_return":1200},
-    "J4": {"name":"J4","price":25000,"duration":30,"daily":2500,"daily_return":2500},
-    "J5": {"name":"J5","price":50000,"duration":30,"daily":5000,"daily_return":5000},
-    "J6": {"name":"J6","price":100000,"duration":30,"daily":10000,"daily_return":10000},
+    # A SERIES - EXCEPTIONS (16d and 15d) - FIXED ✅
+    "A1": {"name":"A1","price":20000,"days":16,"daily":3000,"daily_rate":0.15,"duration":16,"daily_return":3000},
+    "A2": {"name":"A2","price":100000,"days":15,"daily":9000,"daily_rate":0.09,"duration":15,"daily_return":9000},
+    # M SERIES - ALL 30 DAYS as you said
+    "M1": {"name":"M1","price":50000,"days":30,"daily":10000,"daily_rate":0.20,"duration":30,"daily_return":10000},
+    "M2": {"name":"M2","price":100000,"days":30,"daily":20000,"daily_rate":0.20,"duration":30,"daily_return":20000},
+    "M3": {"name":"M3","price":250000,"days":30,"daily":50000,"daily_rate":0.20,"duration":30,"daily_return":50000},
+    "M4": {"name":"M4","price":500000,"days":30,"daily":100000,"daily_rate":0.20,"duration":30,"daily_return":100000},
+    "M5": {"name":"M5","price":1000000,"days":30,"daily":200000,"daily_rate":0.20,"duration":30,"daily_return":200000},
+    "M6": {"name":"M6","price":2000000,"days":30,"daily":400000,"daily_rate":0.20,"duration":30,"daily_return":400000},
+    "M7": {"name":"M7","price":5000000,"days":30,"daily":1000000,"daily_rate":0.20,"duration":30,"daily_return":1000000},
+    # L SERIES - 30 DAYS
+    "L1": {"name":"L1","price":500000,"days":30,"daily":110000,"daily_rate":0.22,"duration":30,"daily_return":110000},
+    "L2": {"name":"L2","price":1000000,"days":30,"daily":220000,"daily_rate":0.22,"duration":30,"daily_return":220000},
+    "L3": {"name":"L3","price":2000000,"days":30,"daily":440000,"daily_rate":0.22,"duration":30,"daily_return":440000},
+    # GS SERIES - 30 DAYS
+    "GS1": {"name":"GS1","price":600000,"days":30,"daily":132000,"daily_rate":0.22,"duration":30,"daily_return":132000},
+    "GS2": {"name":"GS2","price":1200000,"days":30,"daily":264000,"daily_rate":0.22,"duration":30,"daily_return":264000},
+    "GS3": {"name":"GS3","price":2500000,"days":30,"daily":550000,"daily_rate":0.22,"duration":30,"daily_return":550000},
+    # J SERIES - 30 DAYS (not 12k!)
+    "J1": {"name":"J1","price":800000,"days":30,"daily":176000,"daily_rate":0.22,"duration":30,"daily_return":176000},
+    "J2": {"name":"J2","price":1500000,"days":30,"daily":330000,"daily_rate":0.22,"duration":30,"daily_return":330000},
+    "J3": {"name":"J3","price":3000000,"days":30,"daily":660000,"daily_rate":0.22,"duration":30,"daily_return":660000},
+    # K SERIES - 30 DAYS
+    "K1": {"name":"K1","price":1000000,"days":30,"daily":500000,"daily_rate":0.50,"duration":30,"daily_return":500000},
+    "K2": {"name":"K2","price":5000000,"days":30,"daily":2500000,"daily_rate":0.50,"duration":30,"daily_return":2500000},
 }
 
 from flask import Flask,request,redirect,session,render_template
@@ -445,7 +464,7 @@ body{{font-family:sans-serif;margin:0;background:#fff;padding-bottom:80px}}
 </div>
 <a class="btn" id="buybtn" href="#">Invest Now</a>
 <script>
-const D={{"A":[["A1",20000,3000,16],["A2",100000,9000,15]],"M":[["M1",50000,10000],["M2",100000,20000],["M3",250000,50000],["M4",500000,100000],["M5",1000000,200000],["M6",2000000,400000],["M7",5000000,1000000]],"L":[["L1",500000,110000],["L2",1000000,220000],["L3",2000000,440000]],"GS":[["GS1",600000,132000],["GS2",1200000,264000],["GS3",2500000,550000]],"J":[["J1",800000,176000],["J2",1500000,330000],["J3",3000000,660000]],"K":[["K1",1000000,500000],["K2",5000000,2500000]]}};
+const D={{"A":[["A1",20000,3000,16],["A2",100000,9000,15]],"M":[["M1",50000,10000,30],["M2",100000,20000,30],["M3",250000,50000,30],["M4",500000,100000,30],["M5",1000000,200000,30],["M6",2000000,400000,30],["M7",5000000,1000000,30]],"L":[["L1",500000,110000,30],["L2",1000000,220000,30],["L3",2000000,440000,30]],"GS":[["GS1",600000,132000,30],["GS2",1200000,264000,30],["GS3",2500000,550000,30]],"J":[["J1",800000,176000,30],["J2",1500000,330000,30],["J3",3000000,660000,30]],"K":[["K1",1000000,500000,30],["K2",5000000,2500000,30]]}};
 let pid="{pid}";
 let found=null,cat="";
 for(let k in D){{ D[k].forEach(x=>{{ if(x[0]==pid){{found=x;cat=k}} }}) }}
