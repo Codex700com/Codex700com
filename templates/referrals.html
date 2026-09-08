@@ -1,79 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Referrals - Codex700</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#010d1f;color:#fff;font-family:'Segoe UI',Arial,sans-serif;padding-bottom:110px}
-.hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
-.hd .t{text-align:center;flex:1}
-.hd .t h1{font-size:38px;color:#00cfff;font-style:italic;text-shadow:0 0 18px #00cfff}
-.hd .t p{color:#00cfff;font-style:italic;font-size:15px}
-.card{background:linear-gradient(180deg,#021a3a,#011026);border:1.5px solid #0a4dff;border-radius:14px;padding:14px;margin:10px 12px;box-shadow:0 0 18px #0a4dff55}
-.top{display:flex;justify-content:space-between;gap:10px;align-items:center}
-.codebox{border:1.5px dashed #00cfff;border-radius:10px;padding:8px 18px;font-size:26px;font-weight:800;color:#00cfff;letter-spacing:2px}
-.btn{background:linear-gradient(180deg,#00cfff,#0a4dff);border:none;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
-.linkrow{display:flex;gap:8px;margin-top:10px}
-.linkrow input{flex:1;background:#011026;border:1px solid #0a4dff;color:#7ecbff;border-radius:10px;padding:12px}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 12px}
-.stat{background:linear-gradient(180deg,#021a3a,#011026);border:1px solid #0a4dff;border-radius:12px;padding:12px 6px;text-align:center}
-.stat b{color:#00cfff;font-size:20px;display:block}
-.lv{display:flex;justify-content:space-around;text-align:center;margin-top:10px}
-.lv b{color:#00cfff;font-size:24px}
-.nav{position:fixed;bottom:0;left:0;right:0;background:#010d1f;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #0a4dff}
-.nav a{color:#7ecbff;text-decoration:none;font-size:12px;text-align:center}
-.nav a.on{color:#00cfff;border-bottom:2px solid #00cfff}
-</style>
-</head>
-<body>
-<div class="hd">
-<a href="/home" style="color:#fff;font-size:24px;text-decoration:none">←</a>
-<div class="t"><h1>👥 Referrals</h1><p>Together We Grow, Together We Win</p></div>
-<div style="font-size:22px">🔔 👤</div>
-</div>
-
-<div class="card">
-<div class="top">
-<div><div style="font-size:20px;font-weight:800;color:#00cfff">👑 Invite Friends & Earn</div><div style="font-size:13px;color:#aac">Earn unlimited commissions<br>from your referrals.</div>
-<button class="btn" style="margin-top:8px" onclick="alert('Share your link, when they invest you earn 32% / 5% / 1%')">How it Works →</button>
-</div>
-<div style="text-align:center"><div style="font-size:13px">🔗 Your Referral Code</div><div class="codebox">{{ refcode or '084E03' }}</div><button class="btn" style="margin-top:6px" onclick="navigator.clipboard.writeText('{{ refcode }}');alert('Copied!')">📋</button></div>
-</div>
-<div style="text-align:right;color:#00cfff;font-style:italic">More Friends<br>More Income!</div>
-</div>
-
-<div class="card">
-<div style="font-weight:800;font-size:18px">🔗 Your Referral Link</div>
-<div class="linkrow"><input id="rlink" readonly value="{{ referral_link or 'https://codex700com.onrender.com/register?ref='+(refcode or '') }}"><button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('rlink').value);alert('Link copied!')">📋 Copy Link</button></div>
-<div style="color:#00cfff;font-style:italic;margin-top:6px">✈️ Share your link. Change lives. Earn together!</div>
-</div>
-
-<div class="stats">
-<div class="stat">👥 Total Referrals<b>{{ total_referrals or 0 }}</b><small>All Time</small></div>
-<div class="stat">⚡ Active Referrals<b>{{ active_referrals or 0 }}</b><small>Active Now</small></div>
-<div class="stat">💰 Total Earnings<b>UGX {{ total_earnings or 0 }}</b><small>All Time</small></div>
-<div class="stat">📅 This Month<b>UGX {{ month_earnings or 0 }}</b><small>Earnings</small></div>
-</div>
-
-<div class="card">
-<div style="font-weight:800;font-size:18px">👑 Referral Commission Structure</div>
-<div class="lv">
-<div>⬢ Lv1<br><b>32%</b><br>First Level</div>
-<div>⬢ Lv2<br><b>5%</b><br>Second Level</div>
-<div>⬢ Lv3<br><b>1%</b><br>Third Level</div>
-</div>
-</div>
-
-<div class="card"><div style="display:flex;justify-content:space-between"><b>👥 Your Referrals</b><a href="#" style="color:#7ecbff">View All ></a></div>
-<div style="text-align:center;padding:16px;color:#aac"><i>No referrals yet.<br>Share your link to start earning.</i></div>
-</div>
-
-<div class="nav">
-<a href="/home">🏠<br>Home</a><a href="/invest">📊<br>Invest</a><a href="/transactions">🔄<br>Transactions</a><a href="/referrals" class="on">👥<br>Referrals</a><a href="/account">👤<br>Account</a>
-</div>
-<script>
-function copyCode(){navigator.clipboard.writeText("{{ refcode }}")}
-</script>
-</body>
-</html>
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+body{background:#081627;color:#fff;font-family:-apple-system,Inter,Roboto,sans-serif;margin:0;padding-bottom:90px}
+.top{padding:18px 16px 6px}.top h2{margin:0;font-size:22px}.top p{color:#8aa0b8;font-size:13px;margin:4px 0 0}
+.banner{margin:12px 16px;background:linear-gradient(135deg,#0e4a7a,#1da1f2);border-radius:14px;padding:18px}
+.banner h3{margin:0 0 6px}.banner p{margin:0;font-size:13px;opacity:.9}.banner b{font-size:22px}
+.card{background:#0e233f;border:1px solid #1a3a5f;border-radius:14px;margin:12px 16px;padding:16px}
+.card h4{margin:0 0 4px;font-size:14px}.card p{color:#8aa0b8;font-size:12px;margin:0 0 10px}
+.codebox{display:flex;align-items:center;justify-content:space-between;background:#081627;border:1px dashed #1da1f2;border-radius:10px;padding:12px;margin-top:8px}
+.codebox b{font-size:20px;letter-spacing:2px;color:#fff}
+.btn{background:#1da1f2;color:#04263b;border:0;padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer}
+.linkbox{word-break:break-all;background:#081627;border:1px solid #1a3a5f;border-radius:10px;padding:12px;font-size:12px;color:#8aa0b8;margin:8px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 16px}
+.gbox{background:#0e233f;border:1px solid #1a3a5f;border-radius:12px;padding:14px;text-align:center}
+.gbox small{color:#8aa0b8;font-size:11px}.gbox b{color:#1da1f2;font-size:18px;display:block;margin-top:6px}
+.step{display:flex;gap:12px;margin:12px 0}.n{width:28px;height:28px;border-radius:50%;background:#1da1f2;color:#04263b;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.lvl{display:flex;justify-content:space-between;align-items:center;background:#081627;border-radius:10px;padding:12px;margin:8px 0}
+.lvl b{color:#1da1f2}.pill{background:#1da1f2;color:#04263b;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.empty{text-align:center;color:#8aa0b8;padding:20px;font-size:13px}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#0a1c33;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #1a3a5f}
+.nav a{color:#8aa0b8;text-decoration:none;font-size:11px;text-align:center}.nav a.on{color:#1da1f2}
+</style></head><body>
+<div class="top"><h2>Referral Program</h2><p>Invite friends and earn together</p></div>
+<div class="banner"><h3>🎁 Exclusive Rewards</h3><p>Earn up to</p><b>17% Commission</b><p>on every referral investment</p></div>
+<div class="card"><h4>Your Referral Code</h4><p>Share this code with friends</p><div class="codebox"><b>{{code}}</b><button class="btn" onclick="navigator.clipboard.writeText('{{code}}');alert('Copied')">Copy</button></div></div>
+<div class="card"><h4>Referral Link</h4><p>Share this link to invite friends</p><div class="linkbox">{{link}}</div><button class="btn" style="width:100%;padding:12px" onclick="navigator.clipboard.writeText('{{link}}');alert('Link copied')">Copy Invite Link</button></div>
+<div class="grid"><div class="gbox"><small>Total Referrals</small><b>{{total}}</b></div><div class="gbox"><small>Active Referrals</small><b>{{active}}</b></div><div class="gbox"><small>Referral Earnings</small><b>UGX {{earnings}}</b></div><div class="gbox"><small>This Month</small><b>UGX {{month_earnings}}</b></div></div>
+<div class="card"><h4>How It Works</h4><div class="step"><div class="n">1</div><div><b>Share Your Code</b><br><small style="color:#8aa0b8">Send your referral code or link to friends</small></div></div><div class="step"><div class="n">2</div><div><b>Friends Invest</b><br><small style="color:#8aa0b8">They register and make their first investment</small></div></div><div class="step"><div class="n">3</div><div><b>Earn Commission</b><br><small style="color:#8aa0b8">Get instant commission on their investments</small></div></div></div>
+<div class="card"><h4>Commission Structure</h4><div class="lvl"><div>📊 Level 1 <br><small style="color:#8aa0b8">Direct referrals</small></div><span class="pill">10%</span></div><div class="lvl"><div>📊 Level 2 <br><small style="color:#8aa0b8">Second level</small></div><span class="pill">5%</span></div><div class="lvl"><div>📊 Level 3 <br><small style="color:#8aa0b8">Third level</small></div><span class="pill">2%</span></div></div>
+<div class="card"><h4>Your Referrals ({{total}})</h4><div class="empty">👥<br>No referrals yet<br><small>Share your code to start earning</small></div></div>
+<div class="nav"><a href="/home">🏠<br>Home</a><a href="/invest">📈<br>Invest</a><a href="/wallet">💼<br>Wallet</a><a href="/account" class="on">👤<br>Account</a></div>
+</body></html>
