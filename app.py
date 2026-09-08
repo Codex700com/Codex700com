@@ -138,6 +138,7 @@ def reg():
      rc=uuid.uuid4().hex[:6].upper();c.execute("INSERT INTO users(name,phone,password,invite,balance,refcode) VALUES(?,?,?,?,0,?)",(n,p,pw,inv,rc));c.commit();c.close();return redirect("/login")
    except: m="Wrong information due to phone already registered"
  return S+WAVE+"<div class=logo style='text-align:center;margin:20px'>👑 CODEX700</div><div class=card><h2 class=gold style='text-align:center'>REGISTER</h2>"+(f"<p>{m}</p>" if m else "")+"<form method=POST><input name=name placeholder='Enter Name' requiredred><input name=phone placeholder='Enter Phone' requiredred><input name=password type=password placeholder='Enter Password' requiredred><input name=confirm type=password placeholder='Confirm Password' requiredred><input name=invite placeholder='Invitation code'><button class=btn style='width:100%'>REGISTER</button></form><p style='text-align:center'>Have account? <a href='/login' class=gold>Login</a></p></div>"
+
 @app.route("/login",methods=["GET","POST"])
 def login():
  m="";ok=False
@@ -149,8 +150,37 @@ def login():
    _c=db();_ex=_c.execute("SELECT id FROM users WHERE phone=?",(p,)).fetchone();_c.close()
    m="Wrong information due to incorrect password. Please try again." if _ex else "Wrong information due to phone number not registered. Please register first."
   else: session["uid"]=u["id"];ok=True
- if ok: return S+"<div class=card><p>registration successful</p><script>setTimeout(()=>location.href='/home',1500)</script></div>"
- return S+WAVE+"<div class=logo style='text-align:center;margin:20px'>👑 CODEX700</div><div class=card><h2 class=gold style='text-align:center'>LOGIN</h2>"+(f"<p>{m}</p>" if m else "")+"<form method=POST><input name=phone placeholder='Enter Phone' requiredred><input name=password type=password placeholder='Enter Password' requiredred><button class=btn style='width:100%'>LOGIN</button></form><p style='text-align:center'>No account? <a href='/register' class=gold>Register</a></p></div>"
+ if ok: return S+WAVE+"<div class=card><p>Login successful</p><script>setTimeout(()=>location.href='/home',1200)</script></div>"
+ return S+WAVE+"""
+<style>
+.login-wrap{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:22vh;padding-left:18px;padding-right:18px}
+.welcome-txt{font-size:38px;font-weight:800;color:#fff;letter-spacing:.5px;margin-bottom:32px;text-align:center}
+.pill-input{width:100%;max-width:360px;height:56px;background:rgba(10,10,10,0.6);border:1px solid #666;border-radius:28px;display:flex;align-items:center;padding:0 18px;margin:12px 0;backdrop-filter:blur(6px)}
+.pill-input input{border:none;background:transparent;outline:none;color:#fff;width:100%;font-size:16px;margin-left:10px}
+.pill-input input::placeholder{color:#777}
+.pill-input .ico{font-size:20px;color:#aaa;min-width:24px;text-align:center}
+.eye-btn{background:none;border:none;color:#aaa;font-size:20px;cursor:pointer}
+.login-btn{width:100%;max-width:360px;height:54px;background:transparent;border:1.5px solid #0a84ff;border-radius:28px;color:#0a84ff;font-size:20px;font-weight:600;margin-top:28px;cursor:pointer;backdrop-filter:blur(6px)}
+.login-btn:active{transform:scale(0.98)}
+.bot-links{width:100%;max-width:360px;display:flex;justify-content:space-between;margin-top:18px;font-size:14px;color:#ccc}
+.bot-links a{color:#ddd}
+.lang{color:#3a9ad9;font-size:14px;margin-top:8px;align-self:flex-end;margin-right:8px;max-width:360px;width:100%;text-align:right}
+.err{color:#ff6b6b;font-size:13px;margin:8px 0;text-align:center;max-width:360px}
+</style>
+<div class="login-wrap">
+  <div class="welcome-txt">Welcome</div>
+  """+ (f"<div class=err>{m}</div>" if True else "") + f"""
+  <form method="POST" style="width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center">
+    <div class="pill-input"><span class="ico">📱</span><input name="phone" id="ph" placeholder="Phone Number" required></div>
+    <div class="pill-input"><span class="ico">🔑</span><input name="password" id="pw" type="password" placeholder="Login Password" required><button type="button" class="eye-btn" onclick="var i=document.getElementById('pw');i.type=i.type=='password'?'text':'password';this.textContent=i.type=='password'?'👁️‍🗨️':'👁️'">👁️‍🗨️</button></div>
+    <div class="lang">English ▼</div>
+    <button class="login-btn">Login</button>
+    <div class="bot-links"><a href="/register">‹&nbsp; Register</a><a href="/forgot">Forgot your password?</a></div>
+  </form>
+</div>
+"""+f"<p style='display:none'>{m}</p>"
+
+
 @app.route("/home")
 @need
 def home():
