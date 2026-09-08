@@ -38,9 +38,9 @@ except Exception as e:
  print('admin wire fail',e)
 
 
-def ensure_invest_columns()
+def ensure_invest_columns():
 
-def fix_old_investments():
+def fix_old_investments()::
     try:
         import sqlite3
         con = sqlite3.connect('codex700.db')
@@ -72,7 +72,7 @@ fix_old_investments()
     con.close()
 ensure_invest_columns()
 
-def fix_old_investments():
+def fix_old_investments()::
     try:
         import sqlite3
         con = sqlite3.connect('codex700.db')
