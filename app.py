@@ -1374,6 +1374,8 @@ try:
     _con.close()
 except: pass
 
+
+
 @app.route("/chat")
 def chat_page():
     from flask import session, redirect, render_template
