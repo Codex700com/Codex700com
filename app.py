@@ -44,7 +44,6 @@ def ensure_invest_columns():
         cur=con.cursor()
         cur.execute("CREATE TABLE IF NOT EXISTS investments (id INTEGER PRIMARY KEY)")
         con.close()
-    except: pass
 def ensure_admin_column():
     import sqlite3
     try:
@@ -227,7 +226,6 @@ def menu():
   _u=session.get("uid") or session.get("uid")
   _c=sqlite3.connect("codex700.db"); _c.row_factory=sqlite3.Row
   _me=_c.execute("SELECT is_admin FROM users WHERE id=?",(_u,)).fetchone(); _c.close()
- except: pass
  h=S+hdr()+"<div class=card><h3>Menu</h3>"
  try:
   _adm=False
@@ -235,7 +233,6 @@ def menu():
   _cc=_sq.connect("codex700.db"); _cc.row_factory=_sq.Row
   _row=_cc.execute("SELECT is_admin FROM users WHERE id=?",(session.get("uid"),)).fetchone(); _cc.close()
   if _row and _row["is_admin"]==1: ls.insert(len(ls)-1,("Admin Panel","/admin/"))
- except: pass
  for nm,lk in ls: h+="<p><a href='"+lk+"'>"+nm+"</a></p>"
  return h+"</div>"+N
 @app.route("/notifications")
@@ -388,7 +385,6 @@ try:
     _c=sqlite3.connect("codex700.db")
     for _q in ["ALTER TABLE investments ADD COLUMN daily INTEGER","ALTER TABLE investments ADD COLUMN duration INTEGER","ALTER TABLE investments ADD COLUMN created_at TEXT","ALTER TABLE investments ADD COLUMN end_at TEXT","ALTER TABLE investments ADD COLUMN credited INTEGER DEFAULT 0","ALTER TABLE investments ADD COLUMN status TEXT DEFAULT 'active'"]:
         try: _c.execute(_q)
-        except: pass
     _c.execute("CREATE TABLE IF NOT EXISTS daily_checkins (user_id TEXT PRIMARY KEY, last_claim TEXT, streak INTEGER DEFAULT 0)")
     _c.commit(); _c.close()
 except Exception as _e:
@@ -652,9 +648,7 @@ def support_page():
  from flask import render_template
  return render_template("support.html")
 import os, json, datetime
-CHAT_FILE="chat.json"
-if not os.path.exists(CHAT_FILE):
-    open(CHAT_FILE,"w").write("[]")
+
 @app.route("/api/my-chat")
 def api_my_chat():
  from flask import session, jsonify
@@ -667,12 +661,16 @@ def api_my_chat():
   con.close()
   return jsonify([dict(r) for r in rows])
  except Exception as e:
-  print("my-chat error",e)
   return jsonify([])
-        user=data.get("user","Anonymous")[:30]
-        msgs=json.load(open(CHAT_FILE))
-        msgs=msgs[-200:]
-        json.dump(msgs, open(CHAT_FILE,"w"))
+@app.route("/api/chat", methods=["GET","POST"])
+def api_chat():
+    from flask import request, jsonify, session
+    if request.method=="POST":
+        data=request.get_json(force=True)
+        text=data.get("text","")[:1000]
+        if not text.strip():
+            return jsonify({"ok":False})
+        msgs.append({"user":user,"text":text,"time":datetime.datetime.now().strftime("%H:%M")})
         try:
             uid=session.get("user_id") or session.get("uid") or session.get("id")
             if uid:
@@ -695,7 +693,6 @@ def api_my_chat():
             return {"private":[dict(r) for r in rows]}
     except Exception as e:
         print("private inbox error",e)
-    return json.load(open(CHAT_FILE))
 REWARDS=[500,700,1000,1500,2000,3000,5000]
 def ensure_daily_checkin(con):
     con.execute("CREATE TABLE IF NOT EXISTS daily_checkin (user_id INTEGER PRIMARY KEY, last_check TEXT, streak INTEGER DEFAULT 0)")
@@ -713,7 +710,6 @@ def checkin_page():
     if row and row[0]:
         try:
             last_check=datetime.fromisoformat(row[0]); streak=row[1] or 0
-        except: pass
     last_date=last_check.date().isoformat() if last_check else None
     claimed=(last_date==today)
     if claimed:
@@ -727,7 +723,6 @@ def checkin_page():
         con.execute("INSERT OR REPLACE INTO daily_checkin (user_id,last_check,streak) VALUES (?,?,?)",(uid,now.isoformat(),cur_day))
         con.execute("UPDATE users SET balance=balance+? WHERE id=?",(reward,uid))
         try: con.execute("INSERT INTO transactions(user_id,type,amount,status,created_at) VALUES(?,?,?,?,?)",(uid,"Daily Checkin Day "+str(cur_day),reward,"completed",now.isoformat()))
-        except: pass
         con.commit(); claimed=True; can=False; streak=cur_day
     nxt=datetime(now.year,now.month,now.day)+timedelta(days=1)
     secs=int((nxt-now).total_seconds()) if claimed else 0
@@ -871,7 +866,6 @@ def process_maturities(user_id=None):
              f"Your {inv['product_name']} investment has matured. Your account balance has been updated.", now))
         db.commit()
     try: init_invest_tables()
-    except: pass
 @app.route('/invest/success/<int:inv_id>')
 def invest_success(inv_id):
     import sqlite3
@@ -1128,7 +1122,6 @@ def set_language():
             db="codex700.db" if os.path.exists("codex700.db") else "codex.db"
             con=sqlite3.connect(db)
             try: con.execute("ALTER TABLE users ADD COLUMN lang TEXT DEFAULT 'en'")
-            except: pass
             con.execute("UPDATE users SET lang=? WHERE id=?",(lang,uid))
             con.commit(); con.close()
         except Exception as e: print(e)
@@ -1174,7 +1167,6 @@ def process_maturities_v1(user_id=None):
              f"Your {inv['product_name']} investment has matured. Your account balance has been updated.", now))
         db.commit()
     try: init_invest_tables()
-    except: pass
 @app.route('/invest/confirm', methods=['POST'], endpoint='invest_confirm_v2')
 def invest_confirm_v2():
     import sqlite3, time
@@ -1369,9 +1361,7 @@ try:
     import sqlite3
     _con=sqlite3.connect('codex700.db')
     _con.execute("UPDATE investments SET product_id='A1',product_name='A1',amount=20000,daily_income=3000,total_expected=48000,maturity_ts=start_ts+16*86400 WHERE amount=12000")
-    _con.commit()
     _con.close()
-except: pass
 
 @app.route("/chat")
 def chat_page():
@@ -1389,16 +1379,10 @@ def chat_history():
     con=db()
     try:
         con.execute("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, message TEXT, admin_reply TEXT, image TEXT, created_at TEXT)")
-        cols=[c[1] for c in con.execute("PRAGMA table_info(messages)").fetchall()]
-        if "image" not in cols:
-            try:
-                con.execute("ALTER TABLE messages ADD COLUMN image TEXT")
-                con.commit()
-            except: pass
         rows=con.execute("SELECT id, message, admin_reply, image, created_at FROM messages WHERE user_id=? ORDER BY id ASC",(uid,)).fetchall()
         data=[dict(r) for r in rows]
     except Exception as e:
-        print("chat hist err", e)
+        print("chat hist err",e)
         data=[]
     con.close()
     return jsonify(data)
@@ -1443,6 +1427,7 @@ def chat_send_image():
     con.execute("INSERT INTO messages(user_id,message,image,created_at) VALUES(?,?,?,?)",(uid,msg,img_path,now))
     con.commit(); con.close()
     return jsonify({"ok":True})
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
