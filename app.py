@@ -1374,8 +1374,6 @@ try:
     _con.close()
 except: pass
 
-
-
 @app.route("/chat")
 def chat_page():
     from flask import session, redirect, render_template
@@ -1391,11 +1389,17 @@ def chat_history():
         return jsonify([])
     con=db()
     try:
-        con.execute("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, message TEXT, admin_reply TEXT, created_at TEXT)")
-        rows=con.execute("SELECT id, message, admin_reply, created_at FROM messages WHERE user_id=? ORDER BY id ASC",(uid,)).fetchall()
+        con.execute("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, message TEXT, admin_reply TEXT, image TEXT, created_at TEXT)")
+        cols=[c[1] for c in con.execute("PRAGMA table_info(messages)").fetchall()]
+        if "image" not in cols:
+            try:
+                con.execute("ALTER TABLE messages ADD COLUMN image TEXT")
+                con.commit()
+            except: pass
+        rows=con.execute("SELECT id, message, admin_reply, image, created_at FROM messages WHERE user_id=? ORDER BY id ASC",(uid,)).fetchall()
         data=[dict(r) for r in rows]
     except Exception as e:
-        print("chat hist err",e)
+        print("chat hist err", e)
         data=[]
     con.close()
     return jsonify(data)
@@ -1407,16 +1411,38 @@ def chat_send():
     uid=session.get("uid")
     if not uid:
         return jsonify({"ok":False})
-    data=request.get_json() or {}
+    data=request.get_json(silent=True) or {}
     msg=(data.get("message") or "").strip()
     if not msg:
         return jsonify({"ok":False})
     con=db()
-    con.execute("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, message TEXT, admin_reply TEXT, created_at TEXT)")
+    con.execute("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, message TEXT, admin_reply TEXT, image TEXT, created_at TEXT)")
     now=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     con.execute("INSERT INTO messages(user_id,message,created_at) VALUES(?,?,?)",(uid,msg,now))
-    con.commit()
-    con.close()
+    con.commit(); con.close()
+    return jsonify({"ok":True})
+
+@app.route("/api/chat/send-image", methods=["POST"])
+def chat_send_image():
+    from flask import session, request, jsonify
+    import datetime, pathlib
+    uid=session.get("uid")
+    if not uid:
+        return jsonify({"ok":False})
+    f=request.files.get('image')
+    msg=request.form.get('message') or 'Image'
+    img_path=""
+    if f and f.filename:
+        upload_dir=pathlib.Path("static/uploads/chat")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        ext=pathlib.Path(f.filename).suffix or ".jpg"
+        fname=f"chat_{uid}_{int(datetime.datetime.now().timestamp())}{ext}"
+        f.save(upload_dir/fname)
+        img_path=f"static/uploads/chat/{fname}"
+    con=db()
+    now=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    con.execute("INSERT INTO messages(user_id,message,image,created_at) VALUES(?,?,?,?)",(uid,msg,img_path,now))
+    con.commit(); con.close()
     return jsonify({"ok":True})
 
 if __name__ == "__main__":
