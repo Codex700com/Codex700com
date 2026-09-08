@@ -1385,6 +1385,39 @@ try:
     _con.commit()
     _con.close()
 except: pass
+
+@app.route("/admin/chats")
+def admin_chats():
+    from flask import session, render_template
+    if not session.get("admin"):
+        return render_template("admin_login.html")
+    con=db()
+    con.execute("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, message TEXT, admin_reply TEXT, image TEXT, created_at TEXT)")
+    try:
+        con.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, phone TEXT, password TEXT, balance INTEGER DEFAULT 0)")
+    except: pass
+    rows=con.execute("""
+        SELECT m.id, m.user_id, m.message, m.admin_reply, m.image, m.created_at,
+               COALESCE(u.phone, 'User-' || m.user_id) as phone
+        FROM messages m LEFT JOIN users u ON u.id=m.user_id
+        ORDER BY m.id DESC LIMIT 200
+    """).fetchall()
+    con.close()
+    return render_template("admin_chats.html", msgs=rows)
+
+@app.route("/admin/chat/reply/<int:msg_id>", methods=["POST"])
+def admin_chat_reply(msg_id):
+    from flask import request, redirect, session
+    if not session.get("admin"):
+        return redirect("/admin/login")
+    reply=request.form.get("reply","").strip()
+    if not reply:
+        return redirect("/admin/chats")
+    con=db()
+    con.execute("UPDATE messages SET admin_reply=? WHERE id=?",(reply,msg_id))
+    con.commit(); con.close()
+    return redirect("/admin/chats")
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
 if __name__=='__main__':

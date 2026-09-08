@@ -1,0 +1,18 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Chats</title>
+<style>body{background:#0f172a;color:#fff;font-family:sans-serif;padding:10px}table{width:100%;border-collapse:collapse;background:#1e293b;border-radius:10px;overflow:hidden}th{background:#0f172a;padding:10px;text-align:left;font-size:12px;color:#94a3b8}td{padding:10px;border-top:1px solid #334155;font-size:14px;vertical-align:top}img{max-width:100px;border-radius:6px}input[type=text]{width:100%;background:#0f172a;border:1px solid #334155;color:#fff;padding:8px;border-radius:6px}button{background:#f59e0b;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:bold}.phone{color:#38bdf8;font-weight:bold}</style></head><body>
+<h3>💬 User Messages ({{msgs|length}})</h3>
+<a href="/admin" style="color:#38bdf8">← Back to Dashboard</a><br><br>
+<table><tr><th>User</th><th>Message</th><th>Image</th><th>Time</th><th>Reply</th></tr>
+{% for m in msgs %}
+<tr>
+<td class="phone">{{m['phone']}}<br><small>ID:{{m['user_id']}}</small></td>
+<td>{{m['message'] or ''}}<br>{% if m['admin_reply'] %}<small style="color:#22c55e">You: {{m['admin_reply']}}</small>{% endif %}</td>
+<td>{% if m['image'] %}<a href="/{{m['image']}}" target="_blank"><img src="/{{m['image']}}"></a>{% else %}-{% endif %}</td>
+<td><small>{{m['created_at']}}</small></td>
+<td><form method="POST" action="/admin/chat/reply/{{m['id']}}"><input type="text" name="reply" placeholder="Reply..." required><button type="submit">Send</button></form></td>
+</tr>
+{% else %}
+<tr><td colspan=5 style="text-align:center;padding:20px;color:#64748b">No messages yet. User must send from /chat page</td></tr>
+{% endfor %}
+</table>
+</body></html>
