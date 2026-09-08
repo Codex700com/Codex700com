@@ -230,13 +230,21 @@ def chats():
     h="<div class=panel><h3>User Messages ("+str(len(rows))+")</h3><table><tr><th>User</th><th>Msg</th><th>Image</th><th>Time</th><th>Reply</th></tr>"
     for r in rows:
         img=f"<a href=/{r['image']} target=_blank><img src=/{r['image']} style='width:60px'></a>" if r['image'] else "-"
-        h+=f"<tr><td>{r['name']}</td><td>{r['message'] or ''}</td><td>{img}</td><td>{r['created_at'] or ''}</td><td><form action=/admin/reply_chat/{r['id']} method=post><input name=reply value='{r['admin_reply'] or ''}' placeholder='Reply'><button class=btn>Reply</button></form></td></tr>"
+        h+=f"<tr><td>{r['name']}</td><td>{r['message'] or ''}</td><td>{img}</td><td>{r['created_at'] or ''}</td><td><form action=/admin/reply/{r['id']} method=post><input name=reply value='{r['admin_reply'] or ''}' placeholder='Reply'><button class=btn>Reply</button></form></td></tr>"
     return page(h+"</table></div>")
 
+
+
+
 @admin_bp.route('/reply/<int:mid>', methods=['POST'])
-def reply(mid):
+@admin_bp.route('/reply_chat/<int:mid>', methods=['POST'])
+def reply_chat(mid):
     if guard(): return guard()
-    con=db(); con.execute("UPDATE messages SET admin_reply=? WHERE id=?", (request.form.get('reply',''), mid)); con.commit(); con.close()
+    con=db()
+    con.execute("CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,message TEXT,admin_reply TEXT,image TEXT,created_at TEXT)")
+    con.execute("UPDATE messages SET admin_reply=? WHERE id=?", (request.form.get('reply',''), mid))
+    con.commit()
+    con.close()
     return redirect('/admin/chats')
 
 @admin_bp.route('/plans_preview')
