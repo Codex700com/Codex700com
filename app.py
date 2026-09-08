@@ -148,7 +148,19 @@ def login():
    m="Wrong information due to incorrect password. Please try again." if _ex else "Wrong information due to phone number not registered. Please register first."
   else: session["uid"]=u["id"];ok=True
  if ok: return S+"<div class=card><p>registration successful</p><script>setTimeout(()=>location.href='/home',1500)</script></div>"
- return S+"<div class=logo style='text-align:center;margin:20px'>👑 CODEX700</div><div class=card><h2 class=gold style='text-align:center'>LOGIN</h2>"+(f"<p>{m}</p>" if m else "")+"<form method=POST><input name=phone placeholder='Enter Phone' requiredred><input name=password type=password placeholder='Enter Password' requiredred><button class=btn style='width:100%'>LOGIN</button></form><p style='text-align:center'>No account? <a href='/register' class=gold>Register</a></p></div>"
+ return S+'<div class=wave-bg style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;background:#000;pointer-events:none"><canvas id=waveCanvas style="width:100%;height:100%;display:block"></canvas></div><script>const c=document.getElementById("waveCanvas");const x=c.getContext("2d");let W,H,d=window.devicePixelRatio||1;function R(){W=c.width=innerWidth*d;H=c.height=innerHeight*d;c.style.width=innerWidth+"px";c.style.height=innerHeight+"px"}R();addEventListener("resize",R);let t=0;function D(){t+=0.18;x.clearRect(0,0,W,H);
+@app.route("/login",methods=["GET","POST"])
+def login():
+ m="";ok=False
+ if request.method=="POST":
+  p=request.form["phone"];pw=request.form["password"];c=db();u=c.execute("SELECT * FROM users WHERE phone=?",(p,)).fetchone()
+  uu=c.execute("SELECT * FROM users WHERE phone=? AND password=?",(p,pw)).fetchone();c.close()
+  u=uu
+  if not uu:
+   _c=db();_ex=_c.execute("SELECT id FROM users WHERE phone=?",(p,)).fetchone();_c.close()
+   m="Wrong information due to incorrect password. Please try again." if _ex else "Wrong information due to phone number not registered. Please register first."
+  else: session["uid"]=u["id"];ok=True
+ if ok: return S+"<div class=card><p>registration successful</p><script>setTimeout(()=>location.href='/home',1500)</script>'+"<div class=logo style='text-align:center;margin:20px'>👑 CODEX700</div><div class=card><h2 class=gold style='text-align:center'>LOGIN</h2>"+(f"<p>{m}</p>" if m else "")+"<form method=POST><input name=phone placeholder='Enter Phone' requiredred><input name=password type=password placeholder='Enter Password' requiredred><button class=btn style='width:100%'>LOGIN</button></form><p style='text-align:center'>No account? <a href='/register' class=gold>Register</a></p></div>"
 @app.route("/home")
 @need
 def home():
