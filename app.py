@@ -671,7 +671,6 @@ def api_my_chat():
   return jsonify([])
         user=data.get("user","Anonymous")[:30]
         msgs=json.load(open(CHAT_FILE))
-        msgs.append({"user":user,"text":text,"time":datetime.datetime.now().strftime("%H:%M")})
         msgs=msgs[-200:]
         json.dump(msgs, open(CHAT_FILE,"w"))
         try:
