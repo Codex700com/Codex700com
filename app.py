@@ -177,7 +177,7 @@ def home():
  <div class="sbox"><div>📈</div><b>Active</b><br><span>"""+str(ac)+"""</span></div></div>
  <div class="banner"><div>🎁 <b style="color:">Daily Check-In</b><br><small>Log in daily and win rewards!</small></div><a class="btn-blue" href="/checkin">📅 CHECK IN →</a></div>
  <div class="grid">
- <a class="card2" href="/invest">📈<br><b>Invest</b><br><small>Start your journey</small></a>
+ 
  <a class="card2" href="/deposit">💲<br><b>Deposit</b><br><small>Fund your wallet</small></a>
  <a class="card2 gold" href="/withdraw">💼<br><b>Withdraw</b><br><small>Get your earnings</small></a>
  <a class="card2" href="/referrals">👥<br><b>Referral</b><br><small>Earn together</small></a>
