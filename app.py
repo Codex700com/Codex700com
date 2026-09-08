@@ -71,7 +71,7 @@ def need(f):
  w.__name__=f.__name__;return w
 def cu():
  c=db();u=c.execute("SELECT * FROM users WHERE id=?",(session.get("uid"),)).fetchone();c.close();return u
-S="<meta name='viewport' content='width=device-width,initial-scale=1'><style>*{box-sizing:border-box}body{background:#081627;color:#fff;font-family:sans-serif;margin:0;padding-bottom:80px}a{color:inherit;text-decoration:none}.card{background:#0a0a0a;border:1px solid #0a84ff;border-radius:10px;padding:12px;margin:12px;font-size:14px;line-height:1.5;word-break:break-word;text-align:center}.card h2,.card h3{font-weight:800;letter-spacing:.8px;text-transform:uppercase;font-size:15px}.btn{background:linear-gradient(180deg,#29b6ff,#0a84ff);color:#fff;border:none;padding:12px 20px;border-radius:8px;display:inline-block;font-weight:700;letter-spacing:.6px;text-transform:uppercase;font-size:14px}.logo{color:#1da1f2;font-weight:900;font-size:22px;letter-spacing:2px;text-transform:uppercase;font-family:Inter,Arial,sans-serif}input{width:100%;padding:12px;margin:8px 0;background:#111;border:1px solid #0a84ff;border-radius:8px;color:#fff;font-size:15px;font-family:Inter,Arial,sans-serif;letter-spacing:.3px}.nav{position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;display:flex;justify-content:space-around;padding:10px;border-top:1px solid #333;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}.red{color:#1da1f2}.gold{color:#0a84ff}</style>"+"<style>.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px}.gbox{color:#fff !important;background:linear-gradient(180deg,#1da1f2,#0a84ff);border:1px solid #0a84ff;border-radius:12px;height:84px;min-height:84px;max-height:84px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6px 2px;font-size:12px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gbox b{font-size:13px}</style>"""
+S="<meta name='viewport' content='width=device-width,initial-scale=1'><style>*{box-sizing:border-box}body{background:#081627;color:#fff;font-family:sans-serif;margin:0;padding-bottom:80px}a{color:inherit;text-decoration:none}.card{background:#0a0a0a;border:1px solid #0a84ff;border-radius:10px;padding:12px;margin:12px;font-size:14px;line-height:1.5;word-break:break-word;text-align:center}.card h2,.card h3{font-weight:800;letter-spacing:.8px;text-transform:uppercase;font-size:15px}.btn{background:linear-gradient(180deg,#29b6ff,#0a84ff);color:#fff;border:none;padding:12px 20px;border-radius:8px;display:inline-block;font-weight:700;letter-spacing:.6px;text-transform:uppercase;font-size:14px}.logo{color:#1da1f2;font-weight:900;font-size:22px;letter-spacing:2px;text-transform:uppercase;font-family:Inter,Arial,sans-serif}input{width:100%;padding:12px;margin:8px 0;background:#111;border:1px solid #0a84ff;border-radius:8px;color:#fff;font-size:15px;font-family:Inter,Arial,sans-serif;letter-spacing:.3px}.nav{position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;display:flex;justify-content:space-around;padding:10px;border-top:1px solid #333;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}.red{color:#1da1f2}.gold{border-color:#ffb700 !important;background:#1a1500 !important;}</style>"+"<style>.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px}.gbox{color:#fff !important;background:linear-gradient(180deg,#1da1f2,#0a84ff);border:1px solid #0a84ff;border-radius:12px;height:84px;min-height:84px;max-height:84px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6px 2px;font-size:12px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gbox b{font-size:13px}</style>"""
 N="<div class=nav><a href='/home'><div>🏠<br>Home</div></a><a href='/referrals'><div>👥<br>Referrals</div></a><a href='/account'><div>👤<br>Account</div></a></div>"
 def hdr(): return "<div style='display:flex;justify-content:space-between;padding:12px;'><a href='/menu'>☰</a><div class=logo>⬣ CODEX</div><div><a href='/notifications'>🔔</a> <a href='/account'>👤</a></div></div>"
 def fix_chats_table():
@@ -156,14 +156,14 @@ def home():
  .btn-gold{display:inline-block;background:linear-gradient(180deg,#ffdf6b,#ffb700);color:#000;font-weight:900;padding:12px 32px;border-radius:30px;text-decoration:none;margin-top:10px;box-shadow:0 4px 12px #ffb70066}
  .globe{position:absolute;right:10px;top:10px;width:110px;height:110px;background:#111;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:;font-weight:900;text-align:center}
  .stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px}
- .sbox{background:linear-gradient(180deg,#0a2f8a,#041a5a);border:1.5px solid ;border-radius:14px;padding:12px 4px;text-align:center;box-shadow:0 0 12px 44}
+ .sbox{background:#111;border:1.5px solid ;border-radius:14px;padding:12px 4px;text-align:center;box-shadow:0 0 12px 44}
  .sbox div{font-size:22px}.sbox b{font-size:13px}.sbox span{color:#00cfff;font-weight:800}
  .banner{margin:10px;border:1.5px solid ;border-radius:14px;padding:12px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#0a2a7a,#000000)}
  .banner small{color:#cbd5e1}.btn-blue{background:;color:#fff;padding:10px 18px;border-radius:25px;text-decoration:none;font-weight:800}
  .grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px}
- .card2{background:linear-gradient(180deg,#0a2f8a,#041a5a);border:1.5px solid ;border-radius:14px;padding:14px 6px;text-align:center;text-decoration:none;color:#fff}
+ .card2{border:1.5px solid #333;background:#111;border-radius:14px;padding:14px 6px;text-align:center;text-decoration:none;color:#fff}
  .card2 small{color:#7dd3fc;font-size:11px}.card2 b{font-size:14px}
- .card2.gold{background:linear-gradient(180deg,#8a6d00,#5a4500);border-color:;box-shadow:0 0 15px 88}
+ .card2.gold{border-color:#ffb700 !important;background:#1a1500 !important;}
  .nav{position:fixed;bottom:0;left:0;right:0;background:#000000;border-top:1px solid 55;display:flex;padding:8px 0}
  .nav a{flex:1;text-align:center;color:#8aa0b8;text-decoration:none;font-size:10px}.nav a.on{color:}
  .foot{text-align:center;color:#00cfff;font-style:italic;margin:12px}
@@ -179,7 +179,7 @@ def home():
  <div class="grid">
  
  <a class="card2" href="/deposit">💲<br><b>Deposit</b><br><small>Fund your wallet</small></a>
- <a class="card2 gold" href="/withdraw">💼<br><b>Withdraw</b><br><small>Get your earnings</small></a>
+ <a class="card2" href="/withdraw">💼<br><b>Withdraw</b><br><small>Get your earnings</small></a>
  <a class="card2" href="/referrals">👥<br><b>Referral</b><br><small>Earn together</small></a>
  <a class="card2" href="/transactions">🧾<br><b>Transactions</b><br><small>View all records</small></a>
  <a class="card2" href="/raffle">🎁<br><b>Raffle</b><br><small>Win amazing prizes</small></a>
