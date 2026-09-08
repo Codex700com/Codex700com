@@ -23,8 +23,8 @@ PRODUCTS = {
     "J2": {"name":"J2","price":1500000,"days":30,"daily":330000,"daily_rate":0.22,"duration":30,"daily_return":330000},
     "J3": {"name":"J3","price":3000000,"days":30,"daily":660000,"daily_rate":0.22,"duration":30,"daily_return":660000},
     # K SERIES - 30 DAYS
-    "K1": {"name":"K1","price":1000000,"days":30,"daily":500000,"daily_rate":0.50,"duration":30,"daily_return":500000},
-    "K2": {"name":"K2","price":5000000,"days":30,"daily":2500000,"daily_rate":0.50,"duration":30,"daily_return":2500000},
+    "K1": {"name":"K1","price":1000000,"days":3,"daily":500000,"daily_rate":0.50,"duration":3,"daily_return":500000},
+    "K2": {"name":"K2","price":5000000,"days":3,"daily":2500000,"daily_rate":0.50,"duration":3,"daily_return":2500000},
 }
 
 from flask import Flask,request,redirect,session,render_template
@@ -928,54 +928,228 @@ def invest_success(inv_id):
 
 @app.route('/my-investments')
 def my_investments():
-    import time, sqlite3, datetime
-    uid=session.get('uid') or session.get('user_id')
-    if not uid: return redirect('/login')
-    now=int(time.time())
-    con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
+    import time
+    import sqlite3
+    import datetime
+    from flask import session, redirect, render_template
+
+    uid = session.get('uid') or session.get('user_id')
+
+    if not uid:
+        return redirect('/login')
+
+    now = int(time.time())
+
+    con = sqlite3.connect("codex700.db")
+    con.row_factory = sqlite3.Row
+
     try:
-        for inv in list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=1", (uid,))):
+        investments = list(
+            con.execute(
+                "SELECT * FROM investments WHERE user_id=? AND active=1",
+                (uid,)
+            )
+        )
+
+        for inv in investments:
             try:
-                start=inv["purchase_ts"] or now
-                daily=inv["daily_return"] or 0
-                credited=inv["credited_days"] or 0
-                duration=inv["duration_days"] or 30
-                expiry=inv["expiry_ts"] or (start+duration*86400)
-                total_days=int((expiry-start)//86400) if expiry>start else duration
-                days_passed=min(total_days, int((now-start)//86400))
-                claimable=int(days_passed-credited)
-                if claimable>0 and daily>0:
-                    con.execute("UPDATE users SET balance=balance+? WHERE id=?", (claimable*daily, uid))
-                    con.execute("UPDATE investments SET credited_days=? WHERE id=?", (credited+claimable, inv["id"]))
-                    con.execute("INSERT INTO transactions(user_id,type,amount,desc,created_ts) VALUES(?,?,?,?,?)",(uid,'daily_return',claimable*daily,f"Daily {inv['product_name']}",now))
-                if now>=expiry: con.execute("UPDATE investments SET active=0 WHERE id=?", (inv["id"],))
-            except Exception as e: print("credit err",e)
+                start = int(inv["purchase_ts"] or now)
+
+                daily = int(
+                    inv["daily_return"]
+                    or inv["daily"]
+                    or 0
+                )
+
+                credited_days = int(
+                    inv["credited_days"]
+                    or 0
+                )
+
+                duration = int(
+                    inv["duration_days"]
+                    or inv["duration"]
+                    or 30
+                )
+
+                expiry = int(
+                    inv["expiry_ts"]
+                    or (start + duration * 86400)
+                )
+
+                # How many complete investment days have passed?
+                days_passed = min(
+                    duration,
+                    max(0, int((now - start) // 86400))
+                )
+
+                # If investment has expired, make sure ALL
+                # remaining expected return is credited.
+                if now >= expiry:
+
+                    remaining_days = max(
+                        0,
+                        duration - credited_days
+                    )
+
+                    if remaining_days > 0 and daily > 0:
+                        payout = remaining_days * daily
+
+                        con.execute(
+                            "UPDATE users SET balance=balance+? WHERE id=?",
+                            (payout, uid)
+                        )
+
+                        con.execute("""
+                            INSERT INTO transactions
+                            (user_id,type,amount,status,date,ref)
+                            VALUES (?,?,?,?,?,?)
+                        """, (
+                            uid,
+                            "investment_return",
+                            payout,
+                            "completed",
+                            str(now),
+                            str(
+                                inv["product_name"]
+                                or inv["plan"]
+                                or "Plan"
+                            )
+                        ))
+
+                    # IMPORTANT:
+                    # Principal is NOT returned.
+                    # Only expected return is credited.
+                    con.execute("""
+                        UPDATE investments
+                        SET credited_days=?,
+                            active=0,
+                            status='expired',
+                            credited=1
+                        WHERE id=?
+                    """, (
+                        duration,
+                        inv["id"]
+                    ))
+
+                else:
+                    # Investment is still active.
+                    claimable = max(
+                        0,
+                        days_passed - credited_days
+                    )
+
+                    if claimable > 0 and daily > 0:
+                        payout = claimable * daily
+
+                        con.execute(
+                            "UPDATE users SET balance=balance+? WHERE id=?",
+                            (payout, uid)
+                        )
+
+                        con.execute("""
+                            INSERT INTO transactions
+                            (user_id,type,amount,status,date,ref)
+                            VALUES (?,?,?,?,?,?)
+                        """, (
+                            uid,
+                            "daily_return",
+                            payout,
+                            "completed",
+                            str(now),
+                            str(
+                                inv["product_name"]
+                                or inv["plan"]
+                                or "Plan"
+                            )
+                        ))
+
+                        con.execute("""
+                            UPDATE investments
+                            SET credited_days=?
+                            WHERE id=?
+                        """, (
+                            credited_days + claimable,
+                            inv["id"]
+                        ))
+
+            except Exception as e:
+                print("INVESTMENT PROCESS ERROR:", e)
+
         con.commit()
-    except Exception as e: print("credit loop",e)
-    active=list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=1 ORDER BY expiry_ts DESC", (uid,)))
-    done=list(con.execute("SELECT * FROM investments WHERE user_id=? AND active=0 ORDER BY id DESC LIMIT 20", (uid,)))
-    def _map(inv):
-        try: d=dict(inv)
-        except: d={}
-        try:
-            for k in inv.keys(): d[k]=inv[k]
-        except: pass
-        et=d.get('expiry_ts') or 0
-        st=d.get('purchase_ts') or 0
-        try:
-            d['end_time']=datetime.datetime.fromtimestamp(et).isoformat() if isinstance(et,(int,float)) and et>1e6 else str(et)
-            d['start_time']=datetime.datetime.fromtimestamp(st).isoformat() if isinstance(st,(int,float)) and st>1e6 else str(st)
-        except: d['end_time']=str(et); d['start_time']=str(st)
-        d['plan_name']=d.get('product_name') or 'Plan'
-        return d
-    active=[_map(x) for x in active]; done=[_map(x) for x in done]
-    investments=active+done
-    con.close()
-    return render_template('my_investments.html', investments=investments, active=active, done=done, now=now)
 
+        active = list(
+            con.execute("""
+                SELECT * FROM investments
+                WHERE user_id=? AND active=1
+                ORDER BY expiry_ts DESC
+            """, (uid,))
+        )
 
-if __name__=='__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+        done = list(
+            con.execute("""
+                SELECT * FROM investments
+                WHERE user_id=? AND active=0
+                ORDER BY id DESC
+                LIMIT 20
+            """, (uid,))
+        )
+
+        def map_inv(inv):
+            d = dict(inv)
+
+            et = d.get("expiry_ts") or 0
+            st = d.get("purchase_ts") or 0
+
+            try:
+                d["end_time"] = (
+                    datetime.datetime.fromtimestamp(et).isoformat()
+                    if isinstance(et, (int, float)) and et > 1000000
+                    else str(et)
+                )
+
+                d["start_time"] = (
+                    datetime.datetime.fromtimestamp(st).isoformat()
+                    if isinstance(st, (int, float)) and st > 1000000
+                    else str(st)
+                )
+            except Exception:
+                d["end_time"] = str(et)
+                d["start_time"] = str(st)
+
+            d["plan_name"] = (
+                d.get("product_name")
+                or d.get("plan")
+                or "Plan"
+            )
+
+            return d
+
+        active = [map_inv(x) for x in active]
+        done = [map_inv(x) for x in done]
+
+        investments = active + done
+
+        con.close()
+
+        return render_template(
+            "my_investments.html",
+            investments=investments,
+            active=active,
+            done=done,
+            now=now
+        )
+
+    except Exception as e:
+        print("MY INVESTMENTS ERROR:", e)
+
+        try:
+            con.rollback()
+            con.close()
+        except Exception:
+            pass
+
+        return f"Error: {e}", 500
 
 @app.route("/raffle-buy", methods=["POST"])
 def raffle_buy():
