@@ -25,6 +25,8 @@ PRODUCTS = {
     # K SERIES - 30 DAYS
     "K1": {"name":"K1","price":1000000,"days":3,"daily":500000,"daily_rate":0.50,"duration":3,"daily_return":500000},
     "K2": {"name":"K2","price":5000000,"days":3,"daily":2500000,"daily_rate":0.50,"duration":3,"daily_return":2500000},
+    "K3": {"name":"K3","price":10000000,"days":3,"daily":5000000,"daily_rate":0.50,"duration":3,"daily_return":5000000},
+    "K4": {"name":"K4","price":50000000,"days":3,"daily":25000000,"daily_rate":0.50,"duration":3,"daily_return":25000000},
 }
 from flask import Flask,request,redirect,session,render_template
 import sqlite3,datetime,uuid
