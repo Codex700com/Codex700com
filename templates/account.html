@@ -36,7 +36,7 @@ input,select{background:#081627;border:1px solid #1a3a5f;color:#fff;padding:10px
 
 <div class="wtitle" data-i="wallet">WALLET OVERVIEW</div>
 <div class="grid">
-<div class="gbox"><small data-i="wb">Wallet Balance</small><b id="bal">UGX 0</b></div>
+<div class="gbox"><small data-i="wb"> Balance</small><b id="bal">UGX 0</b></div>
 <div class="gbox"><small data-i="ti">Total Invested</small><b id="inv">UGX 0</b></div>
 <div class="gbox"><small data-i="tinc">Total Income</small><b id="inc">UGX 0</b></div>
 <div class="gbox"><small data-i="ai">Active Investments</small><b id="act">0</b></div>
@@ -59,11 +59,11 @@ input,select{background:#081627;border:1px solid #1a3a5f;color:#fff;padding:10px
 <div id="m"><div id="mc"></div></div>
 
 <div class="nav">
-<a href="/home">🏠<br>Home</a><a href="/invest">📈<br>Invest</a><a href="/wallet">💼<br>Wallet</a><a href="/account" class="on">👤<br>Account</a>
+<a href="/home">🏠<br>Home</a><a href="/invest">📈<br>Invest</a><a href="/account" class="on">👤<br>Account</a>
 </div>
 <div id="bell" style="display:none"></div>
 <script>
-let I={en:{title:"My Account",sub:"Manage your profile and account settings",wallet:"WALLET OVERVIEW",wb:"Wallet Balance",ti:"Total Invested",tinc:"Total Income",ai:"Active Investments",menu:"ACCOUNT MENU",pi:"Personal Information",pis:"View and update your details",ss:"Security Settings",sss:"Change password",bank:"Bank / Payment",banks:"Manage payment methods",ns:"Notification Settings",nss:"Manage notification preferences",lg:"Language",lgs:"Select language",actt:"ACCOUNT ACTIONS",dl:"Download Statement"}};
+let I={en:{title:"My Account",sub:"Manage your profile and account settings",wallet:"WALLET OVERVIEW",wb:" Balance",ti:"Total Invested",tinc:"Total Income",ai:"Active Investments",menu:"ACCOUNT MENU",pi:"Personal Information",pis:"View and update your details",ss:"Security Settings",sss:"Change password",bank:"Bank / Payment",banks:"Manage payment methods",ns:"Notification Settings",nss:"Manage notification preferences",lg:"Language",lgs:"Select language",actt:"ACCOUNT ACTIONS",dl:"Download Statement"}};
 let U={};
 async function load(){let r=await fetch('/api/account');U=await r.json();
 document.getElementById('uname').innerText=U.name||'User';
