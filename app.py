@@ -82,7 +82,7 @@ def need(f):
 def cu():
  c=db();u=c.execute("SELECT * FROM users WHERE id=?",(session.get("uid"),)).fetchone();c.close();return u
 S="<meta name='viewport' content='width=device-width,initial-scale=1'><style>*{box-sizing:border-box}body{background:#000;color:#fff;font-family:sans-serif;margin:0;padding-bottom:80px}a{color:inherit;text-decoration:none}.card{background:rgba(10,10,10,0.85);backdrop-filter:blur(8px);position:relative;z-index:10;text-align:center;box-shadow:0 0 20px rgba(10,132,255,0.3);;border:1px solid #0a84ff;border-radius:10px;padding:12px;margin:12px;font-size:14px;line-height:1.5;word-break:break-word;text-align:center}.card h2,.card h3{font-weight:800;letter-spacing:.8px;text-transform:uppercase;font-size:15px}.btn{background:#111;color:#fff;border:none;padding:12px 20px;border-radius:8px;display:inline-block;font-weight:700;letter-spacing:.6px;text-transform:uppercase;font-size:14px}.logo{color:#1da1f2;position:relative;z-index:2;;font-weight:900;font-size:22px;letter-spacing:2px;text-transform:uppercase;font-family:Inter,Arial,sans-serif}input{width:100%;padding:12px;margin:8px 0;background:#111;border:1px solid #0a84ff;border-radius:8px;color:#fff;font-size:15px;font-family:Inter,Arial,sans-serif;letter-spacing:.3px}.nav{position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;display:flex;justify-content:space-around;padding:10px;border-top:1px solid #333;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}.red{color:#1da1f2}.gold{border-color:#ffb700 !important;background:#1a1500 !important;}</style>"+"<style>.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px}.gbox{color:#fff !important;background:#111;border:1px solid #0a84ff;border-radius:12px;height:84px;min-height:84px;max-height:84px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6px 2px;font-size:12px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gbox b{font-size:13px}</style>"""
-WAVE='<div class="wave-bg" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;background:#000;pointer-events:none"><canvas id="waveCanvas" style="width:100%;height:100%;display:block"></canvas></div><script>var c=document.getElementById("waveCanvas");var x=c.getContext("2d");var W,H,d=window.devicePixelRatio||1;function R(){W=c.width=innerWidth*d;H=c.height=innerHeight*d;c.style.width=innerWidth+"px";c.style.height=innerHeight+"px"}R();addEventListener("resize",R);var t=0;function D(){t+=0.18;x.clearRect(0,0,W,H);var rows=20,cols=55,sx=W/cols,sy=H*0.6/rows,oy=H*0.55;for(var y=0;y<rows;y++){for(var X=0;X<cols;X++){var px=X*sx,py=oy+y*sy+Math.sin(X*0.18+t+y*0.25)*32+Math.cos(y*0.18+t*0.7)*16,dist=Math.abs(px-W/2)/(W/2),a=1-dist*0.65;if(a<0)a=0;var sz=(1.2+Math.sin(t*2+X*0.15)*0.3)*(1.1+a*1.6)*d;x.beginPath();x.arc(px,py,sz,0,6.283);x.fillStyle="rgba("+(90+a*40)+","+(190+a*40)+",255,"+(0.35+a*0.6)+")";x.shadowBlur=sz*2.5;x.shadowColor="#60a5fa";x.fill();x.shadowBlur=0;if(X<cols-1){var nx=(X+1)*sx,ny=oy+y*sy+Math.sin((X+1)*0.18+t+y*0.25)*32+Math.cos(y*0.18+t*0.7)*16;x.beginPath();x.moveTo(px,py);x.lineTo(nx,ny);x.strokeStyle="rgba(96,165,250,"+(a*0.16)+")";x.lineWidth=0.8*d;x.stroke()}}}requestAnimationFrame(D)}D();</script>'
+WAVE='<div class="wave-bg" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;background:#000;pointer-events:none"><canvas id="waveCanvas" style="width:100%;height:100%;display:block"></canvas></div><script>var c=document.getElementById("waveCanvas");var x=c.getContext("2d");var W,H,d=window.devicePixelRatio||1;function R(){W=c.width=innerWidth*d;H=c.height=innerHeight*d;c.style.width=innerWidth+"px";c.style.height=innerHeight+"px"}R();addEventListener("resize",R);var t=0;function D(){t+=0.35;x.clearRect(0,0,W,H);var rows=20,cols=55,sx=W/cols,sy=H*0.6/rows,oy=H*0.55;for(var y=0;y<rows;y++){for(var X=0;X<cols;X++){var px=X*sx,py=oy+y*sy+Math.sin(X*0.18+t+y*0.25)*32+Math.cos(y*0.18+t*0.7)*16,dist=Math.abs(px-W/2)/(W/2),a=1-dist*0.65;if(a<0)a=0;var sz=(1.2+Math.sin(t*2+X*0.15)*0.3)*(1.1+a*1.6)*d;x.beginPath();x.arc(px,py,sz,0,6.283);x.fillStyle="rgba("+(90+a*40)+","+(190+a*40)+",255,"+(0.35+a*0.6)+")";x.shadowBlur=sz*2.5;x.shadowColor="#60a5fa";x.fill();x.shadowBlur=0;if(X<cols-1){var nx=(X+1)*sx,ny=oy+y*sy+Math.sin((X+1)*0.18+t+y*0.25)*32+Math.cos(y*0.18+t*0.7)*16;x.beginPath();x.moveTo(px,py);x.lineTo(nx,ny);x.strokeStyle="rgba(96,165,250,"+(a*0.16)+")";x.lineWidth=0.8*d;x.stroke()}}}requestAnimationFrame(D)}D();</script>'
 
 N="<div class=nav><a href='/home'><div>🏠<br>Home</div></a><a href='/referrals'><div>👥<br>Referrals</div></a><a href='/account'><div>👤<br>Account</div></a></div>"
 def hdr(): return "<div style='display:flex;justify-content:space-between;padding:12px;'><a href='/menu'>☰</a><div class=logo>⬣ CODEX</div><div><a href='/notifications'>🔔</a> <a href='/account'>👤</a></div></div>"
@@ -138,6 +138,97 @@ def reg():
      rc=uuid.uuid4().hex[:6].upper();c.execute("INSERT INTO users(name,phone,password,invite,balance,refcode) VALUES(?,?,?,?,0,?)",(n,p,pw,inv,rc));c.commit();c.close();return redirect("/login")
    except: m="Wrong information due to phone already registered"
  return S+WAVE+"<div class=logo style='text-align:center;margin:20px'>👑 CODEX700</div><div class=card><h2 class=gold style='text-align:center'>REGISTER</h2>"+(f"<p>{m}</p>" if m else "")+"<form method=POST><input name=name placeholder='Enter Name' requiredred><input name=phone placeholder='Enter Phone' requiredred><input name=password type=password placeholder='Enter Password' requiredred><input name=confirm type=password placeholder='Confirm Password' requiredred><input name=invite placeholder='Invitation code'><button class=btn style='width:100%'>REGISTER</button></form><p style='text-align:center'>Have account? <a href='/login' class=gold>Login</a></p></div>"
+
+
+
+@app.route("/register",methods=["GET","POST"])
+def register():
+ import random
+ captcha=''.join(random.choices('0123456789',k=4))
+ m=""
+ if request.method=="POST":
+  phone=request.form.get("phone","").strip()
+  pw=request.form.get("password","") or request.form.get("set_password","")
+  cpw=request.form.get("confirm","") or request.form.get("confirm_password","")
+  code=request.form.get("captcha_input","") or request.form.get("captcha","") or request.form.get("verification","")
+  real=request.form.get("real_captcha","")
+  invite=request.form.get("invite","") or request.form.get("invitation_code","") or ""
+  def is_strong(p):
+   if len(p)<8: return False
+   return any(c.isupper() for c in p) and any(c.islower() for c in p) and any(c.isdigit() for c in p) and any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?/" for c in p)
+  if real and code!=real:
+   m="Invalid verification code"
+  elif pw!=cpw:
+   m="Passwords do not match"
+  elif not is_strong(pw):
+   m="Please ur password is too weak"
+  else:
+   c=db()
+   ex=c.execute("SELECT id FROM users WHERE phone=?",(phone,)).fetchone()
+   if ex:
+    m="Phone already registered"
+   else:
+    try:
+     c.execute("INSERT INTO users (phone,password,invite_code) VALUES (?,?,?)",(phone,pw,invite))
+    except:
+     try: c.execute("INSERT INTO users (phone,password) VALUES (?,?)",(phone,pw))
+     except: pass
+    c.commit()
+    c.close()
+    return S+WAVE+"<div style='position:relative;z-index:2;min-height:100vh;display:flex;align-items:center;justify-content:center'><div style='background:rgba(0,0,0,0.7);border:1px solid #0a84ff;border-radius:16px;padding:30px;text-align:center'><p style='color:#4ade80;font-size:18px'>Registration Successful!</p><p style='color:#fff;margin-top:10px'>Go to Login</p><script>setTimeout(()=>location.href='/login',1200)</script></div></div>"
+   c.close()
+ import random as _r
+ colors=["#3b82f6","#f59e0b","#10b981","#a855f7","#ec4899"]
+ col_html="".join([f"<span style='color:{_r.choice(colors)}'>{ch}</span>" for ch in captcha])
+ return S+WAVE+f"""
+<style>
+.reg-wrap{{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-top:10vh;padding-left:18px;padding-right:18px}}
+.welcome{{font-size:34px;font-weight:800;color:#fff;margin-bottom:22px}}
+.pill{{width:100%;max-width:360px;height:52px;background:rgba(0,0,0,0.55);border:1px solid #555;border-radius:26px;display:flex;align-items:center;padding:0 16px;margin:9px 0;backdrop-filter:blur(8px);position:relative}}
+.pill input{{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:15px;margin-left:10px}}
+.pill input::placeholder{{color:#777}}
+.ico{{color:#aaa;font-size:16px;min-width:22px;text-align:center}}
+.captcha-box{{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#fff;border-radius:8px;padding:6px 14px;font-size:22px;letter-spacing:3px;font-weight:800;display:flex;gap:2px;min-width:80px;justify-content:center}}
+.eye{{background:none;border:none;color:#aaa;font-size:18px;cursor:pointer;position:absolute;right:12px}}
+.reg-btn{{width:100%;max-width:360px;height:50px;background:transparent;border:1.6px solid #0a84ff;border-radius:26px;color:#0a84ff;font-size:19px;font-weight:600;margin-top:18px;cursor:pointer}}
+.err{{color:#ff6b6b;font-size:13px;margin:6px 0;max-width:360px;text-align:center;background:rgba(255,0,0,0.08);border-radius:8px;padding:8px 12px;display:{'block' if m else 'none'}}}
+.bot{{width:100%;max-width:360px;margin-top:14px;font-size:14px;color:#aaa}}
+.bot a{{color:#ccc;text-decoration:none}}
+.str{{width:100%;max-width:360px;font-size:11px;margin:2px 0 4px 10px;height:14px}}
+</style>
+<div class="reg-wrap">
+ <div class="welcome">Welcome</div>
+ <div class="err">{m}</div>
+ <form method="POST" style="width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center" onsubmit="return checkStrong()">
+  <input type="hidden" name="real_captcha" value="{captcha}">
+  <div class="pill"><span class="ico">📱</span><input name="phone" placeholder="Phone Number" required></div>
+  <div class="pill"><span class="ico">🔑</span><input id="p1" name="password" type="password" placeholder="Set Password" required oninput="liveCheck()"><button type="button" class="eye" onclick="toggle('p1',this)">🙈</button></div>
+  <div class="pill"><span class="ico">🔑</span><input id="p2" name="confirm" type="password" placeholder="Confirm Password" required><button type="button" class="eye" onclick="toggle('p2',this)">🙈</button></div>
+  <div class="str" id="str"></div>
+  <div class="pill"><span class="ico">🔒</span><input name="captcha_input" placeholder="Verification Code" required><div class="captcha-box">{col_html}</div></div>
+  <div class="pill"><span class="ico">🔗</span><input name="invite" placeholder="Invitation Code"></div>
+  <button class="reg-btn">Register</button>
+  <div class="bot"><a href="/login">‹ Login</a></div>
+ </form>
+</div>
+<script>
+function toggle(id,btn){var i=document.getElementById(id);i.type=i.type=='password'?'text':'password';btn.textContent=i.type=='password'?'🙈':'👁️'}
+function liveCheck(){
+ var p=document.getElementById('p1').value;var s=document.getElementById('str');
+ if(!p){s.innerHTML='';return}
+ var ok=p.length>=8 && /[A-Z]/.test(p) && /[a-z]/.test(p) && /[0-9]/.test(p) && /[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(p);
+ if(p.length<8){s.innerHTML='<span style="color:#ff6b6b">Too short (min 8)</span>'}
+ else if(!ok){s.innerHTML='<span style="color:#f59e0b">Weak - need UPPER, lower, number & symbol</span>'}
+ else{s.innerHTML='<span style="color:#4ade80">✓ Strong password</span>'}
+}
+function checkStrong(){
+ var p=document.getElementById('p1').value;
+ var ok=p.length>=8 && /[A-Z]/.test(p) && /[a-z]/.test(p) && /[0-9]/.test(p) && /[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(p);
+ if(!ok){alert('Please ur password is too weak');return false}
+ return true
+}
+</script>
+"""
 
 
 @app.route("/login",methods=["GET","POST"])
