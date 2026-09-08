@@ -1,0 +1,15 @@
+/* NO ZOOM */
+html, body {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+img {
+  pointer-events: none; /* prevent image zoom */
+}
+body {
+  background: #000 !important;
+}
