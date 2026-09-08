@@ -164,6 +164,8 @@ textarea{min-height:90px}
   <a href="/admin/deposits">💰 Deposits</a>
   <a href="/admin/withdrawals">💸 Withdrawals</a>
   <a href="/admin/plans2">📈 Investment Plans</a>
+  <a href="/admin/users/manage">👤 User Management</a>
+  <a href="/admin/settings">🎨 Platform Appearance</a>
   <a href="/admin/notify">🔔 Notifications</a>
   <a href="/admin/chats">💬 User Chats</a>
   <a href="/admin/logout" class="danger">🚪 Logout</a>
