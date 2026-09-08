@@ -1,0 +1,74 @@
+<!DOCTYPE html><html><head><style>/* CODEX BLUE-BLACK-WHITE THEME */body{background:#000!important;color:#fff!important}.card,.box,.panel{background:#111!important;border:1px solid #00b0ff!important;color:#fff!important}button,.btn{background:#00b0ff!important;color:#000!important;border:none!important;font-weight:700}a{color:#00b0ff!important}input,select,textarea{background:#111!important;color:#fff!important;border:1px solid #00b0ff!important}h1,h2,h3{color:#fff!important}</style><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>About Us - CODEX</title>
+<style>
+body{background:#000;color:#fff;font-family:Arial;padding:20px;line-height:1.7;margin:0}
+h1{color:#1da1f2;text-align:center;margin:10px 0}
+.card{background:#111;border:1px solid #333;border-radius:14px;padding:22px;max-width:620px;margin:15px auto}
+h2{color:#1da1f2}h3{color:#ffcc00;margin-top:20px}
+.back{color:#fff;text-decoration:none}
+.btn{display:block;background:#1da1f2;color:#fff;text-align:center;padding:13px;border-radius:10px;text-decoration:none;font-weight:bold;margin-top:20px}
+ul{padding-left:18px}
+</style><style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script>
+<style>
+:root{ --main-blue:#00b0ff !important; }
+body{ background:#000 !important; color:#fff !important; }
+.card, .info-box, .detail-card{ background:#111 !important; border-radius:12px !important; }
+.price, .amount-blue{ color:#00b0ff !important; font-weight:700; }
+.btn-primary, .invest-btn, button[type=submit]{ background:#00b0ff !important; border:none !important; color:#fff !important; border-radius:10px !important; }
+</style>
+<style>:root{--main-blue:#00b0ff!important}body{background:#000!important}button,.btn,.btn-primary,.invest-btn,input[type=submit]{background:#00b0ff!important;border-color:#00b0ff!important;color:#fff!important}*{border-color:#00b0ff33!important}</style>
+
+<style>body{font-size:14px!important;line-height:1.4!important}h1{font-size:20px!important}h2{font-size:18px!important}h3{font-size:16px!important}p,div,span,a,button{font-size:14px!important}</style><style>
+body{background:radial-gradient(ellipse at top,#0a1e3f 0%,#050a14 60%)!important;color:#e0f0ff!important;font-family:Arial,sans-serif!important}
+.card,.container,.box{background:linear-gradient(180deg,#0a1428,#070d1d)!important;border:1px solid rgba(0,229,255,0.25)!important;border-radius:12px!important;box-shadow:0 0 20px rgba(30,144,255,0.15)!important;color:#e0f0ff!important}
+h1,h2,h3{color:#00e5ff!important;text-shadow:0 0 12px rgba(0,229,255,0.6)!important}
+button,.btn{background:linear-gradient(90deg,#1e90ff,#00e5ff)!important;color:#001220!important;border:none!important;border-radius:8px!important;font-weight:800!important;box-shadow:0 0 15px rgba(0,229,255,0.4)!important}
+.num,.balance,.amount{color:#00ff88!important;text-shadow:0 0 12px rgba(0,255,136,0.6)!important}
+a{color:#00e5ff!important}
+input,select{background:#050a14!important;color:#fff!important;border:1px solid #00b0ff!important;border-radius:8px!important}
+</style>
+</head>
+<body>
+<a href="/menu" class="back">← Back to Menu</a>
+<h1>⬢ CODEX</h1>
+<div class="card">
+<h2>About Us</h2>
+<p><b>Codex Company Kampala, Uganda</b> is here to help you attain <b>financial power and vision</b>.</p>
+<p>Led by our <b>CEO Tamale Imran</b> and the Codex Management Team, we are building a trusted platform for everyday Ugandans to grow their money simply and transparently.</p>
+
+<h3>Our Mission</h3>
+<p>To make wealth creation accessible to everyone through simple, secure investment plans.</p>
+
+<h3>Our Vision</h3>
+<p>Financial freedom for every family in Uganda and beyond.</p>
+
+<h3>What We Do</h3>
+<ul>
+<li>✅ Secure investment series with clear returns</li>
+<li>✅ Fast MTN & Airtel deposits and withdrawals</li>
+<li>✅ Transparent system, no hidden fees</li>
+<li>✅ 24/7 platform access + dedicated support</li>
+</ul>
+
+<h3>Why Choose Codex?</h3>
+<ul>
+<li>📍 Based in Kampala, Uganda</li>
+<li>👔 Led by CEO Tamale Imran</li>
+<li>🤝 Real human support via Chat Manager</li>
+<li>🔒 Focus on trust and consistency</li>
+</ul>
+
+<a href="/chat" class="btn">Chat With Our Team</a>
+</div>
+<script>
+setInterval(async()=>{
+ try{
+  let r=await fetch('/api/notifs'); let j=await r.json();
+  if(j.notifs && j.notifs.length){
+   let last=localStorage.getItem('ln')||0;
+   if(String(j.notifs[0].id)!=String(last)){ alert(j.notifs[0].msg); localStorage.setItem('ln', j.notifs[0].id); }
+  }
+ }catch(e){}
+},5000);
+</script>
+</body></html>

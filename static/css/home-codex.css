@@ -1,0 +1,100 @@
+/* CODEX HOME PAGE ONLY — futuristic AI/server-room style */
+
+body.home-page{
+  background:
+    radial-gradient(circle at 50% 20%,rgba(0,255,220,.16),transparent 30%),
+    linear-gradient(135deg,#020817 0%,#031b35 45%,#00101f 100%) !important;
+  color:#e9fbff!important;
+}
+
+body.home-page .container,
+body.home-page main{
+  background:transparent!important;
+}
+
+body.home-page .box,
+body.home-page .panel,
+body.home-page .card{
+  background:linear-gradient(145deg,rgba(4,45,82,.94),rgba(2,15,35,.97))!important;
+  border:1px solid #00aaff!important;
+  border-radius:18px!important;
+  box-shadow:0 0 15px rgba(0,174,255,.28),inset 0 0 20px rgba(0,255,220,.05)!important;
+}
+
+body.home-page .hero,
+body.home-page .welcome,
+body.home-page .welcome-box{
+  background:
+    linear-gradient(90deg,rgba(0,20,45,.96),rgba(0,80,110,.72)),
+    radial-gradient(circle at 75% 50%,#006b91,transparent 35%)!important;
+  border:2px solid #00aaff!important;
+  border-radius:22px!important;
+  box-shadow:0 0 25px rgba(0,174,255,.4)!important;
+}
+
+body.home-page h1,
+body.home-page h2,
+body.home-page h3{
+  color:#00eaff!important;
+  text-shadow:0 0 10px rgba(0,234,255,.45);
+}
+
+body.home-page .invest-btn,
+body.home-page .btn-primary,
+body.home-page button{
+  border-radius:30px!important;
+  background:linear-gradient(135deg,#00eaff,#00ffb3)!important;
+  color:#00131d!important;
+  border:0!important;
+  font-weight:800!important;
+  box-shadow:0 0 18px rgba(0,255,220,.45)!important;
+}
+
+body.home-page .stat,
+body.home-page .feature,
+body.home-page .action-card{
+  background:linear-gradient(145deg,rgba(0,58,105,.95),rgba(1,20,43,.98))!important;
+  border:1px solid #008cff!important;
+  border-radius:18px!important;
+  box-shadow:0 0 12px rgba(0,140,255,.25)!important;
+}
+
+body.home-page .stat strong,
+body.home-page .amount,
+body.home-page .balance{
+  color:#00eaff!important;
+}
+
+body.home-page .daily-checkin{
+  border:1px solid #00ffb3!important;
+  background:linear-gradient(90deg,rgba(0,65,85,.95),rgba(0,35,65,.98))!important;
+  box-shadow:0 0 18px rgba(0,255,179,.25)!important;
+}
+
+body.home-page .bottom-nav{
+  background:rgba(1,12,28,.97)!important;
+  border-top:1px solid #008cff!important;
+}
+
+body.home-page .bottom-nav .active{
+  color:#00ffb3!important;
+  text-shadow:0 0 10px #00ffb3;
+}
+
+body.home-page a{
+  color:#62eaff;
+}
+
+@media(max-width:430px){
+  body.home-page .box,
+  body.home-page .panel,
+  body.home-page .card{
+    border-radius:16px!important;
+  }
+
+  body.home-page button,
+  body.home-page .btn,
+  body.home-page .invest-btn{
+    min-height:44px!important;
+  }
+}

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><style>/* CODEX BLUE-BLACK-WHITE THEME */body{background:#000!important;color:#fff!important}.card,.box,.panel{background:#111!important;border:1px solid #00b0ff!important;color:#fff!important}button,.btn{background:#00b0ff!important;color:#000!important;border:none!important;font-weight:700}a{color:#00b0ff!important}input,select,textarea{background:#111!important;color:#fff!important;border:1px solid #00b0ff!important}h1,h2,h3{color:#fff!important}</style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Referrals - Codex700</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#010d1f;color:#fff;font-family:'Segoe UI',Arial,sans-serif;padding-bottom:110px}
+.hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
+.hd .t{text-align:center;flex:1}
+.hd .t h1{font-size:38px;color:#00cfff;font-style:italic;text-shadow:0 0 18px #00cfff}
+.hd .t p{color:#00cfff;font-style:italic;font-size:15px}
+.card{background:linear-gradient(180deg,#021a3a,#011026);border:1.5px solid #0a4dff;border-radius:14px;padding:14px;margin:10px 12px;box-shadow:0 0 18px #0a4dff55}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.codebox{border:1.5px dashed #00cfff;border-radius:10px;padding:8px 18px;font-size:26px;font-weight:800;color:#00cfff;letter-spacing:2px}
+.btn{background:linear-gradient(180deg,#00cfff,#0a4dff);border:none;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+.linkrow{display:flex;gap:8px;margin-top:10px}
+.linkrow input{flex:1;background:#011026;border:1px solid #0a4dff;color:#7ecbff;border-radius:10px;padding:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 12px}
+.stat{background:linear-gradient(180deg,#021a3a,#011026);border:1px solid #0a4dff;border-radius:12px;padding:12px 6px;text-align:center}
+.stat b{color:#00cfff;font-size:20px;display:block}
+.lv{display:flex;justify-content:space-around;text-align:center;margin-top:10px}
+.lv b{color:#00cfff;font-size:24px}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#010d1f;display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #0a4dff}
+.nav a{color:#7ecbff;text-decoration:none;font-size:12px;text-align:center}
+.nav a.on{color:#00cfff;border-bottom:2px solid #00cfff}
+</style>
+<style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script>
+<style>
+:root{ --main-blue:#00b0ff !important; }
+body{ background:#000 !important; color:#fff !important; }
+.card, .info-box, .detail-card{ background:#111 !important; border-radius:12px !important; }
+.price, .amount-blue{ color:#00b0ff !important; font-weight:700; }
+.btn-primary, .invest-btn, button[type=submit]{ background:#00b0ff !important; border:none !important; color:#fff !important; border-radius:10px !important; }
+</style>
+<style>:root{--main-blue:#00b0ff!important}body{background:#000!important}button,.btn,.btn-primary,.invest-btn,input[type=submit]{background:#00b0ff!important;border-color:#00b0ff!important;color:#fff!important}*{border-color:#00b0ff33!important}</style>
+
+<style>body{font-size:14px!important;line-height:1.4!important}h1{font-size:20px!important}h2{font-size:18px!important}h3{font-size:16px!important}p,div,span,a,button{font-size:14px!important}</style><style>
+body{background:radial-gradient(ellipse at top,#0a1e3f 0%,#050a14 60%)!important;color:#e0f0ff!important;font-family:Arial,sans-serif!important}
+.card,.container,.box{background:linear-gradient(180deg,#0a1428,#070d1d)!important;border:1px solid rgba(0,229,255,0.25)!important;border-radius:12px!important;box-shadow:0 0 20px rgba(30,144,255,0.15)!important;color:#e0f0ff!important}
+h1,h2,h3{color:#00e5ff!important;text-shadow:0 0 12px rgba(0,229,255,0.6)!important}
+button,.btn{background:linear-gradient(90deg,#1e90ff,#00e5ff)!important;color:#001220!important;border:none!important;border-radius:8px!important;font-weight:800!important;box-shadow:0 0 15px rgba(0,229,255,0.4)!important}
+.num,.balance,.amount{color:#00ff88!important;text-shadow:0 0 12px rgba(0,255,136,0.6)!important}
+a{color:#00e5ff!important}
+input,select{background:#050a14!important;color:#fff!important;border:1px solid #00b0ff!important;border-radius:8px!important}
+</style>
+</head>
+
+<body>
+<div class="hd">
+<a href="/home" style="color:#fff;font-size:24px;text-decoration:none">←</a>
+<div class="t"><h1>👥 Referrals</h1><p>Together We Grow, Together We Win</p></div>
+<div style="font-size:22px">🔔 👤</div>
+</div>
+
+<div class="card">
+<div class="top">
+<div><div style="font-size:20px;font-weight:800;color:#00cfff">👑 Invite Friends & Earn</div><div style="font-size:13px;color:#aac">Earn unlimited commissions<br>from your referrals.</div>
+<button class="btn" style="margin-top:8px" onclick="alert('Share your link, when they invest you earn 32% / 5% / 1%')">How it Works →</button>
+</div>
+<div style="text-align:center"><div style="font-size:13px">🔗 Your Referral Code</div><div class="codebox">{{ refcode or '084E03' }}</div><button class="btn" style="margin-top:6px" onclick="navigator.clipboard.writeText('{{ refcode }}');alert('Copied!')">📋</button></div>
+</div>
+<div style="text-align:right;color:#00cfff;font-style:italic">More Friends<br>More Income!</div>
+</div>
+
+<div class="card">
+<div style="font-weight:800;font-size:18px">🔗 Your Referral Link</div>
+<div class="linkrow"><input id="rlink" readonly value="{{ referral_link or 'https://codex700com.onrender.com/register?ref='+(refcode or '') }}"><button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('rlink').value);alert('Link copied!')">📋 Copy Link</button></div>
+<div style="color:#00cfff;font-style:italic;margin-top:6px">✈️ Share your link. Change lives. Earn together!</div>
+</div>
+
+<div class="stats">
+<div class="stat">👥 Total Referrals<b>{{ total_referrals or 0 }}</b><small>All Time</small></div>
+<div class="stat">⚡ Active Referrals<b>{{ active_referrals or 0 }}</b><small>Active Now</small></div>
+<div class="stat">💰 Total Earnings<b>UGX {{ total_earnings or 0 }}</b><small>All Time</small></div>
+<div class="stat">📅 This Month<b>UGX {{ month_earnings or 0 }}</b><small>Earnings</small></div>
+</div>
+
+<div class="card">
+<div style="font-weight:800;font-size:18px">👑 Referral Commission Structure</div>
+<div class="lv">
+<div>⬢ Lv1<br><b>32%</b><br>First Level</div>
+<div>⬢ Lv2<br><b>5%</b><br>Second Level</div>
+<div>⬢ Lv3<br><b>1%</b><br>Third Level</div>
+</div>
+</div>
+
+<div class="card"><div style="display:flex;justify-content:space-between"><b>👥 Your Referrals</b><a href="#" style="color:#7ecbff">View All ></a></div>
+<div style="text-align:center;padding:16px;color:#aac"><i>No referrals yet.<br>Share your link to start earning.</i></div>
+</div>
+
+<div class="nav">
+<a href="/home">🏠<br>Home</a><a href="/invest">📊<br>Invest</a><a href="/transactions">🔄<br>Transactions</a><a href="/referrals" class="on">👥<br>Referrals</a><a href="/account">👤<br>Account</a>
+</div>
+<script>
+function copyCode(){navigator.clipboard.writeText("{{ refcode }}")}
+</script>
+</body>
+</html>

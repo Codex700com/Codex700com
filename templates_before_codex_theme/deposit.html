@@ -1,0 +1,43 @@
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{background:radial-gradient(ellipse at top,#0a1e3f 0%,#050a14 60%)!important;color:#e0f0ff;font-family:Arial;padding:12px;font-size:14px;margin:0}
+.card{background:linear-gradient(180deg,#0a1428,#070d1d)!important;border:1px solid rgba(0,229,255,0.25)!important;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 0 20px rgba(30,144,255,0.15)}
+.card h3{color:#00e5ff!important;margin:0 0 10px;font-size:14px;text-shadow:0 0 10px rgba(0,229,255,0.5)}
+.num{color:#00ff88!important;font-size:22px;font-weight:900;text-shadow:0 0 12px rgba(0,255,136,0.6)}
+.timer{color:#00e5ff;font-weight:700;margin-top:8px}
+input{width:100%;padding:12px;margin:8px 0;background:#050a14;color:#fff;border:1px solid #00b0ff;border-radius:8px;box-sizing:border-box}
+button{background:linear-gradient(90deg,#1e90ff,#00e5ff)!important;color:#001220!important;padding:14px;width:100%;border:none;border-radius:8px;font-weight:800;box-shadow:0 0 15px rgba(0,229,255,0.4);cursor:pointer}
+h2{color:#00e5ff!important;text-shadow:0 0 12px rgba(0,229,255,0.6)}
+</style>
+</head><body>
+<h2>Deposit</h2>
+<div class="card">
+<h3>SEND MONEY TO</h3>
+<div><b id="aname">Shakira Nantongo</b><br><span class="num" id="anum">0758878297</span><br><span style="color:#ff4444">🔥 airtel money</span></div>
+<div class="timer">Expires in: <span id="count">05:00</span></div>
+<div style="color:#ffb700;font-size:12px;margin-top:6px;cursor:pointer" onclick="copyNum()">📋 Copy Number</div>
+</div>
+<div class="card"><h3>HOW TO DEPOSIT</h3><ol style="color:#ddd;line-height:1.8;margin:0;padding-left:20px">
+<li>Dial *185# on your Airtel line</li><li>Select Send Money</li><li>Send money to <span id="anum2">0758878297</span></li>
+<li>Enter amount</li><li>Fill details below</li><li>Upload screenshot</li><li>Click "Confirm Deposit"</li></ol></div>
+<form action="/deposit-submit" method="POST" enctype="multipart/form-data">
+<input name="phone_number" placeholder="Number you deposited from" required>
+<input name="amount" type="number" placeholder="Amount" required>
+<input name="txid" placeholder="Transaction ID" required>
+<label>Screenshot proof:</label><input type="file" name="screenshot" accept="image/*" required>
+<button>Confirm Deposit</button></form>
+<script>
+const nums=[{n:"0758878297",a:"Shakira Nantongo"},{n:"0757837051",a:"Mary Namara"}];
+let idx=0, sec=300;
+function copyNum(){navigator.clipboard.writeText(document.getElementById('anum').innerText);alert('Copied');}
+setInterval(()=>{
+ sec--;
+ if(sec<=0){idx=(idx+1)%nums.length;sec=300;}
+ document.getElementById('anum').innerText=nums[idx].n;
+ document.getElementById('anum2').innerText=nums[idx].n;
+ document.getElementById('aname').innerText=nums[idx].a;
+ let m=String(Math.floor(sec/60)).padStart(2,'0'), s=String(sec%60).padStart(2,'0');
+ document.getElementById('count').innerText=m+":"+s;
+},1000);
+</script>
+</body></html>

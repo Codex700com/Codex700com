@@ -1,0 +1,73 @@
+<!DOCTYPE html><html><head><style>/* CODEX BLUE-BLACK-WHITE THEME */body{background:#000!important;color:#fff!important}.card,.box,.panel{background:#111!important;border:1px solid #00b0ff!important;color:#fff!important}button,.btn{background:#00b0ff!important;color:#000!important;border:none!important;font-weight:700}a{color:#00b0ff!important}input,select,textarea{background:#111!important;color:#fff!important;border:1px solid #00b0ff!important}h1,h2,h3{color:#fff!important}</style><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Group Chat</title><style>
+body{background:#000;color:#fff;font-family:Arial;margin:0;display:flex;flex-direction:column;height:100vh}
+.top{background:#0f0f0f;padding:10px;color:#ffcc00;font-weight:bold;display:flex;justify-content:space-between}
+.hd{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #222}
+.av{width:48px;height:48px;background:#7a2bff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px}
+.on{color:#00ff00;font-size:12px}
+#box{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:10px}
+.empty{color:#888;text-align:center;margin-top:40px}
+.m{max-width:80%;padding:10px 12px;border-radius:12px;background:#1a1a1a;border:1px solid #333}
+.m small{color:#888;display:block;font-size:11px}
+.me{align-self:flex-end;background:#0d47a1;border-color:#0d47a1}
+.bar{display:flex;gap:8px;padding:10px;border-top:1px solid #222}
+#tin{flex:1;background:#1a1a1a;border:1px solid #333;color:#fff;padding:12px;border-radius:25px;outline:none}
+button{background:#1e6fb8;border:none;width:45px;height:45px;border-radius:50%;color:#fff;font-size:18px;cursor:pointer}
+</style><style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script>
+<style>
+:root{ --main-blue:#00b0ff !important; }
+body{ background:#000 !important; color:#fff !important; }
+.card, .info-box, .detail-card{ background:#111 !important; border-radius:12px !important; }
+.price, .amount-blue{ color:#00b0ff !important; font-weight:700; }
+.btn-primary, .invest-btn, button[type=submit]{ background:#00b0ff !important; border:none !important; color:#fff !important; border-radius:10px !important; }
+</style>
+<style>:root{--main-blue:#00b0ff!important}body{background:#000!important}button,.btn,.btn-primary,.invest-btn,input[type=submit]{background:#00b0ff!important;border-color:#00b0ff!important;color:#fff!important}*{border-color:#00b0ff33!important}</style>
+
+<style>body{font-size:14px!important;line-height:1.4!important}h1{font-size:20px!important}h2{font-size:18px!important}h3{font-size:16px!important}p,div,span,a,button{font-size:14px!important}</style><style>
+body{background:radial-gradient(ellipse at top,#0a1e3f 0%,#050a14 60%)!important;color:#e0f0ff!important;font-family:Arial,sans-serif!important}
+.card,.container,.box{background:linear-gradient(180deg,#0a1428,#070d1d)!important;border:1px solid rgba(0,229,255,0.25)!important;border-radius:12px!important;box-shadow:0 0 20px rgba(30,144,255,0.15)!important;color:#e0f0ff!important}
+h1,h2,h3{color:#00e5ff!important;text-shadow:0 0 12px rgba(0,229,255,0.6)!important}
+button,.btn{background:linear-gradient(90deg,#1e90ff,#00e5ff)!important;color:#001220!important;border:none!important;border-radius:8px!important;font-weight:800!important;box-shadow:0 0 15px rgba(0,229,255,0.4)!important}
+.num,.balance,.amount{color:#00ff88!important;text-shadow:0 0 12px rgba(0,255,136,0.6)!important}
+a{color:#00e5ff!important}
+input,select{background:#050a14!important;color:#fff!important;border:1px solid #00b0ff!important;border-radius:8px!important}
+</style>
+</head>
+<body>
+<div class="top"><span>📌 How to Deposit & Withdraw</span><span>▼</span></div>
+<div class="hd"><a href="/" style="color:#1e90ff;text-decoration:none;font-size:20px">←</a><div class="av">🌐</div><div><b>Group Chat</b><div class="on">Everyone can see this</div></div></div>
+<div id="box"><div class="empty">No messages yet. Say hello!</div></div>
+<div class="bar"><input id="tin" placeholder="Type a message... use @ to mention" onkeypress="if(event.key==='Enter')send()"><button onclick="send()">➤</button></div>
+<script>
+let user = localStorage.getItem('chat_user') || 'User'+Math.floor(Math.random()*9000+1000);
+localStorage.setItem('chat_user',user);
+async function load(){
+ let r=await fetch('/api/chat'); let j=await r.json();
+ let b=document.getElementById('box'); b.innerHTML='';
+ if(j.length===0) b.innerHTML='<div class="empty">No messages yet. Say hello!</div>';
+ j.forEach(m=>{
+  let d=document.createElement('div'); d.className='m'+(m.user===user?' me':'');
+  d.innerHTML='<small>'+m.user+' • '+m.time+'</small>'+m.text.replace(/</g,'&lt;');
+  b.appendChild(d);
+ });
+ b.scrollTop=b.scrollHeight;
+}
+async function send(){
+ let t=document.getElementById('tin'); let txt=t.value.trim(); if(!txt) return;
+ await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:user,text:txt})});
+ t.value=''; load();
+}
+setInterval(load,2000); load();
+</script>
+<script>
+setInterval(async()=>{
+ try{
+  let r=await fetch('/api/notifs'); let j=await r.json();
+  if(j.notifs && j.notifs.length){
+   let last=localStorage.getItem('ln')||0;
+   if(String(j.notifs[0].id)!=String(last)){ alert(j.notifs[0].msg); localStorage.setItem('ln', j.notifs[0].id); }
+  }
+ }catch(e){}
+},5000);
+</script>
+</body></html>

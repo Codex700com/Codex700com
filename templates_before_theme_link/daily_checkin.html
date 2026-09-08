@@ -1,0 +1,26 @@
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#020617;color:#fff;font-family:sans-serif;padding:20px;text-align:center}.card{background:#0f172a;border:1px solid #1e40ff;border-radius:20px;padding:24px;margin-top:20px}.btn{padding:14px 28px;border-radius:12px;background:#16a34a;color:#fff;font-weight:800;border:none;width:100%;font-size:16px}.btn:disabled{background:#334155}.timer{font-size:28px;font-weight:900;color:#38bdf8;margin:16px 0}</style></head><body>
+<h2>Daily Check-In</h2>
+<div class="card">
+<div>Streak: <b id="streak">0</b> days</div>
+<div class="timer" id="timer">--:--:--</div>
+<div id="msg" style="margin:12px 0;color:#94a3b8"></div>
+<button class="btn" id="btn" onclick="claim()">Claim 500 UGX</button>
+</div>
+<a href="/" style="display:block;margin-top:20px;color:#38bdf8">Back to Home</a>
+<script>
+let next=0, claimed=false;
+function fmt(s){let h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=s%60; return h+"h "+m+"m "+sec+"s";}
+function tick(){ if(claimed && next>0){ document.getElementById('timer').innerText=fmt(next); next--; setTimeout(tick,1000);} }
+async function load(){
+ let r=await fetch('/api/daily-status'); let j=await r.json();
+ document.getElementById('streak').innerText=j.streak||0;
+ if(j.claimed){ claimed=true; next=j.next_in||0; document.getElementById('msg').innerText="Already claimed today, come back tomorrow"; document.getElementById('btn').disabled=true; document.getElementById('btn').innerText="Claimed"; tick(); }
+ else { document.getElementById('timer').innerText="Ready to claim!"; document.getElementById('msg').innerText="Tap to claim your daily bonus"; }
+}
+async function claim(){
+ let r=await fetch('/api/daily-checkin',{method:'POST'}); let j=await r.json();
+ if(j.ok){ alert(j.msg); load(); } else { alert(j.msg); load(); }
+}
+load();
+</script>
+</body></html>

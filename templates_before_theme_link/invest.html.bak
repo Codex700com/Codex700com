@@ -1,0 +1,45 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CODEX - Invest</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#fff;font-family:Arial,sans-serif;overflow-x:hidden}
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px 15px}
+.logo{color:#f5b301;font-weight:900;font-size:24px;letter-spacing:1px}
+.tabs{display:flex;gap:8px;padding:10px 12px;overflow-x:auto}
+.tab{flex:1;white-space:nowrap padding:10px 18px;border:1px solid #f5b301;border-radius:12px;background:transparent;color:#fff;font-weight:700;cursor:pointer;text-align:center}
+.tab.active{background:#f5b301;color:#000}
+.banner{margin:5px 12px;border:1px solid #f5b30166;border-radius:12px;padding:18px;background:linear-gradient(90deg,#0a0a0a,#1a1200);position:relative;overflow:hidden}
+.banner h2{color:#f5b301;font-size:22px}
+.banner p{color:#ccc;margin-top:5px}
+.card{display:flex;align-items:center;background:#0d0d0d;border:1px solid #222;border-radius:12px;margin:10px 12px;padding:10px;gap:10px}
+.card img{width:90px;height:90px;object-fit:cover;border-radius:8px;background:#111}
+.info{flex:1}
+.info h3{color:#f5b301;font-size:18px;margin-bottom:8px}
+.meta{display:flex;justify-content:space-between;font-size:11px;color:#ccc}
+.meta div{text-align:center;flex:1;border-left:1px solid #333;padding:0 4px}
+.meta div:first-child{border:none}
+.meta span{display:block;color:#888;font-size:10px;margin-bottom:3px}
+.btn{background:#d61f26;color:#fff;border:none;padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer}
+.arrow{color:#f5b301;font-size:20px}
+</style></head><body>
+<div class="header"><div style="font-size:24px">☰</div><div class="logo">⬢ CODEX</div><div>🔔<sup style="background:red;border-radius:50%;padding:2px 6px">3</sup> 👤</div></div>
+<div class="tabs"><button class="tab active">CODEX M</button><button class="tab">CODEX L</button><button class="tab">CODEX GS</button><button class="tab">CODEX J</button></div>
+<div class="banner"><h2>CODEX M SERIES</h2><p>Smart Investment. Daily Income.</p></div>
+<div id="plans"></div>
+<script>
+const plans=[
+["M1","20,000","20 Days","2,000","40,000"],
+["M2","50,000","20 Days","5,000","100,000"],
+["M3","100,000","30 Days","10,000","300,000"],
+["M4","250,000","30 Days","25,000","750,000"],
+["M5","500,000","30 Days","50,000","1,500,000"],
+["M6","1,000,000","40 Days","100,000","4,000,000"],
+["M7","2,000,000","40 Days","200,000","8,000,000"],
+];
+let h="";
+plans.forEach(p=>{
+h+=`<div class="card"><img src="https://via.placeholder.com/90x90/aa8800/000?text=${p[0]}"><div class="info"><h3>CODEX ${p[0]}</h3><div style="display:flex;align-items:center;justify-content:space-between"><div class="meta"><div><span>💰 PRICE</span>UGX ${p[1]}</div><div><span>📅 DURATION</span>${p[2]}</div><div><span>📈 DAILY RETURN</span>UGX ${p[3]}</div><div><span>💰 TOTAL RETURN</span>UGX ${p[4]}</div></div></div></div><div><button class="btn">Invest Now</button><div class="arrow" style="text-align:center;margin-top:8px">›</div></div></div>`;
+});
+document.getElementById("plans").innerHTML=h;
+</script>
+</body></html>
