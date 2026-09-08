@@ -655,10 +655,6 @@ import os, json, datetime
 CHAT_FILE="chat.json"
 if not os.path.exists(CHAT_FILE):
     open(CHAT_FILE,"w").write("[]")
-@app.route("/chat")
-def chat_page():
-    from flask import render_template
-    return render_template("chat.html")
 @app.route("/api/my-chat")
 def api_my_chat():
  from flask import session, jsonify
@@ -673,14 +669,6 @@ def api_my_chat():
  except Exception as e:
   print("my-chat error",e)
   return jsonify([])
-@app.route("/api/chat", methods=["GET","POST"])
-def api_chat():
-    from flask import request, jsonify, session
-    if request.method=="POST":
-        data=request.get_json(force=True)
-        text=data.get("text","")[:1000]
-        if not text.strip():
-            return jsonify({"ok":False})
         user=data.get("user","Anonymous")[:30]
         msgs=json.load(open(CHAT_FILE))
         msgs.append({"user":user,"text":text,"time":datetime.datetime.now().strftime("%H:%M")})
@@ -1385,6 +1373,50 @@ try:
     _con.commit()
     _con.close()
 except: pass
+
+@app.route("/chat")
+def chat_page():
+    from flask import session, redirect, render_template
+    if not session.get("uid"):
+        return redirect("/login")
+    return render_template("chat.html")
+
+@app.route("/api/chat/history")
+def chat_history():
+    from flask import session, jsonify
+    uid=session.get("uid")
+    if not uid:
+        return jsonify([])
+    con=db()
+    try:
+        con.execute("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, message TEXT, admin_reply TEXT, created_at TEXT)")
+        rows=con.execute("SELECT id, message, admin_reply, created_at FROM messages WHERE user_id=? ORDER BY id ASC",(uid,)).fetchall()
+        data=[dict(r) for r in rows]
+    except Exception as e:
+        print("chat hist err",e)
+        data=[]
+    con.close()
+    return jsonify(data)
+
+@app.route("/api/chat/send", methods=["POST"])
+def chat_send():
+    from flask import session, request, jsonify
+    import datetime
+    uid=session.get("uid")
+    if not uid:
+        return jsonify({"ok":False})
+    data=request.get_json() or {}
+    msg=(data.get("message") or "").strip()
+    if not msg:
+        return jsonify({"ok":False})
+    con=db()
+    con.execute("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, message TEXT, admin_reply TEXT, created_at TEXT)")
+    now=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    con.execute("INSERT INTO messages(user_id,message,created_at) VALUES(?,?,?)",(uid,msg,now))
+    con.commit()
+    con.close()
+    return jsonify({"ok":True})
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
 if __name__=='__main__':
