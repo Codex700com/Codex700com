@@ -1406,6 +1406,7 @@ def withdraw_submit():
     con.execute("CREATE TABLE IF NOT EXISTS withdrawals (id INTEGER PRIMARY KEY, user_id INT, amount INT, phone TEXT, status TEXT DEFAULT 'pending', created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
     con.execute("UPDATE users SET balance=balance-? WHERE id=?",(amt,uid))
     con.execute("INSERT INTO withdrawals (user_id,amount,phone,status) VALUES (?,?,?, 'pending')",(uid,amt,phone))
+    con.execute("INSERT INTO transactions(user_id,type,amount,status,date,ref) VALUES(?,?,?,?,?,?)",(uid,"withdrawal",amt,"pending",__import__("datetime").datetime.now().isoformat(),phone))
     con.commit(); con.close()
     return jsonify({"ok":True,"msg":"Withdrawal requested, wait for approval"})
 @app.route("/deposit-submit", methods=["POST"])
@@ -1432,6 +1433,7 @@ def deposit_submit():
         con=sqlite3.connect("codex700.db")
         con.execute("CREATE TABLE IF NOT EXISTS deposits (id INTEGER PRIMARY KEY, user_id INT, airtel TEXT, amount INT, txid TEXT, screenshot TEXT, status TEXT DEFAULT 'pending', created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
         con.execute("INSERT INTO deposits (user_id, airtel, amount, txid, screenshot) VALUES (?,?,?,?,?)",(uid,airtel,amount,txid,sp))
+        con.execute("INSERT INTO transactions(user_id,type,amount,status,date,ref) VALUES(?,?,?,?,?,?)",(uid,"deposit",amount,"pending",__import__("datetime").datetime.now().isoformat(),txid))
         con.commit(); con.close()
         from flask import redirect
         return redirect("/transactions")
