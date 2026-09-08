@@ -1384,25 +1384,129 @@ def deposit_submit():
 def confirm_buy(pid):
     import sqlite3, time, traceback
     from flask import session, redirect
-    uid=session.get('uid') or session.get('user_id')
-    if not uid: return redirect('/login')
-    con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
+
+    uid = session.get('uid') or session.get('user_id')
+    if not uid:
+        return redirect('/login')
+
+    pid = str(pid).strip().upper()
+
+    # Use the single correct source of product information.
+    if pid not in PRODUCTS:
+        return "Invalid product", 400
+
+    pr = PRODUCTS[pid]
+
+    price = int(pr['price'])
+    dur = int(pr['days'])
+    daily = int(pr['daily'])
+    total_expected = daily * dur
+
+    con = sqlite3.connect("codex700.db")
+    con.row_factory = sqlite3.Row
+
     try:
-        user=con.execute("SELECT * FROM users WHERE id=?", (uid,)).fetchone()
-        bal=user["balance"] if user else 0
-        prod={"J1":(3000,30,300),"J2":(6000,30,600),"J3":(12000,30,1200),"J4":(25000,30,2500),"J5":(50000,30,5000)}.get(pid,(12000,30,1200))
-        price,dur,daily=prod
+        user = con.execute(
+            "SELECT * FROM users WHERE id=?",
+            (uid,)
+        ).fetchone()
+
+        bal = int(user["balance"]) if user else 0
+
+        if not user:
+            con.close()
+            return redirect('/login')
+
         if bal < price:
             con.close()
-            return f'<h2 style="text-align:center;margin-top:50px">Insufficient balance: have {bal} need {price}<br><a href="/buy/{pid}">Back</a></h2>'
-        now=int(time.time()); expiry=now+dur*86400
-        con.execute("UPDATE users SET balance=balance-? WHERE id=?", (int(price), uid))
-        con.execute("INSERT OR IGNORE INTO investments(user_id,product_name,amount,purchase_ts,expiry_ts,daily_return,credited_days,active,duration_days) VALUES(?,?,?,?,?,?,?,?,?)",(uid, pid, price, now, expiry, daily, 0, 1, dur))
-        con.execute("INSERT INTO transactions(user_id,type,amount,status,date,ref) VALUES(?,?,?,?,?,?)",(uid,'invest',-price,'completed',now,pid))
-        con.commit(); con.close()
+            return (
+                f'<h2 style="text-align:center;margin-top:50px">'
+                f'Insufficient balance: have {bal:,} need {price:,}<br>'
+                f'<a href="/buy/{pid}">Back</a></h2>'
+            ), 400
+
+        now = int(time.time())
+        expiry = now + dur * 86400
+
+        # Deduct the exact price of this product.
+        con.execute(
+            "UPDATE users SET balance=balance-? WHERE id=?",
+            (price, uid)
+        )
+
+        # Save all values in the ACTUAL investments table.
+        cur = con.execute("""
+            INSERT INTO investments (
+                user_id,
+                plan,
+                amount,
+                active,
+                date,
+                daily_return,
+                duration_days,
+                purchase_ts,
+                expiry_ts,
+                product_name,
+                credited_days,
+                total_expected,
+                daily,
+                duration,
+                created_at,
+                end_at,
+                credited,
+                status,
+                end_time,
+                start_time
+            )
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """, (
+            uid,
+            pid,
+            price,
+            1,
+            str(now),
+            daily,
+            dur,
+            now,
+            expiry,
+            pid,
+            0,
+            total_expected,
+            daily,
+            dur,
+            str(now),
+            str(expiry),
+            0,
+            'active',
+            str(expiry),
+            str(now)
+        ))
+
+        con.execute("""
+            INSERT INTO transactions
+            (user_id,type,amount,status,date,ref)
+            VALUES (?,?,?,?,?,?)
+        """, (
+            uid,
+            'invest',
+            -price,
+            'completed',
+            str(now),
+            pid
+        ))
+
+        con.commit()
+        inv_id = cur.lastrowid
+        con.close()
+
         return redirect('/my-investments')
+
     except Exception as e:
         traceback.print_exc()
-        try: con.close()
-        except: pass
+        try:
+            con.rollback()
+            con.close()
+        except:
+            pass
         return f"Error: {e}", 500
+
