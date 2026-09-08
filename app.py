@@ -869,16 +869,34 @@ def checkin_page():
 
 
 <link rel="stylesheet" href="/static/css/branches.css">
-<div class="codex-branches-wrap codex-float-card">
-  <img src="/static/ai_branches.jpg" class="codex-branches-bg" onerror="this.src='https://i.imgur.com/8Km9tLL.jpg'">
-  <div class="codex-branches-ticker"><span>CODEX700 BRANCHES: Kamwenge | Ibanda | Fort Portal | Mbarara | Kasese | Kampala | Powered by National Freedom Cooperation | AI Secured | Manager 0724018143 | Join WhatsApp Group</span></div>
-</div>
+
 <script>
 document.addEventListener('DOMContentLoaded',function(){
  var w=null;
  var ds=document.getElementsByTagName('div');
  for(var i=0;i<ds.length;i++){if(ds[i].innerText&&ds[i].innerText.indexOf('WELCOME BACK')>-1&&ds[i].innerText.length<250){w=ds[i];break;}}
  if(w){w.classList.add('codex-float-card');w.style.border='2px solid #00ff99';w.style.borderRadius='15px';}
+});
+</script>
+
+
+<link rel="stylesheet" href="/static/css/branches.css">
+<div class="codex-branches-wrap codex-float-card">
+  <div class="codex-branches-inner" id="branchesInner"></div>
+  <div class="codex-branches-title"><b>CODEX700 BRANCHES</b> <i>/ Kamwenge | Ibanda | Fort Portal | Mbarara | Kasese | Kampala</i></div>
+  <div class="codex-branches-ticker"><span>CODEX700 BRANCHES: Kamwenge | Ibanda | Fort Portal | Mbarara | Kasese | Kampala | Powered by National Freedom Cooperation | AI Secured</span></div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  // try to load the real banner if you upload it later
+  var inner=document.getElementById('branchesInner');
+  var img=new Image();
+  img.onload=function(){inner.style.backgroundImage="url('/static/ai_branches.jpg')";}
+  img.src='/static/ai_branches.jpg';
+  // float welcome
+  var w=null;var ds=document.getElementsByTagName('div');
+  for(var i=0;i<ds.length;i++){if(ds[i].innerText&&ds[i].innerText.indexOf('WELCOME BACK')>-1&&ds[i].innerText.length<300){w=ds[i];break;}}
+  if(w){w.classList.add('codex-float-card');w.style.border='2px solid #00ff99';w.style.borderRadius='15px';}
 });
 </script>
 
