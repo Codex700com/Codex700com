@@ -655,10 +655,7 @@ import os, json, datetime
 CHAT_FILE="chat.json"
 if not os.path.exists(CHAT_FILE):
     open(CHAT_FILE,"w").write("[]")
-@app.route("/chat")
-def chat_page():
-    from flask import render_template
-    return render_template("chat.html")
+
 @app.route("/api/my-chat")
 def api_my_chat():
  from flask import session, jsonify
@@ -673,46 +670,6 @@ def api_my_chat():
  except Exception as e:
   print("my-chat error",e)
   return jsonify([])
-@app.route("/api/chat", methods=["GET","POST"])
-def api_chat():
-    from flask import request, jsonify, session
-    if request.method=="POST":
-        data=request.get_json(force=True)
-        text=data.get("text","")[:1000]
-        if not text.strip():
-            return jsonify({"ok":False})
-        user=data.get("user","Anonymous")[:30]
-        msgs=json.load(open(CHAT_FILE))
-        msgs.append({"user":user,"text":text,"time":datetime.datetime.now().strftime("%H:%M")})
-        msgs=msgs[-200:]
-        json.dump(msgs, open(CHAT_FILE,"w"))
-        try:
-            uid=session.get("user_id") or session.get("uid") or session.get("id")
-            if uid:
-                con=db()
-                con.execute("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, message TEXT, admin_reply TEXT, created_at TEXT)")
-                con.execute("INSERT INTO messages (user_id, message, created_at) VALUES (?,?,?)",(uid, text.strip(), datetime.datetime.now().isoformat()))
-                con.commit(); con.close()
-        except Exception as e:
-            print("msg save error", e)
-        return jsonify({"ok":True})
-    # private inbox for logged-in user
-    try:
-        from flask import session
-        uid=session.get("user_id") or session.get("uid") or session.get("id")
-        if uid:
-            con=db()
-            con.execute("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, message TEXT, admin_reply TEXT, created_at TEXT)")
-            rows=con.execute("SELECT id, message, admin_reply, created_at FROM messages WHERE user_id=? ORDER BY id ASC LIMIT 100",(uid,)).fetchall()
-            con.close()
-            return {"private":[dict(r) for r in rows]}
-    except Exception as e:
-        print("private inbox error",e)
-    return json.load(open(CHAT_FILE))
-REWARDS=[500,700,1000,1500,2000,3000,5000]
-def ensure_daily_checkin(con):
-    con.execute("CREATE TABLE IF NOT EXISTS daily_checkin (user_id INTEGER PRIMARY KEY, last_check TEXT, streak INTEGER DEFAULT 0)")
-    con.commit()
 @app.route("/checkin", methods=["GET","POST"])
 def checkin_page():
     from datetime import datetime, timedelta
@@ -1419,13 +1376,23 @@ def admin_chat_reply(msg_id):
     return redirect("/admin/chats")
 
 
+
+
+
+
+
+
+
+
+
 @app.route("/api/chat/send", methods=["POST"])
 def chat_send():
-    from flask import session, request, jsonify
-    import datetime, os, json
-    uid = session.get("uid") or session.get("user_id") or session.get("id")
+    uid = session.get("uid") or session.get("user_id")
     if not uid:
+        from flask import jsonify
         return jsonify({"error":"not logged in"}), 401
+    from flask import request, jsonify
+    import datetime
     data = request.get_json() or {}
     msg = (data.get("message") or "").strip()
     if not msg:
@@ -1435,13 +1402,13 @@ def chat_send():
     con.execute("INSERT INTO messages(user_id,message,created_at) VALUES(?,?,?)", (uid, msg, datetime.datetime.now().isoformat()))
     con.commit()
     con.close()
-    print(f"CHAT SAVED uid={uid} msg={msg}")
+    print(f"CHAT SAVED uid={uid}")
     return jsonify({"ok":True})
 
 @app.route("/api/chat/history")
 def chat_history():
-    from flask import session, jsonify
-    uid = session.get("uid") or session.get("user_id") or session.get("id")
+    from flask import jsonify
+    uid = session.get("uid") or session.get("user_id")
     if not uid:
         return jsonify([])
     con = db()
@@ -1452,9 +1419,9 @@ def chat_history():
 
 @app.route("/api/chat/send-image", methods=["POST"])
 def chat_send_image():
-    from flask import session, request, jsonify
-    import datetime, os, uuid
-    uid = session.get("uid") or session.get("user_id") or session.get("id")
+    from flask import request, jsonify
+    import os, uuid, datetime
+    uid = session.get("uid") or session.get("user_id")
     if not uid:
         return jsonify({"error":"not logged in"}), 401
     f = request.files.get("image")
@@ -1472,7 +1439,6 @@ def chat_send_image():
 
 @app.route("/chat")
 def chat_page():
-    from flask import session
     if "uid" not in session and "user_id" not in session:
         return redirect("/login")
     return render_template("chat.html")
