@@ -1551,3 +1551,4 @@ def confirm_buy(pid):
         except:
             pass
         return f"Error: {e}", 500
+# K fix Tue Sep  8 18:55:38 EAT 2026
