@@ -26,7 +26,6 @@ PRODUCTS = {
     "K1": {"name":"K1","price":1000000,"days":3,"daily":500000,"daily_rate":0.50,"duration":3,"daily_return":500000},
     "K2": {"name":"K2","price":5000000,"days":3,"daily":2500000,"daily_rate":0.50,"duration":3,"daily_return":2500000},
 }
-
 from flask import Flask,request,redirect,session,render_template
 import sqlite3,datetime,uuid
 app=Flask(__name__);app.secret_key="codex700secret"
@@ -36,8 +35,6 @@ try:
  print('admin wired')
 except Exception as e:
  print('admin wire fail',e)
-
-
 def ensure_invest_columns():
     try:
         import sqlite3
@@ -46,8 +43,6 @@ def ensure_invest_columns():
         cur.execute("CREATE TABLE IF NOT EXISTS investments (id INTEGER PRIMARY KEY)")
         con.close()
     except: pass
-
-
 def ensure_admin_column():
     import sqlite3
     try:
@@ -61,7 +56,6 @@ def ensure_admin_column():
     except Exception as e:
         print("admin mig failed:", e)
 ensure_admin_column()
-
 DB="codex700.db"
 def db():
  c=sqlite3.connect(DB);c.row_factory=sqlite3.Row;return c
@@ -80,8 +74,6 @@ def cu():
 S="<meta name='viewport' content='width=device-width,initial-scale=1'><style>*{box-sizing:border-box}body{background:#020b26;background-image:linear-gradient(rgba(1,10,36,0.35),rgba(1,10,36,0.68)),url('/static/ai_bg.jpg');background-size:cover;background-attachment:fixed;background-position:center;color:#fff;padding-bottom:85px}a{color:inherit;text-decoration:none}.card{background:#0a0a0a;border:1px solid #0a84ff;border-radius:10px;padding:12px;margin:12px;font-size:14px;line-height:1.5;word-break:break-word;text-align:center}.card h2,.card h3{font-weight:800;letter-spacing:.8px;text-transform:uppercase;font-size:15px}.btn{background:linear-gradient(180deg,#29b6ff,#0a84ff);color:#fff;border:none;padding:12px 20px;border-radius:8px;display:inline-block;font-weight:700;letter-spacing:.6px;text-transform:uppercase;font-size:14px}.logo{color:#1da1f2;font-weight:900;font-size:22px;letter-spacing:2px;text-transform:uppercase;font-family:Inter,Arial,sans-serif}input{width:100%;padding:12px;margin:8px 0;background:#111;border:1px solid #0a84ff;border-radius:8px;color:#fff;font-size:15px;font-family:Inter,Arial,sans-serif;letter-spacing:.3px}.nav{position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;display:flex;justify-content:space-around;padding:10px;border-top:1px solid #333;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}.red{color:#1da1f2}.gold{color:#0a84ff}</style>"+"<style>.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px}.gbox{color:#fff !important;background:linear-gradient(180deg,#1da1f2,#0a84ff);border:1px solid #0a84ff;border-radius:12px;height:84px;min-height:84px;max-height:84px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6px 2px;font-size:12px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gbox b{font-size:13px}</style>"""
 N="<div class=nav><a href='/home'><div>🏠<br>Home</div></a><a href='/invest'><div>📈<br>Invest</div></a><a href='/my-investments'><div>💼<br>My Invest</div></a><a href='/transactions'><div>⇄<br>Transactions</div></a><a href='/referrals'><div>👥<br>Referrals</div></a><a href='/account'><div>👤<br>Account</div></a></div>"
 def hdr(): return "<div style='display:flex;justify-content:space-between;padding:12px;'><a href='/menu'>☰</a><div class=logo>⬣ CODEX</div><div><a href='/notifications'>🔔</a> <a href='/account'>👤</a></div></div>"
-
-
 def fix_chats_table():
     try:
         import sqlite3
@@ -98,10 +90,7 @@ def fix_chats_table():
         con.commit(); con.close()
     except Exception as e:
         print("fix_chats_table error:", e)
-
 fix_chats_table()
-
-
 def ensure_checkin_schema():
     try:
         import sqlite3, time
@@ -117,7 +106,6 @@ def ensure_checkin_schema():
     except Exception as e:
         print("checkin schema error:", e)
 ensure_checkin_schema()
-
 @app.route("/")
 def i():
     return redirect("/home") if "uid" in session else redirect("/register")
@@ -138,7 +126,6 @@ def reg():
      rc=uuid.uuid4().hex[:6].upper();c.execute("INSERT INTO users(name,phone,password,invite,balance,refcode) VALUES(?,?,?,?,0,?)",(n,p,pw,inv,rc));c.commit();c.close();return redirect("/login")
    except: m="Wrong information due to phone already registered"
  return S+"<div class=logo style='text-align:center;margin:20px'>👑 CODEX700</div><div class=card><h2 class=gold style='text-align:center'>REGISTER</h2>"+(f"<p>{m}</p>" if m else "")+"<form method=POST><input name=name placeholder='Enter Name' requiredred><input name=phone placeholder='Enter Phone' requiredred><input name=password type=password placeholder='Enter Password' requiredred><input name=confirm type=password placeholder='Confirm Password' requiredred><input name=invite placeholder='Invitation code'><button class=btn style='width:100%'>REGISTER</button></form><p style='text-align:center'>Have account? <a href='/login' class=gold>Login</a></p></div>"
-
 @app.route("/login",methods=["GET","POST"])
 def login():
  m="";ok=False
@@ -152,7 +139,6 @@ def login():
   else: session["uid"]=u["id"];ok=True
  if ok: return S+"<div class=card><p>registration successful</p><script>setTimeout(()=>location.href='/home',1500)</script></div>"
  return S+"<div class=logo style='text-align:center;margin:20px'>👑 CODEX700</div><div class=card><h2 class=gold style='text-align:center'>LOGIN</h2>"+(f"<p>{m}</p>" if m else "")+"<form method=POST><input name=phone placeholder='Enter Phone' requiredred><input name=password type=password placeholder='Enter Password' requiredred><button class=btn style='width:100%'>LOGIN</button></form><p style='text-align:center'>No account? <a href='/register' class=gold>Register</a></p></div>"
-
 @app.route("/home")
 @need
 def home():
@@ -185,7 +171,7 @@ def home():
  <div class="top"><a href="/menu" style="font-size:28px;color:;text-decoration:none">☰</a><div class="logo"><b>CODEX</b><br><span>INVEST • GROW • WIN</span></div><div style="font-size:22px"><a href="/notifications" style="text-decoration:none">🔔</a> <a href="/account" style="text-decoration:none">👤</a></div></div>
  <div class="hero"><h4>👑 WELCOME BACK,</h4><h2>"""+nm+"""</h2><p>Big dreams requiredre action.<br><i>You're one step closer to freedom!</i></p><a class="btn-gold" href="/invest">↗ INVEST NOW →</a><div class="globe">INVEST<br>TODAY<br>BUILD<br>TOMORROW</div></div>
  <div class="stats">
- <div class="sbox"><div>💼</div><b>Wallet</b><br><span>UGX """+bal+"""</span></div>
+ <div class="sbox"><div>💼</div><b></b><br><span>UGX """+bal+"""</span></div>
  <div class="sbox"><div>🪙</div><b>Invested</b><br><span>UGX """+tiv+"""</span></div>
  <div class="sbox"><div>💰</div><b>Income</b><br><span>UGX 0</span></div>
  <div class="sbox"><div>📈</div><b>Active</b><br><span>"""+str(ac)+"""</span></div></div>
@@ -206,7 +192,6 @@ def home():
 Located in Kampala Uganda, we do not have headquarters running in Uganda, due to governmental supervision, we at least have branches in Mbarara, Mukono, Kampala-Uganda<br><br>
 <b style="color:#ffd54f">For more information call our Airtel service number 0758878597</b><br><br>
 <span style="color:#4caf50;font-weight:bold">Drink water, save lives</div>
-
     <div style="background: linear-gradient(135deg,#0a3d2a,#0f5a3f); border:1px solid #00ff99; border-radius:12px; padding:14px; margin:10px;">
       <div style="color:#00ff99; font-weight:bold; font-size:15px;">🚀 CODEX Launched - Tue 8th September 2026</div>
       <div style="color:#fff; font-size:13px; margin-top:6px; line-height:1.5;">
@@ -215,28 +200,22 @@ Located in Kampala Uganda, we do not have headquarters running in Uganda, due to
         We are hiring system monitors - apply only via the official Support ticket, do NOT share your password or database access with anyone.
       </div>
     </div>
-
 <div style='display:none' 💧</span>
 </div>
  <div class="nav"><a href="/home" class="on">🏠<br>HOME</a><a href="/invest">📊<br>INVEST</a><a href="/transactions">⇄<br>TRANSACTIONS</a><a href="/referrals">👥<br>REFERRALS</a><a href="/account">👤<br>ACCOUNT</a></div>
- 
 <div style="text-align:center; margin:8px 10px 20px 10px; padding:10px; background:#111; border-radius:8px; border:1px solid #333;">
   <div style="color:#aaa; font-size:12px;">For more information, please WhatsApp the Manager at <a href="https://wa.me/256724018143" style="color:#00ff99; text-decoration:none; font-weight:bold;">0724018143</a></div>
   <div style="color:#666; font-size:11px; margin-top:4px;">Powered by National Freedom Cooperation</div>
-
 <div style="text-align:center; margin:10px;">
   <a href="https://chat.whatsapp.com/L1aDECtHAbECE61pcJIkro" target="_blank" style="display:inline-block; background:#25D366; color:#fff; padding:10px 18px; border-radius:20px; text-decoration:none; font-weight:bold; font-size:13px;">
     💬 Join Our WhatsApp Group
   </a>
   <div style="color:#888; font-size:10px; margin-top:6px;">https://chat.whatsapp.com/L1aDECtHAbECE61pcJIkro</div>
 </div>
-
 <div style='display:none'</div>
 </div>
-
 </body></html>"""
  return h
-
 @app.route("/menu")
 @need
 def menu():
@@ -246,7 +225,6 @@ def menu():
   _u=session.get("uid") or session.get("uid")
   _c=sqlite3.connect("codex700.db"); _c.row_factory=sqlite3.Row
   _me=_c.execute("SELECT is_admin FROM users WHERE id=?",(_u,)).fetchone(); _c.close()
-
  except: pass
  h=S+hdr()+"<div class=card><h3>Menu</h3>"
  try:
@@ -298,7 +276,6 @@ def account_page():
         wallet_balance=fmt(bal), total_invested_f=fmt(inv),
         total_income_f=fmt(inc), active_investments=act,
         lang_name="English")
-
 @app.route("/api/account")
 def api_account():
     import sqlite3, datetime
@@ -319,7 +296,6 @@ def api_account():
     d=dict(id=u["id"],name=u["name"] if "name" in u.keys() else "User",member_id=u["member_id"] if "member_id" in u.keys() else "",email=u["email"] if "email" in u.keys() else "",phone=u["phone"] if "phone" in u.keys() else "",balance=u["balance"] if "balance" in u.keys() else 0,total_invested=inv,total_income=inc,active_investments=act,joined=jd,lang=u["lang"] if "lang" in u.keys() and u["lang"] else "en",notif_muted=bool(u["notif_muted"]) if "notif_muted" in u.keys() and u["notif_muted"] else False)
     con.close()
     return jsonify(d)
-
 @app.route("/api/account/lang", methods=["POST"])
 def api_lang():
     import sqlite3
@@ -329,7 +305,6 @@ def api_lang():
     con.execute("UPDATE users SET lang=? WHERE id=?",(l, session.get("uid") or session.get("uid")))
     con.commit(); con.close()
     return jsonify({"ok":True})
-
 @app.route("/api/account/notif", methods=["POST"])
 def api_notif():
     import sqlite3
@@ -339,7 +314,6 @@ def api_notif():
     con.execute("UPDATE users SET notif_muted=? WHERE id=?",(m, session.get("uid") or session.get("uid")))
     con.commit(); con.close()
     return jsonify({"ok":True})
-
 @app.route("/api/account/password", methods=["POST"])
 def api_pwd():
     import sqlite3, hashlib
@@ -351,11 +325,9 @@ def api_pwd():
     con.execute("UPDATE users SET password=? WHERE id=?",(h, session.get("uid") or session.get("uid")))
     con.commit(); con.close()
     return jsonify({"msg":"Password changed successfully"})
-
 @app.route("/api/account/reset", methods=["POST"])
 def api_reset():
     return __import__("flask").jsonify({"msg":"Reset link sent to your email"})
-
 @app.route("/api/account/statement")
 def api_statement():
     import sqlite3, csv, io
@@ -369,7 +341,6 @@ def api_statement():
     for r in rows:
         w.writerow([datetime.datetime.fromtimestamp(r[0]).isoformat(),r[1],r[2],r[3],r[4],r[5]])
     return Response(out.getvalue(), mimetype="text/csv", headers={"Content-Disposition":"attachment;filename=statement.csv"})
-
 @app.route("/api/account/can-statement")
 def can_statement():
     import sqlite3
@@ -381,7 +352,6 @@ def can_statement():
     if c==0:
         return jsonify({"ok":False,"msg":"You must deposit first to download statement"})
     return jsonify({"ok":True})
-
 @app.route("/api/account/statement")
 def api_statement_guard():
     import sqlite3
@@ -402,7 +372,6 @@ def api_statement_guard():
         w.writerow([datetime.datetime.fromtimestamp(r[0]).isoformat(),r[1],r[2],r[3],r[4],r[5]])
     from flask import Response
     return Response(out.getvalue(), mimetype="text/csv", headers={"Content-Disposition":"attachment;filename=statement.csv"})
-
 @app.route("/raffle")
 def raffle_page_auto():
     import pathlib
@@ -411,11 +380,6 @@ def raffle_page_auto():
     if fp.exists():
         from flask import render_template; return render_template(fp.name)
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "raffle".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
-
-
-
-
-
 # --- AUTO-MIGRATE OLD DB FOR PERSISTENT TIMER ---
 try:
     import sqlite3
@@ -428,9 +392,6 @@ try:
 except Exception as _e:
     print("migrate err", _e)
 # --- END MIGRATE ---
-
-
-
 @app.route("/buy/<pid>")
 def buy_detail(pid):
     return f"""
@@ -509,27 +470,22 @@ if(found){{
 <div style="text-align:center; margin:8px 10px 20px 10px; padding:10px; background:#111; border-radius:8px; border:1px solid #333;">
   <div style="color:#aaa; font-size:12px;">For more information, please WhatsApp the Manager at <a href="https://wa.me/256724018143" style="color:#00ff99; text-decoration:none; font-weight:bold;">0724018143</a></div>
   <div style="color:#666; font-size:11px; margin-top:4px;">Powered by National Freedom Cooperation</div>
-
 <div style="text-align:center; margin:10px;">
   <a href="https://chat.whatsapp.com/L1aDECtHAbECE61pcJIkro" target="_blank" style="display:inline-block; background:#25D366; color:#fff; padding:10px 18px; border-radius:20px; text-decoration:none; font-weight:bold; font-size:13px;">
     💬 Join Our WhatsApp Group
   </a>
   <div style="color:#888; font-size:10px; margin-top:6px;">https://chat.whatsapp.com/L1aDECtHAbECE61pcJIkro</div>
 </div>
-
 <div style='display:none'</div>
 </div>
-
 </body></html>
 """
-
 @app.route("/product")
 def product_page():
     from flask import render_template, request
     plan=request.args.get("p","A2")
     img="miner_k.jpg" if plan.startswith("K") else "miner.jpg"
     return render_template("product_detail.html", plan=plan, img=img)
-
 @app.route("/invest")
 def invest_page_auto():
     import pathlib
@@ -538,7 +494,6 @@ def invest_page_auto():
     if fp.exists():
         from flask import render_template; return render_template(fp.name)
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "invest".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
-
 @app.route("/deposit")
 def deposit_page_auto():
     import pathlib
@@ -547,9 +502,7 @@ def deposit_page_auto():
     if fp.exists():
         from flask import render_template; return render_template(fp.name)
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "deposit".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
-
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "withdraw".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
-
 @app.route("/daily-check")
 def daily_check_page_auto():
     import pathlib
@@ -558,7 +511,6 @@ def daily_check_page_auto():
     if fp.exists():
         from flask import render_template; return render_template(fp.name)
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "daily-check".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
-
 @app.route("/daily_check")
 def daily_check_page2_auto():
     import pathlib
@@ -567,13 +519,11 @@ def daily_check_page2_auto():
     if fp.exists():
         from flask import render_template; return render_template(fp.name)
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "daily_check".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
-
 @app.route("/logout")
 def logout_auto():
     from flask import session, redirect
     session.clear()
     return redirect("/register")
-
 @app.route("/register")
 def register_page_auto():
     import pathlib
@@ -582,25 +532,20 @@ def register_page_auto():
     if fp.exists():
         from flask import render_template; return render_template(fp.name)
     return "<h2 style='font-family:sans-serif;padding:20px'>"+ "register".title() + " page coming - route fixed, no more 404</h2><a href='/home'>Back Home</a>"
-
 @app.route("/transactions")
 def transactions_page_auto():
     from flask import render_template, session
-
     uid = session.get("uid")
     if not uid:
         return redirect("/login")
-
     con = db()
     rows = []
-
     # Existing transactions table
     try:
         tx = con.execute(
             "SELECT * FROM transactions WHERE user_id=? ORDER BY id DESC",
             (uid,)
         ).fetchall()
-
         for r in tx:
             rows.append({
                 "type": r["type"] if "type" in r.keys() else "Transaction",
@@ -611,21 +556,18 @@ def transactions_page_auto():
             })
     except Exception:
         pass
-
     # Deposits table
     try:
         deps = con.execute(
             "SELECT * FROM deposits WHERE user_id=? ORDER BY id DESC",
             (uid,)
         ).fetchall()
-
         for r in deps:
             ref = ""
             if "txid" in r.keys():
                 ref = r["txid"] or ""
             elif "txn_id" in r.keys():
                 ref = r["txn_id"] or ""
-
             rows.append({
                 "type": "Deposit",
                 "amount": r["amount"] if "amount" in r.keys() else 0,
@@ -639,36 +581,29 @@ def transactions_page_auto():
             })
     except Exception:
         pass
-
     # Withdrawals table
     try:
         tables = con.execute(
             "SELECT name FROM sqlite_master WHERE type='table'"
         ).fetchall()
-
         table_names = [x["name"] for x in tables]
-
         if "withdrawals" in table_names:
             info = con.execute("PRAGMA table_info(withdrawals)").fetchall()
             cols = [x["name"] for x in info]
-
             user_col = "user_id" if "user_id" in cols else (
                 "uid" if "uid" in cols else None
             )
-
             if user_col:
                 wds = con.execute(
                     f"SELECT * FROM withdrawals WHERE {user_col}=? ORDER BY id DESC",
                     (uid,)
                 ).fetchall()
-
                 for r in wds:
                     ref = ""
                     for c in ("txid", "txn_id", "ref", "reference"):
                         if c in r.keys() and r[c]:
                             ref = r[c]
                             break
-
                     rows.append({
                         "type": "Withdrawal",
                         "amount": r["amount"] if "amount" in r.keys() else 0,
@@ -682,20 +617,15 @@ def transactions_page_auto():
                     })
     except Exception:
         pass
-
     con.close()
-
     # Newest first
     rows.reverse()
-
     return render_template("transactions.html", rows=rows)
-
 @app.route("/withdraw")
 def withdraw():
     from flask import render_template, session
     bal = session.get("balance", 0)
     return render_template("withdraw.html", balance=bal)
-
 @app.route("/referrals")
 def referrals_page():
  from flask import render_template, request
@@ -704,8 +634,6 @@ def referrals_page():
  code=hashlib.md5(uid.encode()).hexdigest()[:6].upper()
  link="https://codex700com.onrender.com/register?ref="+code
  return render_template("referrals.html",code=code,link=link,total=0,active=0,earnings=0,month_earnings=0,referrals=[],lv1=0,lv2=0,lv3=0)
-
-
 @app.route("/about")
 def about():
     h="<div class=card><h3>About Us</h3><p><b>Codex Company Kampala, Uganda</b> helps you attain <b>financial power and vision</b>.</p><p>Led by <b>CEO Tamale Imran</b> and the Codex Management Team.</p><p><b>Mission:</b> Make wealth simple for Ugandans.<br><b>Vision:</b> Financial freedom for every family.</p><p>📍 Kampala, Uganda<br>✅ Secure investments<br>✅ Fast payments<br>✅ 24/7 Support</p><p><a href='/menu'>Back to Menu</a></p></div>"
@@ -714,18 +642,14 @@ def about():
 def support_page():
  from flask import render_template
  return render_template("support.html")
-
-
 import os, json, datetime
 CHAT_FILE="chat.json"
 if not os.path.exists(CHAT_FILE):
     open(CHAT_FILE,"w").write("[]")
-
 @app.route("/chat")
 def chat_page():
     from flask import render_template
     return render_template("chat.html")
-
 @app.route("/api/my-chat")
 def api_my_chat():
  from flask import session, jsonify
@@ -740,7 +664,6 @@ def api_my_chat():
  except Exception as e:
   print("my-chat error",e)
   return jsonify([])
-
 @app.route("/api/chat", methods=["GET","POST"])
 def api_chat():
     from flask import request, jsonify, session
@@ -777,8 +700,6 @@ def api_chat():
     except Exception as e:
         print("private inbox error",e)
     return json.load(open(CHAT_FILE))
-
-
 REWARDS=[500,700,1000,1500,2000,3000,5000]
 def ensure_daily_checkin(con):
     con.execute("CREATE TABLE IF NOT EXISTS daily_checkin (user_id INTEGER PRIMARY KEY, last_check TEXT, streak INTEGER DEFAULT 0)")
@@ -852,24 +773,18 @@ def checkin_page():
     <div class="card" style="display:flex;gap:12px;align-items:center"><div style="font-size:50px">🏆</div>
     <div><i style="color:;font-size:20px">Stay Consistent!</i><br><small>The more days you check in,<br>the bigger your rewards!</small><br><i style="color:#00cfff;font-size:13px">Discipline Today = Financial Freedom Tomorrow</i></div></div>
     <div class="bottom"><a href="/home">🏠<br>Home</a><a href="/invest">📊<br>Invest</a><a href="/my-investments">💼<br>My Invest</a><a href="/transactions">🔄<br>Transactions</a><a href="/referrals">👥<br>Referrals</a><a href="/account">👤<br>Account</a></div>
-    
 <div style="text-align:center; margin:8px 10px 20px 10px; padding:10px; background:#111; border-radius:8px; border:1px solid #333;">
   <div style="color:#aaa; font-size:12px;">For more information, please WhatsApp the Manager at <a href="https://wa.me/256724018143" style="color:#00ff99; text-decoration:none; font-weight:bold;">0724018143</a></div>
   <div style="color:#666; font-size:11px; margin-top:4px;">Powered by National Freedom Cooperation</div>
-
 <div style="text-align:center; margin:10px;">
   <a href="https://chat.whatsapp.com/L1aDECtHAbECE61pcJIkro" target="_blank" style="display:inline-block; background:#25D366; color:#fff; padding:10px 18px; border-radius:20px; text-decoration:none; font-weight:bold; font-size:13px;">
     💬 Join Our WhatsApp Group
   </a>
   <div style="color:#888; font-size:10px; margin-top:6px;">https://chat.whatsapp.com/L1aDECtHAbECE61pcJIkro</div>
 </div>
-
 <div style='display:none'</div>
 </div>
-
-
 <link rel="stylesheet" href="/static/css/branches.css">
-
 <script>
 document.addEventListener('DOMContentLoaded',function(){
  var w=null;
@@ -878,8 +793,6 @@ document.addEventListener('DOMContentLoaded',function(){
  if(w){w.classList.add('codex-float-card');w.style.border='2px solid #00ff99';w.style.borderRadius='15px';}
 });
 </script>
-
-
 <link rel="stylesheet" href="/static/css/branches.css">
 <div class="codex-branches-wrap codex-float-card">
   <div class="codex-branches-inner" id="branchesInner"></div>
@@ -899,7 +812,6 @@ document.addEventListener('DOMContentLoaded',function(){
   if(w){w.classList.add('codex-float-card');w.style.border='2px solid #00ff99';w.style.borderRadius='15px';}
 });
 </script>
-
 </body></html>"""
 @app.route("/investments")
 def investments_page():
@@ -916,49 +828,12 @@ def investments_page():
             h+=f"<div class=card>📈 <b>{pl}</b><br>UGX {amt:,}<br><small>{dt}</small></div>"
     h+="</div>"
     return S+hdr()+h+N
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @app.route("/api/notifs")
 def api_notifs():
     import sqlite3; con=sqlite3.connect("codex700.db"); con.row_factory=sqlite3.Row
     ns=list(con.execute("SELECT * FROM notifications ORDER BY id DESC LIMIT 5")); con.close()
     return {"notifs":[dict(n) for n in ns]}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # --- ADMIN PANEL Deep Blue / White ---
-
 def init_invest_tables():
     import sqlite3
     db = sqlite3.connect('codex700.db')
@@ -974,7 +849,6 @@ def init_invest_tables():
     db.execute("""CREATE TABLE IF NOT EXISTS notifications
     (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, title TEXT, msg TEXT, created_ts INTEGER)""")
     db.commit()
-
 def process_maturities(user_id=None):
     import sqlite3, time
     db = sqlite3.connect('codex700.db')
@@ -1002,8 +876,6 @@ def process_maturities(user_id=None):
         db.commit()
     try: init_invest_tables()
     except: pass
-
-
 @app.route('/invest/success/<int:inv_id>')
 def invest_success(inv_id):
     import sqlite3
@@ -1014,24 +886,18 @@ def invest_success(inv_id):
     inv = db.execute("SELECT * FROM investments WHERE id=?", (inv_id,)).fetchone()
     if not inv:
         return 'not found',404
-
 @app.route('/my-investments')
 def my_investments():
     import time
     import sqlite3
     import datetime
     from flask import session, redirect, render_template
-
     uid = session.get('uid') or session.get('user_id')
-
     if not uid:
         return redirect('/login')
-
     now = int(time.time())
-
     con = sqlite3.connect("codex700.db")
     con.row_factory = sqlite3.Row
-
     try:
         investments = list(
             con.execute(
@@ -1039,56 +905,45 @@ def my_investments():
                 (uid,)
             )
         )
-
         for inv in investments:
             try:
                 start = int(inv["purchase_ts"] or now)
-
                 daily = int(
                     inv["daily_return"]
                     or inv["daily"]
                     or 0
                 )
-
                 credited_days = int(
                     inv["credited_days"]
                     or 0
                 )
-
                 duration = int(
                     inv["duration_days"]
                     or inv["duration"]
                     or 30
                 )
-
                 expiry = int(
                     inv["expiry_ts"]
                     or (start + duration * 86400)
                 )
-
                 # How many complete investment days have passed?
                 days_passed = min(
                     duration,
                     max(0, int((now - start) // 86400))
                 )
-
                 # If investment has expired, make sure ALL
                 # remaining expected return is credited.
                 if now >= expiry:
-
                     remaining_days = max(
                         0,
                         duration - credited_days
                     )
-
                     if remaining_days > 0 and daily > 0:
                         payout = remaining_days * daily
-
                         con.execute(
                             "UPDATE users SET balance=balance+? WHERE id=?",
                             (payout, uid)
                         )
-
                         con.execute("""
                             INSERT INTO transactions
                             (user_id,type,amount,status,date,ref)
@@ -1105,7 +960,6 @@ def my_investments():
                                 or "Plan"
                             )
                         ))
-
                     # IMPORTANT:
                     # Principal is NOT returned.
                     # Only expected return is credited.
@@ -1120,22 +974,18 @@ def my_investments():
                         duration,
                         inv["id"]
                     ))
-
                 else:
                     # Investment is still active.
                     claimable = max(
                         0,
                         days_passed - credited_days
                     )
-
                     if claimable > 0 and daily > 0:
                         payout = claimable * daily
-
                         con.execute(
                             "UPDATE users SET balance=balance+? WHERE id=?",
                             (payout, uid)
                         )
-
                         con.execute("""
                             INSERT INTO transactions
                             (user_id,type,amount,status,date,ref)
@@ -1152,7 +1002,6 @@ def my_investments():
                                 or "Plan"
                             )
                         ))
-
                         con.execute("""
                             UPDATE investments
                             SET credited_days=?
@@ -1161,12 +1010,9 @@ def my_investments():
                             credited_days + claimable,
                             inv["id"]
                         ))
-
             except Exception as e:
                 print("INVESTMENT PROCESS ERROR:", e)
-
         con.commit()
-
         active = list(
             con.execute("""
                 SELECT * FROM investments
@@ -1174,7 +1020,6 @@ def my_investments():
                 ORDER BY expiry_ts DESC
             """, (uid,))
         )
-
         done = list(
             con.execute("""
                 SELECT * FROM investments
@@ -1183,20 +1028,16 @@ def my_investments():
                 LIMIT 20
             """, (uid,))
         )
-
         def map_inv(inv):
             d = dict(inv)
-
             et = d.get("expiry_ts") or 0
             st = d.get("purchase_ts") or 0
-
             try:
                 d["end_time"] = (
                     datetime.datetime.fromtimestamp(et).isoformat()
                     if isinstance(et, (int, float)) and et > 1000000
                     else str(et)
                 )
-
                 d["start_time"] = (
                     datetime.datetime.fromtimestamp(st).isoformat()
                     if isinstance(st, (int, float)) and st > 1000000
@@ -1205,22 +1046,16 @@ def my_investments():
             except Exception:
                 d["end_time"] = str(et)
                 d["start_time"] = str(st)
-
             d["plan_name"] = (
                 d.get("product_name")
                 or d.get("plan")
                 or "Plan"
             )
-
             return d
-
         active = [map_inv(x) for x in active]
         done = [map_inv(x) for x in done]
-
         investments = active + done
-
         con.close()
-
         return render_template(
             "my_investments.html",
             investments=investments,
@@ -1228,18 +1063,14 @@ def my_investments():
             done=done,
             now=now
         )
-
     except Exception as e:
         print("MY INVESTMENTS ERROR:", e)
-
         try:
             con.rollback()
             con.close()
         except Exception:
             pass
-
         return f"Error: {e}", 500
-
 @app.route("/raffle-buy", methods=["POST"])
 def raffle_buy():
     from flask import request, jsonify, session
@@ -1274,7 +1105,6 @@ def raffle_buy():
     total = con.execute("SELECT COUNT(*) FROM rtickets WHERE user_id=?", (str(uid),)).fetchone()[0]
     con.close()
     return jsonify(ok=True, msg=f"Purchased {qty} ticket(s) for UGX {cost:,}!", total=total)
-
 @app.route("/raffle-my")
 def raffle_my():
     from flask import jsonify, session
@@ -1285,12 +1115,10 @@ def raffle_my():
     total=con.execute("SELECT COUNT(*) FROM rtickets WHERE user_id=?", (uid,)).fetchone()[0]
     con.close()
     return jsonify(total=total)
-
 @app.route("/raffle-winners")
 def raffle_winners():
     from flask import jsonify
     return jsonify([["Lucky256","iPhone 14","15 Aug 2026"],["Bright001","$500 Cash","01 Aug 2026"]])
-
 @app.route("/set-language", methods=["POST"])
 def set_language():
     from flask import request, jsonify, session
@@ -1309,8 +1137,6 @@ def set_language():
             con.commit(); con.close()
         except Exception as e: print(e)
     return jsonify(ok=True)
-
-
 def init_invest_tables_v1():
     import sqlite3
     db = sqlite3.connect('codex700.db')
@@ -1326,7 +1152,6 @@ def init_invest_tables_v1():
     db.execute("""CREATE TABLE IF NOT EXISTS notifications
     (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, title TEXT, msg TEXT, created_ts INTEGER)""")
     db.commit()
-
 def process_maturities_v1(user_id=None):
     import sqlite3, time
     db = sqlite3.connect('codex700.db')
@@ -1354,58 +1179,42 @@ def process_maturities_v1(user_id=None):
         db.commit()
     try: init_invest_tables()
     except: pass
-
-
 @app.route('/invest/confirm', methods=['POST'], endpoint='invest_confirm_v2')
 def invest_confirm_v2():
     import sqlite3, time
     from flask import request, session, redirect, render_template
-
     uid = session.get('user_id') or session.get('uid')
     if not uid:
         return redirect('/login')
-
     pid = (request.form.get('product_id') or 'J1').strip().upper()
-
     try:
         qty = int(request.form.get('quantity', 1))
     except:
         qty = 1
-
     if qty < 1 or qty > 10:
         return "Invalid quantity", 400
-
     if pid not in PRODUCTS:
         return "Invalid product", 400
-
     pr = PRODUCTS[pid]
-
     # Use the values belonging to the selected product.
     price = int(pr['price'])
     days = int(pr['days'])
     daily = int(pr['daily'])
-
     amount = price * qty
     daily_total = daily * qty
     total_expected = daily_total * days
-
     now = int(time.time())
     expiry = now + (days * 86400)
-
     db = sqlite3.connect('codex700.db')
     db.row_factory = sqlite3.Row
     cur = db.cursor()
-
     try:
         cur.execute("BEGIN IMMEDIATE")
-
         row = cur.execute(
             "SELECT balance FROM users WHERE id=?",
             (uid,)
         ).fetchone()
-
         balance = int(row["balance"]) if row else 0
-
         if not row or balance < amount:
             db.rollback()
             return render_template(
@@ -1417,13 +1226,11 @@ def invest_confirm_v2():
                 daily_pct=int(pr.get('daily_rate', 0) * 100),
                 duration_days=days
             ), 400
-
         # Deduct the exact purchase amount.
         cur.execute(
             "UPDATE users SET balance=balance-? WHERE id=?",
             (amount, uid)
         )
-
         # Store the investment using the ACTUAL investments table columns.
         cur.execute("""
             INSERT INTO investments (
@@ -1471,9 +1278,7 @@ def invest_confirm_v2():
             str(expiry),
             str(now)
         ))
-
         inv_id = cur.lastrowid
-
         # Record the investment transaction.
         cur.execute("""
             INSERT INTO transactions
@@ -1486,19 +1291,14 @@ def invest_confirm_v2():
             f"{pid} x{qty} invested",
             now
         ))
-
         db.commit()
-
         return redirect(f'/invest/success/{inv_id}')
-
     except Exception as e:
         db.rollback()
         print("INVESTMENT ERROR:", e)
         return "Investment could not be completed.", 500
-
     finally:
         db.close()
-
 @app.route('/invest/success/<int:inv_id>', endpoint='invest_success_v1')
 def invest_success_v1(inv_id):
     import sqlite3
@@ -1509,8 +1309,6 @@ def invest_success_v1(inv_id):
     inv = db.execute("SELECT * FROM investments WHERE id=?", (inv_id,)).fetchone()
     if not inv:
         return 'not found',404
-
-
 @app.route("/api/daily-status")
 def api_daily_status():
     import sqlite3
@@ -1535,7 +1333,6 @@ def api_daily_status():
         return jsonify({"claimed":True,"next_in":int(diff.total_seconds()),"streak":row["streak"]})
     else:
         return jsonify({"claimed":False,"streak":row["streak"]})
-
 @app.route("/api/daily-checkin", methods=["POST"])
 def api_daily_checkin():
     import sqlite3
@@ -1571,9 +1368,6 @@ def api_daily_checkin():
         con.commit()
         con.close()
         return jsonify({"ok":True,"msg":"First check-in! +500 UGX","streak":1,"reward":500})
-
-
-
 # --- ONE-TIME FIX OLD 12k -> 20k ---
 try:
     import sqlite3
@@ -1582,14 +1376,10 @@ try:
     _con.commit()
     _con.close()
 except: pass
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
-
 if __name__=='__main__':
  app.run(host='0.0.0.0', port=5000, debug=True)
-
-
 @app.route("/withdraw-submit", methods=["POST"])
 def withdraw_submit():
     import sqlite3
@@ -1611,7 +1401,6 @@ def withdraw_submit():
     con.execute("INSERT INTO withdrawals (user_id,amount,phone,status) VALUES (?,?,?, 'pending')",(uid,amt,phone))
     con.commit(); con.close()
     return jsonify({"ok":True,"msg":"Withdrawal requested, wait for approval"})
-
 @app.route("/deposit-submit", methods=["POST"])
 def deposit_submit():
     from flask import request, session, jsonify
@@ -1641,45 +1430,33 @@ def deposit_submit():
         return redirect("/transactions")
     except Exception as e:
         return jsonify({"ok":False,"msg":"Server error: "+str(e)})
-
-
 @app.route("/confirm_buy/<pid>", methods=["GET","POST"])
 def confirm_buy(pid):
     import sqlite3, time, traceback
     from flask import session, redirect
-
     uid = session.get('uid') or session.get('user_id')
     if not uid:
         return redirect('/login')
-
     pid = str(pid).strip().upper()
-
     # Use the single correct source of product information.
     if pid not in PRODUCTS:
         return "Invalid product", 400
-
     pr = PRODUCTS[pid]
-
     price = int(pr['price'])
     dur = int(pr['days'])
     daily = int(pr['daily'])
     total_expected = daily * dur
-
     con = sqlite3.connect("codex700.db")
     con.row_factory = sqlite3.Row
-
     try:
         user = con.execute(
             "SELECT * FROM users WHERE id=?",
             (uid,)
         ).fetchone()
-
         bal = int(user["balance"]) if user else 0
-
         if not user:
             con.close()
             return redirect('/login')
-
         if bal < price:
             con.close()
             return (
@@ -1687,16 +1464,13 @@ def confirm_buy(pid):
                 f'Insufficient balance: have {bal:,} need {price:,}<br>'
                 f'<a href="/buy/{pid}">Back</a></h2>'
             ), 400
-
         now = int(time.time())
         expiry = now + dur * 86400
-
         # Deduct the exact price of this product.
         con.execute(
             "UPDATE users SET balance=balance-? WHERE id=?",
             (price, uid)
         )
-
         # Save all values in the ACTUAL investments table.
         cur = con.execute("""
             INSERT INTO investments (
@@ -1744,7 +1518,6 @@ def confirm_buy(pid):
             str(expiry),
             str(now)
         ))
-
         con.execute("""
             INSERT INTO transactions
             (user_id,type,amount,status,date,ref)
@@ -1757,13 +1530,10 @@ def confirm_buy(pid):
             str(now),
             pid
         ))
-
         con.commit()
         inv_id = cur.lastrowid
         con.close()
-
         return redirect('/my-investments')
-
     except Exception as e:
         traceback.print_exc()
         try:
@@ -1772,4 +1542,3 @@ def confirm_buy(pid):
         except:
             pass
         return f"Error: {e}", 500
-
