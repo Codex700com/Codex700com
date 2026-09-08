@@ -629,11 +629,18 @@ def withdraw():
 @app.route("/referrals")
 def referrals_page():
  from flask import render_template, request
- import hashlib
- uid=request.args.get("user") or "guest"
- code=hashlib.md5(uid.encode()).hexdigest()[:6].upper()
- link="https://codex700com.onrender.com/register?ref="+code
- return render_template("referrals.html",code=code,link=link,total=0,active=0,earnings=0,month_earnings=0,referrals=[],lv1=0,lv2=0,lv3=0)
+ u=cu()
+ c=db()
+ row=c.execute("SELECT * FROM users WHERE id=?",(u["id"],)).fetchone()
+ c.close()
+ code=row["refcode"] if row and "refcode" in row.keys() else u.get("refcode","CODEX700")
+ link="https://codex700com.onrender.com/register?ref="+str(code)
+ # Get real referral stats
+ c2=db()
+ # count users who used this code as invite
+ total=c2.execute("SELECT COUNT(*) n FROM users WHERE invite=?",(code,)).fetchone()["n"]
+ c2.close()
+ return render_template("referrals.html",code=code,link=link,total=total,active=total,earnings=0,month_earnings=0,referrals=[],lv1=0,lv2=0,lv3=0)
 @app.route("/about")
 def about():
     h="<div class=card><h3>About Us</h3><p><b>Codex Company Kampala, Uganda</b> helps you attain <b>financial power and vision</b>.</p><p>Led by <b>CEO Tamale Imran</b> and the Codex Management Team.</p><p><b>Mission:</b> Make wealth simple for Ugandans.<br><b>Vision:</b> Financial freedom for every family.</p><p>📍 Kampala, Uganda<br>✅ Secure investments<br>✅ Fast payments<br>✅ 24/7 Support</p><p><a href='/menu'>Back to Menu</a></p></div>"
