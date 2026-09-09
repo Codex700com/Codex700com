@@ -21,7 +21,36 @@ def init_db():
 init_db()
 
 S='''
-<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!DOCTYPE html><html><head><style>
+html{
+  scroll-behavior:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  overflow-x:hidden!important;
+}
+body{
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  touch-action:pan-y!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+*{
+  -webkit-tap-highlight-color:transparent;
+}
+button,a,input,select,textarea{
+  touch-action:manipulation;
+}
+</style><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+<style>
+html,body{
+  touch-action:pan-x pan-y;
+  -ms-touch-action:pan-x pan-y;
+  overscroll-behavior-x:none;
+}
+input,select,textarea,button{
+  touch-action:manipulation;
+}
+</style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;color:#fff;font-family:system-ui,sans-serif;overflow-x:hidden}
@@ -115,7 +144,7 @@ def login():
    return S+WAVE+'<div class="card"><p style="color:#4ade80">Login successful</p><script>setTimeout(function(){location.href="/home"},100)</script></div>'
   else:
    m="Wrong password. Please try again." if ex else "Phone not registered. Please register first."
- html='<style>.login-wrap{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-top:18vh;padding-left:18px;padding-right:18px}.welcome{font-size:36px;font-weight:800;color:#fff;margin-bottom:28px}.pill{width:100%;max-width:360px;height:52px;background:rgba(0,0,0,0.5);border:1px solid #555;border-radius:14px;display:flex;align-items:center;padding:0 14px;margin:10px 0}.pill input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:15px;margin-left:10px}.login-btn{width:100%;max-width:360px;height:50px;background:transparent;border:1.5px solid #0a84ff;border-radius:12px;color:#0a84ff;font-size:18px;font-weight:600;margin-top:22px;cursor:pointer}.err{color:#ff6b6b;font-size:13px;max-width:360px;text-align:center;margin:6px}.bot{width:100%;max-width:360px;display:flex;justify-content:space-between;margin-top:16px;color:#bbb;font-size:13px}.bot a{color:#bbb;text-decoration:none}</style><div class="login-wrap"><div class="welcome">Welcome</div><div class="err">'+m+'</div><form method="POST" style="width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center"><div class="pill"><input name="phone" placeholder="Phone Number" required></div><div class="pill"><input name="password" type="password" placeholder="Login Password" required></div><button class="login-btn">Login</button><div class="bot"><a href="/register">Register</a><a href="/reset">Forgot your password?</a></div></form></div>'
+ html='<style>.login-wrap{position:relative;z-index:2;min-height:100vh;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;padding:10vh 18px 30px;overflow:hidden;background:#020609}.login-wrap:before{content:"";position:absolute;left:-20%;right:-20%;bottom:-5%;height:48%;z-index:-1;background:repeating-linear-gradient(0deg,rgba(0,174,255,.11) 0,rgba(0,174,255,.11) 1px,transparent 1px,transparent 30px),repeating-linear-gradient(90deg,rgba(0,174,255,.10) 0,rgba(0,174,255,.10) 1px,transparent 1px,transparent 30px);transform:perspective(420px) rotateX(58deg);transform-origin:bottom}.login-wrap:after{content:"";position:absolute;width:360px;height:220px;left:50%;bottom:0;transform:translateX(-50%);background:rgba(0,145,255,.20);border-radius:50%;z-index:-2}.welcome{font-family:Georgia,serif;font-size:45px;font-weight:500;color:#fff;margin-bottom:30px;text-shadow:0 0 20px rgba(0,170,255,.25)}.login-wrap .err{color:#ff6b6b;font-size:13px;width:100%;max-width:370px;min-height:18px;text-align:center;margin:0 0 5px}.login-form{width:100%;max-width:370px;display:flex;flex-direction:column;align-items:center}.login-pill{width:100%;height:58px;box-sizing:border-box;background:rgba(0,0,0,.70);border:1px solid rgba(255,255,255,.28);border-radius:30px;display:flex;align-items:center;padding:0 18px;margin:9px 0;box-shadow:0 5px 22px rgba(0,0,0,.25);transition:.2s}.login-pill:focus-within{border-color:#00aaff;box-shadow:0 0 16px rgba(0,170,255,.22)}.login-pill input{flex:1;width:100%;background:transparent;border:none;outline:none;color:#fff;font-size:15px;margin-left:5px}.login-pill input::placeholder{color:#929292}.eye{color:#999;font-size:17px;cursor:pointer;padding:8px}.lang{width:100%;display:flex;justify-content:flex-end;margin:3px 0 7px}.lang select{background:transparent;border:0;outline:0;color:#999;font-size:13px}.lang option{background:#050b12;color:#fff}.login-btn{width:100%;height:54px;background:transparent;border:1.6px solid #078cff;border-radius:28px;color:#078cff;font-size:18px;font-weight:600;margin-top:19px;cursor:pointer;box-shadow:0 0 15px rgba(0,140,255,.12)}.login-btn:active{transform:scale(.98);background:rgba(0,140,255,.08)}.bot{width:100%;display:flex;justify-content:space-between;margin-top:18px;font-size:13px}.bot a{color:#aaa;text-decoration:none}.bot a:first-child{color:#078cff}@media(max-width:430px){.login-wrap{padding-top:9vh}.welcome{font-size:43px}}</style><div class="login-wrap"><div class="welcome">Welcome</div><div class="err">'+m+'</div><form method="POST" class="login-form"><div class="login-pill"><input name="phone" placeholder="Phone Number" required></div><div class="login-pill"><input id="loginPassword" name="password" type="password" placeholder="Login Password" required><span class="eye" onclick="togglePassword()">◉</span></div><div class="lang"><select><option>English</option></select></div><button class="login-btn" type="submit">Login</button><div class="bot"><a href="/register">‹ &nbsp;Register</a><a href="/reset">Forgot your password?</a></div></form></div><script>function togglePassword(){var p=document.getElementById("loginPassword");p.type=p.type==="password"?"text":"password";}</script>'
  return S+WAVE+html
 
 @app.route("/reset",methods=["GET","POST"])
@@ -137,7 +166,401 @@ def reset():
 def home():
  if "uid" not in session:
   return redirect("/login")
- return S+WAVE+'<div class="card"><h2>Welcome to CODEX700</h2><p>Home page</p><a href="/login">Logout</a></div>'
+
+ return S+WAVE+"""<style>
+.home-page{
+ min-height:100vh;
+ background:#000;
+ color:#fff;
+ padding:18px 14px 100px;
+ box-sizing:border-box;
+ font-family:Georgia,serif;
+ position:relative;
+ overflow:hidden;
+}
+.home-page:before{
+ content:"";
+ position:fixed;
+ inset:0;
+ pointer-events:none;
+ opacity:.28;
+ background-image:
+  radial-gradient(circle,rgba(0,174,255,.25) 1px,transparent 1.5px);
+ background-size:26px 26px;
+}
+.home-top{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin:4px 0 28px;
+}
+.home-logo{
+ font-size:30px;
+ font-weight:800;
+ letter-spacing:1px;
+}
+.msg-link{
+ color:#fff;
+ text-decoration:none;
+ text-align:center;
+ font-size:12px;
+}
+.msg-icon{
+ display:block;
+ font-size:34px;
+ line-height:30px;
+}
+.hero{
+ height:210px;
+ border:1px solid #008fd4;
+ border-radius:28px;
+ overflow:hidden;
+ position:relative;
+ background:
+  linear-gradient(90deg,rgba(0,0,0,.82),rgba(0,0,0,.25)),
+  radial-gradient(circle at 50% 70%,rgba(0,174,255,.35),transparent 55%),
+  #02070b;
+ box-shadow:0 0 8px rgba(0,174,255,.18);
+ margin-bottom:18px;
+}
+.hero-grid{
+ position:absolute;
+ inset:0;
+ background:
+  linear-gradient(rgba(0,170,255,.08) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(0,170,255,.08) 1px,transparent 1px);
+ background-size:30px 30px;
+ transform:perspective(400px) rotateX(55deg);
+ transform-origin:bottom;
+ opacity:.55;
+}
+.hero-content{
+ position:absolute;
+ left:22px;
+ bottom:25px;
+ z-index:2;
+}
+.hero-title{
+ color:#00aaff;
+ font-size:21px;
+ font-weight:800;
+ margin-bottom:8px;
+}
+.hero-text{
+ color:#ddd;
+ font-size:13px;
+}
+.hero-arrow{
+ position:absolute;
+ top:50%;
+ transform:translateY(-50%);
+ width:43px;
+ height:43px;
+ border:1px solid #00aaff;
+ border-radius:50%;
+ background:rgba(0,0,0,.45);
+ color:#fff;
+ font-size:27px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ z-index:3;
+}
+.hero-left{left:10px}
+.hero-right{right:10px}
+.dots{
+ position:absolute;
+ bottom:9px;
+ left:50%;
+ transform:translateX(-50%);
+ display:flex;
+ gap:8px;
+}
+.dot{
+ width:9px;
+ height:9px;
+ background:#aaa;
+ border-radius:50%;
+}
+.dot.active{
+ width:32px;
+ border-radius:10px;
+ background:#00b7ff;
+}
+.stats{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:14px;
+}
+.stat{
+ background:#fff;
+ color:#111;
+ border-radius:24px;
+ overflow:hidden;
+ text-align:center;
+ box-shadow:0 0 15px rgba(0,174,255,.25);
+}
+.stat-value{
+ height:72px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-size:25px;
+ font-weight:800;
+}
+.stat-label{
+ min-height:52px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ background:#08b3ed;
+ color:#fff;
+ font-size:17px;
+}
+.team-stats{
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:12px;
+ margin-top:14px;
+}
+.team-card{
+ background:#fff;
+ color:#111;
+ border-radius:22px;
+ overflow:hidden;
+ text-align:center;
+ box-shadow:0 0 14px rgba(0,174,255,.22);
+}
+.team-value{
+ height:70px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-size:22px;
+ font-weight:800;
+}
+.team-label{
+ min-height:48px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ background:#08b3ed;
+ color:#fff;
+ font-size:14px;
+ padding:0 4px;
+}
+.news{
+ margin-top:28px;
+ border:1px solid rgba(0,174,255,.55);
+ border-radius:22px;
+ background:rgba(0,8,14,.82);
+ padding:18px 16px;
+ box-shadow:0 0 20px rgba(0,174,255,.12);
+}
+.news-title{
+ font-size:24px;
+ font-weight:800;
+ margin-bottom:16px;
+}
+.news-title span{
+ color:#00aaff;
+}
+.news-item{
+ padding:14px 0;
+ border-top:1px solid rgba(255,255,255,.08);
+ color:#ddd;
+ font-size:14px;
+ line-height:1.5;
+}
+.bottom-nav{
+ position:fixed;
+ z-index:20;
+ left:0;
+ right:0;
+ bottom:0;
+ height:76px;
+ background:#000;
+ border-top:1px solid rgba(0,174,255,.22);
+ display:grid;
+ grid-template-columns:repeat(6,1fr);
+ padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-item{
+ color:#fff;
+ text-decoration:none;
+ text-align:center;
+ font-size:12px;
+ display:flex;
+ flex-direction:column;
+ justify-content:center;
+ gap:3px;
+}
+.nav-icon{
+ font-size:27px;
+ line-height:28px;
+}
+.nav-item.active{
+ color:#00b7ff;
+}
+@media(max-width:380px){
+ .home-page{padding-left:10px;padding-right:10px}
+ .stat-label{font-size:14px}
+ .team-label{font-size:12px}
+ .home-logo{font-size:26px}
+}
+</style>
+
+<div class="home-page">
+ <div class="home-top">
+  <div class="home-logo">CODEX700</div>
+  <a class="msg-link" href="/messages">
+   <span class="msg-icon">♧</span>
+   Message
+  </a>
+ </div>
+
+ <div class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-arrow hero-left">‹</div>
+  <div class="hero-arrow hero-right">›</div>
+  <div class="hero-content">
+   <div class="hero-title">Welcome to CODEX700</div>
+   <div class="hero-text">Your CODEX dashboard</div>
+  </div>
+  <div class="dots">
+   <span class="dot"></span>
+   <span class="dot"></span>
+   <span class="dot active"></span>
+   <span class="dot"></span>
+  </div>
+ </div>
+
+ <div class="stats">
+  <div class="stat">
+   <div class="stat-value">0.00</div>
+   <div class="stat-label">Deposit details</div>
+  </div>
+  <div class="stat">
+   <div class="stat-value">0.00</div>
+   <div class="stat-label">Withdraw details</div>
+  </div>
+  <div class="stat">
+   <div class="stat-value">0.00</div>
+   <div class="stat-label">AI Income</div>
+  </div>
+  <div class="stat">
+   <div class="stat-value">0.00</div>
+   <div class="stat-label">Today's earnings</div>
+  </div>
+ </div>
+
+ <div class="team-stats">
+  <div class="team-card">
+   <div class="team-value">0</div>
+   <div class="team-label">Invite Count</div>
+  </div>
+  <div class="team-card">
+   <div class="team-value">0</div>
+   <div class="team-label">Team Count</div>
+  </div>
+  <div class="team-card">
+   <div class="team-value">0.00</div>
+   <div class="team-label">Team income</div>
+  </div>
+ </div>
+
+ <div class="news">
+  <div class="news-title"><span>♧</span> News &amp; Announcements</div>
+  <div class="news-item">Welcome to CODEX700.</div>
+  <div class="news-item">Check your notifications for the latest platform updates.</div>
+ </div>
+</div>
+
+<div class="bottom-nav">
+ <a class="nav-item active" href="/home"><span class="nav-icon">⌂</span>Home</a>
+ <a class="nav-item" href="/raffle"><span class="nav-icon">▣</span>Raffle</a>
+ <a class="nav-item" href="/messages"><span class="nav-icon">▤</span>Chats</a>
+ <a class="nav-item" href="/invest"><span class="nav-icon">▦</span>AI</a>
+ <a class="nav-item" href="/income"><span class="nav-icon">₿</span>Income</a>
+ <a class="nav-item" href="/my"><span class="nav-icon">♙</span>My</a>
+</div>"""
+
+@app.route("/my")
+def my_page():
+ if "uid" not in session:
+  return redirect("/login")
+
+ c=db()
+ u=c.execute("SELECT * FROM users WHERE id=?",(session["uid"],)).fetchone()
+ c.close()
+
+ phone = u["phone"] if u else ""
+ balance = u["balance"] if u and "balance" in u.keys() else 0
+
+ return S+WAVE+"""<style>
+.my-page{min-height:100vh;background:#000;color:#fff;padding:20px 14px 105px;box-sizing:border-box;font-family:Georgia,serif}
+.my-top{display:flex;justify-content:space-between;align-items:flex-start;margin:5px 8px 28px}
+.my-welcome{color:#00baff;font-size:27px}
+.my-phone{font-size:18px;margin-top:13px}
+.vip{text-align:center}
+.vip-circle{width:72px;height:72px;border:3px solid #08baff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px}
+.vip-label{margin-top:8px;border:1px solid #08baff;border-radius:20px;padding:6px 18px;color:#00baff;font-size:13px}
+.wallet{border:1px solid #078cff;border-radius:25px;padding:32px 12px;margin-bottom:28px;background:#02080d;display:grid;grid-template-columns:1fr 1fr;text-align:center}
+.wallet-title{color:#aaa;font-size:22px;margin-bottom:15px}
+.wallet-value{font-size:32px;font-weight:bold}
+.down{grid-column:1/3;color:#00baff;font-size:36px;margin-top:15px}
+.services{border:1px solid #078cff;border-radius:24px;padding:25px 8px;background:#02080d;display:grid;grid-template-columns:repeat(4,1fr);gap:25px 5px}
+.service{text-align:center;color:#fff;text-decoration:none;font-size:14px}
+.icon{width:56px;height:56px;margin:auto auto 8px;border-radius:17px;background:#08b9ee;display:flex;align-items:center;justify-content:center;font-size:27px}
+.bottom{position:fixed;z-index:50;left:0;right:0;bottom:0;height:76px;background:#000;border-top:1px solid #123;display:grid;grid-template-columns:repeat(6,1fr)}
+.bottom a{color:#fff;text-decoration:none;text-align:center;font-size:12px;padding-top:10px}
+.bottom i{display:block;font-style:normal;font-size:27px}
+.bottom .active{color:#00baff}
+@media(max-width:380px){.my-page{padding-left:8px;padding-right:8px}.icon{width:52px;height:52px}.service{font-size:12px}}
+</style>
+<div class="my-page">
+<div class="my-top">
+<div>
+<div class="my-welcome">Welcome to CODEX700</div>
+<div class="my-phone">"""+str(phone)+"""</div>
+</div>
+<div class="vip">
+<div class="vip-circle">✦</div>
+<div class="vip-label">★ VIP 0</div>
+</div>
+</div>
+
+<div class="wallet">
+<div><div class="wallet-title">Wallet</div><div class="wallet-value">0.00</div></div>
+<div><div class="wallet-title">Balance</div><div class="wallet-value">"""+str(balance)+"""</div></div>
+<div class="down">⌄</div>
+</div>
+
+<div class="services">
+<a class="service" href="/home"><div class="icon">▣</div>Deposit</a>
+<a class="service" href="/home"><div class="icon">♢</div>Withdraw</a>
+<a class="service" href="/home"><div class="icon">▤</div>Card</a>
+<a class="service" href="/home"><div class="icon">$</div>Bill</a>
+<a class="service" href="/home"><div class="icon">♙</div>Invite</a>
+<a class="service" href="/home"><div class="icon">♧</div>My team</a>
+<a class="service" href="/home"><div class="icon">☆</div>VIP Task</a>
+<a class="service" href="/home"><div class="icon">🎁</div>Reward</a>
+<a class="service" href="/home"><div class="icon">▱</div>Gift code</a>
+<a class="service" href="/home"><div class="icon">◇</div>Raffle</a>
+<a class="service" href="/home"><div class="icon">↓</div>Download App</a>
+<a class="service" href="/home"><div class="icon">♧</div>Manager</a>
+<a class="service" href="/my"><div class="icon">⚙</div>Settings</a>
+</div>
+</div>
+
+<div class="bottom">
+<a href="/home"><i>⌂</i>Home</a>
+<a href="/home"><i>▣</i>Raffle</a>
+<a href="/home"><i>▤</i>Chats</a>
+<a href="/home"><i>▦</i>AI</a>
+<a href="/home"><i>₿</i>Income</a>
+<a class="active" href="/my"><i>♙</i>My</a>
+</div>"""
 
 if __name__=="__main__":
- app.run(host="0.0.0.0",port=5000,debug=True)
+ app.run(host="0.0.0.0",port=5000,debug=False)
