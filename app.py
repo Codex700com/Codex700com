@@ -1,6 +1,6 @@
 import sqlite3, pathlib, os, random
 from manager_code import setup as setup_manager
-from flask import Flask, request, redirect, session, g
+from flask import render_template, Flask, request, redirect, session, g
 
 app=Flask(__name__)
 app.secret_key="codex700_secret_2024"
