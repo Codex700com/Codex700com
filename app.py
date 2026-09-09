@@ -800,11 +800,49 @@ def my_page():
 <a href="/home"><i>▣</i>Raffle</a>
 <a href="/home"><i>▤</i>Chats</a>
 <a href="/home"><i>▦</i>AI</a>
-<a href="/home"><i>₿</i>Income</a>
+<a href="/income"><i>₿</i>Income</a>
 <a class="active" href="/my"><i>♙</i>My</a>
 </div>"""
 
 setup_manager(app, db, S)
+
+
+@app.route("/income")
+def income_page():
+    if "uid" not in session:
+        return redirect("/login")
+
+    c=db()
+    c.execute("CREATE TABLE IF NOT EXISTS ai_machines(id INTEGER PRIMARY KEY AUTOINCREMENT,uid INTEGER NOT NULL,name TEXT NOT NULL,started_at TEXT DEFAULT CURRENT_TIMESTAMP,status TEXT DEFAULT 'RUNNING')")
+    rows=c.execute("SELECT name,started_at,status FROM ai_machines WHERE uid=? ORDER BY id DESC",(session["uid"],)).fetchall()
+    c.close()
+
+    items=""
+    for r in rows:
+        items += '<div class="machine"><b>▦ '+html.escape(r["name"])+'</b><span>● '+html.escape(r["status"])+'</span><small>Started: '+html.escape(r["started_at"])+'</small></div>'
+
+    if not items:
+        items='<div class="empty"><div>No active machines yet.</div><small>Activate a machine on the AI tab to see it here.</small><a href="/invest">Browse AI machines</a></div>'
+
+    page = S + '<style>'
+    page += 'body{margin:0;background:#000;color:#fff;font-family:Georgia,serif}'
+    page += '.inc{min-height:100vh;padding:25px 14px 95px}'
+    page += '.title{text-align:center;color:#00baff;font-size:30px;font-weight:bold;margin:10px 0 28px}'
+    page += '.machine,.empty{background:#02090e;border:1px solid #078cff;border-radius:22px;padding:22px;margin-bottom:15px}'
+    page += '.machine b{display:block;color:#00baff;font-size:21px}'
+    page += '.machine span{display:block;color:#20dc75;margin-top:8px}'
+    page += '.machine small{display:block;color:#888;margin-top:8px}'
+    page += '.empty{text-align:center;padding:55px 18px}'
+    page += '.empty div{font-size:22px;color:#ddd;margin-bottom:15px}'
+    page += '.empty small{display:block;color:#aaa;margin-bottom:25px}'
+    page += '.empty a{display:inline-block;background:#08baf0;color:#fff;text-decoration:none;padding:14px 25px;border-radius:25px;font-weight:bold}'
+    page += '.nav{position:fixed;bottom:0;left:0;right:0;height:72px;background:#000;border-top:1px solid #123;display:grid;grid-template-columns:repeat(6,1fr)}'
+    page += '.nav a{color:#fff;text-decoration:none;text-align:center;padding-top:9px;font-size:12px}'
+    page += '.nav i{display:block;font-style:normal;font-size:25px}'
+    page += '.active{color:#00baff!important}'
+    page += '</style><div class="inc"><div class="title">Income</div>'+items+'</div>'
+    page += '<div class="nav"><a href="/home"><i>⌂</i>Home</a><a href="/home"><i>▣</i>Raffle</a><a href="/support"><i>▤</i>Chats</a><a href="/invest"><i>▦</i>AI</a><a class="active" href="/income"><i>₿</i>Income</a><a href="/my"><i>♙</i>My</a></div>'
+    return page
 
 if __name__=="__main__":
  app.run(host="0.0.0.0",port=5000,debug=False)
