@@ -993,10 +993,25 @@ def raffle_page():
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000,debug=False)
 
-@app.route("/reward")
+@app.route("/reward", methods=["GET","POST"])
 def reward_page():
     if "uid" not in session:
         return redirect("/login")
+
+    con=sqlite3.connect(DB)
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS reward_redemptions(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            uid INTEGER NOT NULL,
+            code TEXT NOT NULL,
+            value INTEGER NOT NULL,
+            redeemed_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(uid,code)
+        )
+    """)
+    con.commit()
+    con.close()
+
     return S+"""<style>
 body{background:#000;color:#fff;font-family:Georgia,serif}
 .page{min-height:100vh;padding:20px 15px 100px;box-sizing:border-box}
@@ -1023,12 +1038,68 @@ button{width:100%;margin-top:15px;padding:16px;border:0;border-radius:14px;backg
 </div>
 </div>
 <script>
-function checkCode(){
- let c=document.getElementById("code").value.trim();
- alert(c ? "Reward code submitted." : "Please enter the reward code");
+async function checkCode(){
+ let c=document.getElementById("code").value.trim().toUpperCase();
+ if(!c){
+   alert("Please enter the reward code");
+   return;
+ }
+
+ const r=await fetch("/reward/redeem",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({code:c})
+ });
+ const d=await r.json();
+ alert(d.message);
 }
 </script>"""
 
+
+
+@app.route("/reward/redeem", methods=["POST"])
+def redeem_reward():
+    if "uid" not in session:
+        return {"message":"Please log in first."},401
+
+    data=request.get_json(silent=True) or {}
+    code=str(data.get("code","")).strip().upper()
+
+    rewards={
+        "HFCS":40000,
+        "CODEX20":20000,
+        "WELCOME10":10000,
+        "BONUS5":5000,
+        "VIP50":50000
+    }
+
+    if code not in rewards:
+        return {"message":"Invalid reward code."}
+
+    con=sqlite3.connect(DB)
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS reward_redemptions(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            uid INTEGER NOT NULL,
+            code TEXT NOT NULL,
+            value INTEGER NOT NULL,
+            redeemed_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(uid,code)
+        )
+    """)
+
+    try:
+        con.execute(
+            "INSERT INTO reward_redemptions(uid,code,value) VALUES(?,?,?)",
+            (session["uid"],code,rewards[code])
+        )
+        con.commit()
+        msg=f"Reward code accepted: {rewards[code]:,} promotional points."
+    except sqlite3.IntegrityError:
+        msg="You have already used this reward code."
+
+    con.close()
+    return {"message":msg}
 
 @app.route("/support")
 def support_page():
