@@ -21,7 +21,11 @@ def init_db():
  c.close()
 init_db()
 
-S='''<link rel="stylesheet" href="/static/css/codex-waves.css">
+S='''
+<div class="codex-waves">
+<span></span><span></span><span></span>
+</div>
+<link rel="stylesheet" href="/static/css/codex-waves.css">
 <!DOCTYPE html><html><head><style>
 html{
   scroll-behavior:auto!important;
@@ -936,9 +940,7 @@ def invest():
         <a href="/my"><b>◉</b>My</a>
       </div>
     
-<div class="codex-waves">
-<span></span><span></span><span></span>
-</div>
+
 </body>
     </html>
     """
