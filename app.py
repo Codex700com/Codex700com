@@ -779,17 +779,17 @@ def my_page():
 
 <div class="services">
 <a class="service" href="/home"><div class="icon">▣</div>Deposit</a>
-<a class="service" href="/home"><div class="icon">♢</div>Withdraw</a>
+<a class="service" href="/withdraw"><div class="icon">♢</div>Withdraw</a>
 <a class="service" href="/home"><div class="icon">▤</div>Card</a>
 <a class="service" href="/home"><div class="icon">$</div>Bill</a>
 <a class="service" href="/home"><div class="icon">♙</div>Invite</a>
 <a class="service" href="/home"><div class="icon">♧</div>My team</a>
 <a class="service" href="/home"><div class="icon">☆</div>VIP Task</a>
-<a class="service" href="/home"><div class="icon">🎁</div>Reward</a>
+<a class="service" href="/reward"><div class="icon">🎁</div>Reward</a>
 <a class="service" href="/home"><div class="icon">▱</div>Gift code</a>
 <a class="service" href="/home"><div class="icon">◇</div>Raffle</a>
 <a class="service" href="/home"><div class="icon">↓</div>Download App</a>
-<a class="service" href="/home"><div class="icon">♧</div>Manager</a>
+<a class="service" href="/support"><div class="icon">♧</div>Manager</a>
 <a class="service" href="/my"><div class="icon">⚙</div>Settings</a>
 </div>
 </div>
@@ -805,3 +805,120 @@ def my_page():
 
 if __name__=="__main__":
  app.run(host="0.0.0.0",port=5000,debug=False)
+
+@app.route("/reward")
+def reward_page():
+    if "uid" not in session:
+        return redirect("/login")
+    return S+"""<style>
+body{background:#000;color:#fff;font-family:Georgia,serif}
+.page{min-height:100vh;padding:20px 15px 100px;box-sizing:border-box}
+.head{display:flex;align-items:center;gap:15px;margin-bottom:25px}
+.back{color:#00baff;text-decoration:none;font-size:35px}
+.title{color:#00baff;font-size:26px;font-weight:bold}
+.card{background:#02080d;border:1px solid #078cff;border-radius:22px;padding:25px 18px;text-align:center}
+.icon{font-size:55px}
+h2{color:#00baff}
+p{color:#aaa;line-height:1.5}
+input{width:100%;box-sizing:border-box;padding:16px;border-radius:14px;border:1px solid #078cff;background:#050d15;color:#fff;font-size:16px}
+button{width:100%;margin-top:15px;padding:16px;border:0;border-radius:14px;background:#08b9ee;color:#fff;font-weight:bold;font-size:17px}
+.cancel{display:block;margin-top:15px;color:#00baff;text-decoration:none}
+</style>
+<div class="page">
+<div class="head"><a class="back" href="/my">‹</a><div class="title">Reward Center</div></div>
+<div class="card">
+<div class="icon">🎁</div>
+<h2>Enter Reward Code</h2>
+<p>Please enter the reward code provided by CODEX700.</p>
+<input id="code" placeholder="Enter code">
+<button onclick="checkCode()">Confirm</button>
+<a class="cancel" href="/my">Cancel</a>
+</div>
+</div>
+<script>
+function checkCode(){
+ let c=document.getElementById("code").value.trim();
+ alert(c ? "Reward code submitted." : "Please enter the reward code");
+}
+</script>"""
+
+
+@app.route("/support")
+def support_page():
+    if "uid" not in session:
+        return redirect("/login")
+    return S+"""<style>
+body{background:#000;color:#fff;font-family:Georgia,serif}
+.page{min-height:100vh;padding:20px 15px 100px;box-sizing:border-box}
+.head{display:flex;align-items:center;gap:15px;margin-bottom:25px}
+.back{color:#00baff;text-decoration:none;font-size:35px}
+.title{color:#00baff;font-size:26px;font-weight:bold}
+.card{background:#02080d;border:1px solid #078cff;border-radius:22px;padding:20px;margin-bottom:18px}
+.manager{display:flex;align-items:center;gap:15px}
+.avatar{width:58px;height:58px;border:2px solid #00baff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:27px}
+.name{color:#00baff;font-weight:bold}
+.status{color:#aaa;font-size:13px;margin-top:5px}
+.message{margin-top:20px;padding:16px;border-radius:18px;background:#071522;border:1px solid #078cff;line-height:1.5}
+.btn{display:block;text-align:center;padding:15px;border:1px solid #078cff;border-radius:14px;color:#00baff;text-decoration:none;margin-top:15px}
+</style>
+<div class="page">
+<div class="head"><a class="back" href="/my">‹</a><div class="title">Support Center</div></div>
+<div class="card manager">
+<div class="avatar">♧</div>
+<div><div class="name">CODEX700 SUPPORT</div><div class="status">● Support Center</div></div>
+</div>
+<div class="card">
+<div class="message"><b style="color:#00baff">CODEX700 SUPPORT</b><br><br>Welcome to the CODEX700 Support Center. How can we help you today?</div>
+<a class="btn" href="/home">Open Support</a>
+<a class="btn" href="/my">Back to My Account</a>
+</div>
+</div>"""
+
+
+@app.route("/withdraw")
+def withdraw_page():
+    if "uid" not in session:
+        return redirect("/login")
+    c=db()
+    u=c.execute("SELECT * FROM users WHERE id=?",(session["uid"],)).fetchone()
+    c.close()
+    balance=u["balance"] if u and "balance" in u.keys() else 0
+
+    return S+"""<style>
+body{background:#000;color:#fff;font-family:Georgia,serif}
+.page{min-height:100vh;padding:20px 15px 100px;box-sizing:border-box}
+.head{display:flex;align-items:center;gap:15px;margin-bottom:25px}
+.back{color:#00baff;text-decoration:none;font-size:35px}
+.title{color:#00baff;font-size:26px;font-weight:bold}
+.card{background:#02080d;border:1px solid #078cff;border-radius:22px;padding:20px;margin-bottom:18px}
+.balance{text-align:center}
+.label{color:#aaa}
+.amount{color:#00baff;font-size:34px;font-weight:bold;margin-top:8px}
+.methods{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:12px}
+.method{padding:13px 3px;text-align:center;border:1px solid #078cff;border-radius:12px;font-size:12px}
+.method.active{background:#08b9ee}
+input{width:100%;box-sizing:border-box;padding:16px;margin-top:10px;border-radius:14px;border:1px solid #078cff;background:#050d15;color:#fff;font-size:16px}
+.note{color:#aaa;font-size:13px;line-height:1.5}
+.disabled{width:100%;padding:16px;border:0;border-radius:14px;background:#075d78;color:#aaa;font-size:17px;font-weight:bold}
+</style>
+<div class="page">
+<div class="head"><a class="back" href="/my">‹</a><div class="title">Withdraw</div></div>
+<div class="card balance"><div class="label">Available Balance</div><div class="amount">"""+str(balance)+"""</div></div>
+<div class="card">
+<div class="label">Payout Method</div>
+<div class="methods">
+<div class="method active">MTN UG</div>
+<div class="method">Airtel UG</div>
+<div class="method">USDT</div>
+</div>
+<div style="margin-top:20px" class="label">Amount (UGX)</div>
+<input type="number" placeholder="Enter amount">
+</div>
+<div class="card">
+<div>Amount <span style="float:right;color:#00baff">0.00</span></div>
+<div>Fee <span style="float:right;color:#00baff">0.00</span></div>
+<div style="margin-top:8px"><b>You receive</b><span style="float:right;color:#00baff">0.00</span></div>
+<p class="note">Withdrawal functionality is currently unavailable in this interface.</p>
+<button class="disabled" disabled>Request Withdrawal</button>
+</div>
+</div>"""
