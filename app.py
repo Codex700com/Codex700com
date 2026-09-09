@@ -167,7 +167,7 @@ def home():
  if "uid" not in session:
   return redirect("/login")
 
- return S+WAVE+"""<style>
+ return S+"""<style>
 .home-page{
  min-height:100vh;
  background:#000;
@@ -497,7 +497,7 @@ def my_page():
  phone = u["phone"] if u else ""
  balance = u["balance"] if u and "balance" in u.keys() else 0
 
- return S+WAVE+"""<style>
+ return S+"""<style>
 .my-page{min-height:100vh;background:#000;color:#fff;padding:20px 14px 105px;box-sizing:border-box;font-family:Georgia,serif}
 .my-top{display:flex;justify-content:space-between;align-items:flex-start;margin:5px 8px 28px}
 .my-welcome{color:#00baff;font-size:27px}
