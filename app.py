@@ -844,6 +844,144 @@ def income_page():
     page += '<div class="nav"><a href="/home"><i>⌂</i>Home</a><a href="/home"><i>▣</i>Raffle</a><a href="/support"><i>▤</i>Chats</a><a href="/invest"><i>▦</i>AI</a><a class="active" href="/income"><i>₿</i>Income</a><a href="/my"><i>♙</i>My</a></div>'
     return page
 
+
+@app.route("/invest", methods=["GET"])
+def invest():
+    if "uid" not in session:
+        return redirect("/login")
+
+    machines = [
+        ("Codex M1", "Entry AI Computing Machine", "Basic"),
+        ("Codex M2", "AI Processing Machine", "Standard"),
+        ("Codex M3", "High Performance AI Machine", "Advanced"),
+        ("Codex M4", "Neural Processing Machine", "Pro"),
+        ("Codex M5", "Enterprise AI Machine", "Enterprise"),
+        ("Codex M6", "Advanced Computing Machine", "Premium"),
+        ("Codex M7", "Codex High Performance System", "Ultra")
+    ]
+
+    html = """
+    <!doctype html>
+    <html>
+    <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>CODEX700 AI</title>
+    <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;background:#050b14;color:#fff;
+      font-family:Arial,sans-serif;padding-bottom:80px
+    }
+    .top{
+      padding:18px 16px;
+      background:linear-gradient(135deg,#02060c,#061a30);
+      border-bottom:1px solid #087fc1
+    }
+    .top h1{margin:0;color:#00b7ff;font-size:24px}
+    .top p{margin:6px 0 0;color:#8fa3b8;font-size:13px}
+    .wrap{padding:14px}
+    .machine{
+      background:#0b1422;
+      border:1px solid #123957;
+      border-radius:16px;
+      padding:16px;
+      margin-bottom:12px;
+      box-shadow:0 0 15px rgba(0,150,255,.08)
+    }
+    .machine h2{margin:0 0 7px;color:#fff;font-size:18px}
+    .machine p{margin:5px 0;color:#91a7bb;font-size:13px}
+    .tag{
+      display:inline-block;padding:5px 9px;border-radius:8px;
+      background:#062b46;color:#00b7ff;font-size:11px;margin:7px 0
+    }
+    button{
+      width:100%;border:0;border-radius:12px;
+      min-height:44px;background:linear-gradient(90deg,#008cff,#00c6ff);
+      color:#fff;font-weight:bold;font-size:15px;margin-top:9px
+    }
+    .nav{
+      position:fixed;bottom:0;left:0;right:0;
+      height:64px;background:#050b14;
+      border-top:1px solid #123957;
+      display:flex;justify-content:space-around;align-items:center
+    }
+    .nav a{color:#91a7bb;text-decoration:none;font-size:12px;text-align:center}
+    .nav a.active{color:#00b7ff}
+    .nav b{display:block;font-size:20px;margin-bottom:2px}
+    </style>
+    </head>
+    <body>
+      <div class="top">
+        <h1>CODEX700 AI</h1>
+        <p>AI Computing Machines</p>
+      </div>
+
+      <div class="wrap">
+        {% for name,desc,level in machines %}
+        <div class="machine">
+          <h2>{{name}}</h2>
+          <p>{{desc}}</p>
+          <span class="tag">{{level}}</span>
+          <form method="post" action="/ai/activate/{{name|replace(' ','_')}}">
+            <button type="submit">Activate Machine</button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="nav">
+        <a href="/home"><b>⌂</b>Home</a>
+        <a class="active" href="/invest"><b>▦</b>AI</a>
+        <a href="/income"><b>₿</b>Income</a>
+        <a href="/my"><b>◉</b>My</a>
+      </div>
+    </body>
+    </html>
+    """
+
+    return render_template_string(html, machines=machines)
+
+
+@app.route("/ai/activate/<machine_name>", methods=["POST"])
+def activate_ai_machine(machine_name):
+    if "uid" not in session:
+        return redirect("/login")
+
+    allowed={
+        "Codex_M1":"Codex M1",
+        "Codex_M2":"Codex M2",
+        "Codex_M3":"Codex M3",
+        "Codex_M4":"Codex M4",
+        "Codex_M5":"Codex M5",
+        "Codex_M6":"Codex M6",
+        "Codex_M7":"Codex M7"
+    }
+
+    name=allowed.get(machine_name)
+    if not name:
+        return redirect("/invest")
+
+    con=sqlite3.connect(DB)
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS ai_machines(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            uid INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            started_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            status TEXT DEFAULT 'RUNNING'
+        )
+    """)
+
+    # Keep this as virtual machine activation only.
+    con.execute(
+        "INSERT INTO ai_machines(uid,name,status) VALUES(?,?,?)",
+        (session["uid"],name,"RUNNING")
+    )
+    con.commit()
+    con.close()
+
+    return redirect("/income")
+
 if __name__=="__main__":
  app.run(host="0.0.0.0",port=5000,debug=False)
 
