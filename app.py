@@ -210,45 +210,43 @@ def home():
  font-size:34px;
  line-height:30px;
 }
-.hero{
+
+ .hero{
  height:210px;
  border:1px solid #008fd4;
  border-radius:28px;
  overflow:hidden;
  position:relative;
- background:
-  linear-gradient(90deg,rgba(0,0,0,.82),rgba(0,0,0,.25)),
-  radial-gradient(circle at 50% 70%,rgba(0,174,255,.35),transparent 55%),
-  #02070b;
- box-shadow:0 0 8px rgba(0,174,255,.18);
+ background:#02070b;
  margin-bottom:18px;
+ box-shadow:0 0 8px rgba(0,174,255,.18);
+ touch-action:pan-y;
 }
-.hero-grid{
+.hero-track{
+ display:flex;
+ width:100%;
+ height:100%;
+ transform:translate3d(0,0,0);
+ transition:transform .42s ease;
+ will-change:transform;
+}
+.hero-slide{
+ min-width:100%;
+ height:100%;
+ position:relative;
+}
+.hero-slide img{
+ width:100%;
+ height:100%;
+ display:block;
+ object-fit:cover;
+}
+.hero-slide:after{
+ content:"";
  position:absolute;
  inset:0;
- background:
-  linear-gradient(rgba(0,170,255,.08) 1px,transparent 1px),
-  linear-gradient(90deg,rgba(0,170,255,.08) 1px,transparent 1px);
- background-size:30px 30px;
- transform:perspective(400px) rotateX(55deg);
- transform-origin:bottom;
- opacity:.55;
-}
-.hero-content{
- position:absolute;
- left:22px;
- bottom:25px;
- z-index:2;
-}
-.hero-title{
- color:#00aaff;
- font-size:21px;
- font-weight:800;
- margin-bottom:8px;
-}
-.hero-text{
- color:#ddd;
- font-size:13px;
+ background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.55));
+ pointer-events:none;
 }
 .hero-arrow{
  position:absolute;
@@ -258,13 +256,14 @@ def home():
  height:43px;
  border:1px solid #00aaff;
  border-radius:50%;
- background:rgba(0,0,0,.45);
+ background:rgba(0,0,0,.48);
  color:#fff;
  font-size:27px;
  display:flex;
  align-items:center;
  justify-content:center;
- z-index:3;
+ z-index:4;
+ padding:0;
 }
 .hero-left{left:10px}
 .hero-right{right:10px}
@@ -275,6 +274,7 @@ def home():
  transform:translateX(-50%);
  display:flex;
  gap:8px;
+ z-index:5;
 }
 .dot{
  width:9px;
@@ -420,21 +420,41 @@ def home():
  </div>
 
  <div class="hero">
-  <div class="hero-grid"></div>
-  <div class="hero-arrow hero-left">‹</div>
-  <div class="hero-arrow hero-right">›</div>
-  <div class="hero-content">
-   <div class="hero-title">Welcome to CODEX700</div>
-   <div class="hero-text">Your CODEX dashboard</div>
+  <div class="hero-track" id="heroTrack">
+
+   <div class="hero-slide">
+    <img src="/static/home_banners/banner1.jpg">
+   </div>
+
+   <div class="hero-slide">
+    <img src="/static/home_banners/banner2.jpg">
+   </div>
+
+   <div class="hero-slide">
+    <img src="/static/home_banners/banner3.jpg">
+   </div>
+
+   <div class="hero-slide">
+    <img src="/static/home_banners/banner4.jpg">
+   </div>
+
+   <div class="hero-slide">
+    <img src="/static/home_banners/banner5.jpg">
+   </div>
+
   </div>
-  <div class="dots">
-   <span class="dot"></span>
-   <span class="dot"></span>
+
+  <button class="hero-arrow hero-left" id="heroPrev" type="button">‹</button>
+  <button class="hero-arrow hero-right" id="heroNext" type="button">›</button>
+
+  <div class="dots" id="heroDots">
    <span class="dot active"></span>
+   <span class="dot"></span>
+   <span class="dot"></span>
+   <span class="dot"></span>
    <span class="dot"></span>
   </div>
  </div>
-
  <div class="stats">
   <div class="stat">
    <div class="stat-value">0.00</div>
@@ -483,7 +503,118 @@ def home():
  <a class="nav-item" href="/invest"><span class="nav-icon">▦</span>AI</a>
  <a class="nav-item" href="/income"><span class="nav-icon">₿</span>Income</a>
  <a class="nav-item" href="/my"><span class="nav-icon">♙</span>My</a>
-</div>"""
+
+<script>
+(function(){
+ var track=document.getElementById("heroTrack");
+ var dots=document.querySelectorAll("#heroDots .dot");
+ var total=4;
+ var index=0;
+ var timer=null;
+ var startX=0;
+ var moving=false;
+
+ function show(n){
+  index=(n+total)%total;
+  track.style.transform="translate3d(-"+(index*100)+"%,0,0)";
+  dots.forEach(function(d,i){
+   d.className=i===index?"dot active":"dot";
+  });
+ }
+
+ function next(){show(index+1)}
+ function prev(){show(index-1)}
+
+ document.getElementById("heroNext").onclick=function(){
+  next();
+  restart();
+ };
+
+ document.getElementById("heroPrev").onclick=function(){
+  prev();
+  restart();
+ };
+
+ dots.forEach(function(d,i){
+  d.onclick=function(){
+   show(i);
+   restart();
+  };
+ });
+
+ track.addEventListener("touchstart",function(e){
+  startX=e.touches[0].clientX;
+  moving=true;
+ },{passive:true});
+
+ track.addEventListener("touchend",function(e){
+  if(!moving)return;
+  var diff=e.changedTouches[0].clientX-startX;
+  moving=false;
+  if(Math.abs(diff)>45){
+   if(diff<0)next();
+   else prev();
+   restart();
+  }
+ },{passive:true});
+
+ function restart(){
+  clearInterval(timer);
+  timer=setInterval(next,4000);
+ }
+
+ show(0);
+ restart();
+})();
+</script>
+<script>
+(function(){
+ var track=document.getElementById("heroTrack");
+ var dots=document.querySelectorAll("#heroDots .dot");
+ var total=5,index=0,timer;
+
+ function show(n){
+  index=(n+total)%total;
+  track.style.transform="translate3d(-"+(index*100)+"%,0,0)";
+  dots.forEach(function(d,i){
+   d.className=i===index?"dot active":"dot";
+  });
+ }
+
+ function restart(){
+  clearInterval(timer);
+  timer=setInterval(function(){show(index+1)},4000);
+ }
+
+ document.getElementById("heroNext").onclick=function(){
+  show(index+1); restart();
+ };
+
+ document.getElementById("heroPrev").onclick=function(){
+  show(index-1); restart();
+ };
+
+ dots.forEach(function(d,i){
+  d.onclick=function(){show(i); restart()};
+ });
+
+ var x=0;
+ track.addEventListener("touchstart",function(e){
+  x=e.touches[0].clientX;
+ },{passive:true});
+
+ track.addEventListener("touchend",function(e){
+  var diff=e.changedTouches[0].clientX-x;
+  if(Math.abs(diff)>45){
+   show(diff<0?index+1:index-1);
+   restart();
+  }
+ },{passive:true});
+
+ show(0);
+ restart();
+})();
+</script></div>"""
 
 @app.route("/my")
 def my_page():
