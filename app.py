@@ -685,6 +685,44 @@ def my_page():
 .vip{text-align:center}
 .vip-circle{width:72px;height:72px;border:3px solid #08baff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px}
 .vip-label{margin-top:8px;border:1px solid #08baff;border-radius:20px;padding:6px 18px;color:#00baff;font-size:13px}
+
+.wallet-details{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ max-height:0;
+ overflow:hidden;
+ opacity:0;
+ transition:max-height:.4s ease,opacity:.3s ease,margin-top:.3s ease;
+}
+.wallet.open .wallet-details{
+ max-height:260px;
+ opacity:1;
+ margin-top:24px;
+}
+.wallet-detail{
+ text-align:center;
+ padding:8px 4px;
+}
+.wallet-detail-title{
+ color:#aaa;
+ font-size:17px;
+ margin-bottom:10px;
+}
+.wallet-detail-value{
+ color:#fff;
+ font-size:20px;
+ font-weight:bold;
+}
+.wallet-arrow{
+ grid-column:1/3;
+ color:#00baff;
+ font-size:36px;
+ line-height:30px;
+ margin-top:14px;
+ cursor:pointer;
+ text-align:center;
+ user-select:none;
+}
 .wallet{border:1px solid #078cff;border-radius:25px;padding:32px 12px;margin-bottom:28px;background:#02080d;display:grid;grid-template-columns:1fr 1fr;text-align:center}
 .wallet-title{color:#aaa;font-size:22px;margin-bottom:15px}
 .wallet-value{font-size:32px;font-weight:bold}
@@ -710,11 +748,34 @@ def my_page():
 </div>
 </div>
 
-<div class="wallet">
+<div class="wallet" id="walletBox">
 <div><div class="wallet-title">Wallet</div><div class="wallet-value">0.00</div></div>
 <div><div class="wallet-title">Balance</div><div class="wallet-value">"""+str(balance)+"""</div></div>
-<div class="down">⌄</div>
+
+<div class="wallet-details">
+ <div class="wallet-detail"><div class="wallet-detail-title">Deposit</div><div class="wallet-detail-value">0.00</div></div>
+ <div class="wallet-detail"><div class="wallet-detail-title">Withdraw</div><div class="wallet-detail-value">0.00</div></div>
+ <div class="wallet-detail"><div class="wallet-detail-title">AI Income</div><div class="wallet-detail-value">0.00</div></div>
+ <div class="wallet-detail"><div class="wallet-detail-title">Today's earnings</div><div class="wallet-detail-value">0.00</div></div>
+ <div class="wallet-detail"><div class="wallet-detail-title">Invite Count</div><div class="wallet-detail-value">0</div></div>
+ <div class="wallet-detail"><div class="wallet-detail-title">Team Count</div><div class="wallet-detail-value">0</div></div>
+ <div class="wallet-detail"><div class="wallet-detail-title">Team income</div><div class="wallet-detail-value">0.00</div></div>
 </div>
+
+<div class="wallet-arrow" id="walletArrow">⌄</div>
+</div>
+
+<script>
+(function(){
+ const box=document.getElementById("walletBox");
+ const arrow=document.getElementById("walletArrow");
+ if(!box || !arrow) return;
+ arrow.addEventListener("click",function(){
+   box.classList.toggle("open");
+   arrow.textContent=box.classList.contains("open") ? "⌃" : "⌄";
+ });
+})();
+</script>
 
 <div class="services">
 <a class="service" href="/home"><div class="icon">▣</div>Deposit</a>
