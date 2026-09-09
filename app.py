@@ -39,6 +39,37 @@ body{
 button,a,input,select,textarea{
   touch-action:manipulation;
 }
+
+<style>
+.carousel-caption{
+ position:absolute;
+ left:20px;
+ right:20px;
+ bottom:22px;
+ z-index:5;
+ padding:12px 14px;
+ border-radius:14px;
+ background:rgba(0,0,0,.62);
+ border:1px solid rgba(0,174,255,.65);
+ box-shadow:0 0 14px rgba(0,174,255,.18);
+ pointer-events:none;
+}
+.carousel-title{
+ color:#00b7ff;
+ font-size:18px;
+ font-weight:800;
+ letter-spacing:.4px;
+}
+.carousel-sub{
+ margin-top:5px;
+ color:#fff;
+ font-size:12px;
+ line-height:1.4;
+}
+.hero-slide{
+ position:relative!important;
+}
+</style>
 </style><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
 <style>
 html,body{
@@ -424,22 +455,42 @@ def home():
 
    <div class="hero-slide">
     <img src="/static/home_banners/banner1.jpg">
+<div class="carousel-caption">
+  <div class="carousel-title">CODEX700 TECHNOLOGY</div>
+  <div class="carousel-sub">Advanced Computing Infrastructure</div>
+</div>
    </div>
 
    <div class="hero-slide">
     <img src="/static/home_banners/banner2.jpg">
+<div class="carousel-caption">
+  <div class="carousel-title">DIGITAL INFRASTRUCTURE</div>
+  <div class="carousel-sub">Built for the future of computing</div>
+</div>
    </div>
 
    <div class="hero-slide">
     <img src="/static/home_banners/banner3.jpg">
+<div class="carousel-caption">
+  <div class="carousel-title">HIGH-PERFORMANCE SYSTEMS</div>
+  <div class="carousel-sub">Powerful machines. Reliable infrastructure.</div>
+</div>
    </div>
 
    <div class="hero-slide">
     <img src="/static/home_banners/banner4.jpg">
+<div class="carousel-caption">
+  <div class="carousel-title">DATA CENTER TECHNOLOGY</div>
+  <div class="carousel-sub">Modern infrastructure powering digital services</div>
+</div>
    </div>
 
    <div class="hero-slide">
     <img src="/static/home_banners/banner5.jpg">
+<div class="carousel-caption">
+  <div class="carousel-title">THE CODEX700 VISION</div>
+  <div class="carousel-sub">Technology • Innovation • Infrastructure</div>
+</div>
    </div>
 
   </div>
