@@ -788,7 +788,7 @@ def my_page():
 <a class="service" href="/home"><div class="icon">☆</div>VIP Task</a>
 <a class="service" href="/reward"><div class="icon">🎁</div>Reward</a>
 <a class="service" href="/home"><div class="icon">▱</div>Gift code</a>
-<a class="service" href="/home"><div class="icon">◇</div>Raffle</a>
+<a class="service" href="/raffle"><div class="icon">◇</div>Raffle</a>
 <a class="service" href="/home"><div class="icon">↓</div>Download App</a>
 <a class="service" href="/manager"><div class="icon">♧</div>Manager</a>
 <a class="service" href="/my"><div class="icon">⚙</div>Settings</a>
@@ -797,7 +797,7 @@ def my_page():
 
 <div class="bottom">
 <a href="/home"><i>⌂</i>Home</a>
-<a href="/home"><i>▣</i>Raffle</a>
+<a href="/raffle"><i>▣</i>Raffle</a>
 <a href="/home"><i>▤</i>Chats</a>
 <a href="/home"><i>▦</i>AI</a>
 <a href="/income"><i>₿</i>Income</a>
@@ -841,7 +841,7 @@ def income_page():
     page += '.nav i{display:block;font-style:normal;font-size:25px}'
     page += '.active{color:#00baff!important}'
     page += '</style><div class="inc"><div class="title">Income</div>'+items+'</div>'
-    page += '<div class="nav"><a href="/home"><i>⌂</i>Home</a><a href="/home"><i>▣</i>Raffle</a><a href="/support"><i>▤</i>Chats</a><a href="/invest"><i>▦</i>AI</a><a class="active" href="/income"><i>₿</i>Income</a><a href="/my"><i>♙</i>My</a></div>'
+    page += '<div class="nav"><a href="/home"><i>⌂</i>Home</a><a href="/raffle"><i>▣</i>Raffle</a><a href="/support"><i>▤</i>Chats</a><a href="/invest"><i>▦</i>AI</a><a class="active" href="/income"><i>₿</i>Income</a><a href="/my"><i>♙</i>My</a></div>'
     return page
 
 
@@ -982,8 +982,16 @@ def activate_ai_machine(machine_name):
 
     return redirect("/income")
 
+@app.route("/raffle")
+def raffle_page():
+    import pathlib
+    fp = pathlib.Path("templates/raffle.html")
+    if fp.exists():
+        return render_template("raffle.html")
+    return "<h2>Raffle page not found</h2><a href='/home'>Back Home</a>"
+
 if __name__=="__main__":
- app.run(host="0.0.0.0",port=5000,debug=False)
+    app.run(host="0.0.0.0",port=5000,debug=False)
 
 @app.route("/reward")
 def reward_page():
@@ -1101,3 +1109,4 @@ input{width:100%;box-sizing:border-box;padding:16px;margin-top:10px;border-radiu
 <button class="disabled" disabled>Request Withdrawal</button>
 </div>
 </div>"""
+
