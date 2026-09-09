@@ -40,7 +40,6 @@ button,a,input,select,textarea{
   touch-action:manipulation;
 }
 
-<style>
 .carousel-caption{
  position:absolute;
  left:20px;
@@ -69,7 +68,6 @@ button,a,input,select,textarea{
 .hero-slide{
  position:relative!important;
 }
-</style>
 </style><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
 <style>
 html,body{
