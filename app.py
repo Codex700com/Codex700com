@@ -790,7 +790,7 @@ def my_page():
 <a class="service" href="/home"><div class="icon">▱</div>Gift code</a>
 <a class="service" href="/home"><div class="icon">◇</div>Raffle</a>
 <a class="service" href="/home"><div class="icon">↓</div>Download App</a>
-<a class="service" href="/support"><div class="icon">♧</div>Manager</a>
+<a class="service" href="/manager"><div class="icon">♧</div>Manager</a>
 <a class="service" href="/my"><div class="icon">⚙</div>Settings</a>
 </div>
 </div>
