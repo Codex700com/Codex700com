@@ -1,4 +1,5 @@
 import sqlite3, pathlib, os, random
+from manager_code import setup as setup_manager
 from flask import Flask, request, redirect, session, g
 
 app=Flask(__name__)
@@ -802,6 +803,8 @@ def my_page():
 <a href="/home"><i>₿</i>Income</a>
 <a class="active" href="/my"><i>♙</i>My</a>
 </div>"""
+
+setup_manager(app, db, S)
 
 if __name__=="__main__":
  app.run(host="0.0.0.0",port=5000,debug=False)
