@@ -984,11 +984,7 @@ def activate_ai_machine(machine_name):
 
 @app.route("/raffle")
 def raffle_page():
-    import pathlib
-    fp = pathlib.Path("templates/raffle.html")
-    if fp.exists():
-        return render_template("raffle.html")
-    return "<h2>Raffle page not found</h2><a href='/home'>Back Home</a>"
+    return redirect("/home")
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000,debug=False)
