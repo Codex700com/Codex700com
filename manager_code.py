@@ -78,10 +78,12 @@ h1{{color:#00baff;font-size:25px;margin:0}}
 
         # No manager selected yet: show choices
         cards=""
+        photos={'joose': 'https://randomuser.me/api/portraits/women/44.jpg', 'ellie': 'https://randomuser.me/api/portraits/women/32.jpg', 'elia': 'https://randomuser.me/api/portraits/women/65.jpg', 'amelia': 'https://randomuser.me/api/portraits/women/68.jpg', 'mary': 'https://randomuser.me/api/portraits/women/49.jpg', 'anna': 'https://randomuser.me/api/portraits/women/63.jpg'}
         for k,v in MANAGERS.items():
             wa="256"+v[1].lstrip("0").replace("+","").replace(" ","")
             cards+=f'''
             <div class="card">
+              <img class="manager-photo" src="{photos.get(k, "")}" alt="{html.escape(v[0])}">
               <div class="pic">{html.escape(v[0][0])}</div>
               <div class="name">{html.escape(v[0])}</div>
               <div class="role">{html.escape(v[2])}</div>
@@ -99,7 +101,7 @@ h1{{color:#00baff;font-size:24px;margin:0}}
 .info{{color:#999;line-height:1.5;text-align:center;margin:20px 5px}}
 .grid{{display:grid;grid-template-columns:1fr 1fr;gap:15px}}
 .card{{background:#020b11;border:1px solid #087fae;border-radius:20px;padding:18px 7px;text-align:center}}
-.pic{{width:78px;height:78px;border:2px solid #00baff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:auto;color:#00baff;font-size:34px;font-weight:bold}}
+.manager-photo{{width:96px;height:96px;object-fit:cover;border:3px solid #00baff;border-radius:50%;display:block;margin:auto;box-shadow:0 0 18px rgba(0,174,255,.35)}}.pic{{display:none}}
 .name{{color:#00baff;font-size:20px;font-weight:bold;margin-top:12px}}
 .role{{color:#999;font-size:12px;margin:7px 0 15px}}
 button{{background:#08baf0;color:#fff;border:0;border-radius:25px;padding:10px 14px;font-weight:bold}}
