@@ -28,6 +28,32 @@ body{background:#000;color:#fff;font-family:system-ui,sans-serif;overflow-x:hidd
 .card{position:relative;z-index:2;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column}
 a{color:#0a84ff}
 </style>
+<style>
+button,a{ touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+button:active{ transform: scale(0.97); opacity:0.8; transition: transform 0.05s, opacity 0.05s; }
+</style>
+<script>
+// SUPER FAST BUTTONS
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('button').forEach(function(b){
+    b.addEventListener('touchstart', function(){}, {passive:true});
+    b.addEventListener('click', function(){
+      this.style.transform='scale(0.96)';
+      var orig=this.innerHTML;
+      // instant feedback
+      setTimeout(()=>{ this.style.transform='scale(1)'; },80);
+    });
+  });
+  // Make forms submit instantly, no double delay
+  document.querySelectorAll('form').forEach(function(f){
+    f.addEventListener('submit', function(){
+      var btn=f.querySelector('button');
+      if(btn){ btn.disabled=false; btn.innerHTML='Processing...'; btn.style.opacity='0.7'; }
+    });
+  });
+});
+</script>
+
 '''
 
 WAVE='<div class="wave-bg" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;background:#000;pointer-events:none"><canvas id="waveCanvas" style="width:100%;height:100%;display:block"></canvas></div><script>var c=document.getElementById("waveCanvas");var x=c.getContext("2d");var W,H,d=window.devicePixelRatio||1;function R(){W=c.width=innerWidth*d;H=c.height=innerHeight*d;c.style.width=innerWidth+"px";c.style.height=innerHeight+"px"}R();addEventListener("resize",R);var t=0;function D(){t+=1.5;x.clearRect(0,0,W,H);var rows=22,cols=60,sx=W/cols,sy=H*0.7/rows,oy=H*0.5;for(var y=0;y<rows;y++){for(var X=0;X<cols;X++){var px=X*sx,py=oy+y*sy+Math.sin(X*0.18+t+y*0.25)*34+Math.cos(y*0.18+t*0.7)*18,dist=Math.abs(px-W/2)/(W/2),a=1-dist*0.6;if(a<0)a=0;var sz=(1.3+Math.sin(t*2+X*0.15)*0.3)*(1.1+a*1.6)*d;x.beginPath();x.arc(px,py,sz,0,6.283);x.fillStyle="rgba("+(90+a*40)+","+(190+a*40)+",255,"+(0.35+a*0.6)+")";x.shadowBlur=sz*2.5;x.shadowColor="#60a5fa";x.fill();x.shadowBlur=0;if(X<cols-1){var nx=(X+1)*sx,ny=oy+y*sy+Math.sin((X+1)*0.18+t+y*0.25)*34+Math.cos(y*0.18+t*0.7)*18;x.beginPath();x.moveTo(px,py);x.lineTo(nx,ny);x.strokeStyle="rgba(96,165,250,"+(a*0.18)+")";x.lineWidth=0.9*d;x.stroke()}}}requestAnimationFrame(D)}D();</script>'
@@ -68,7 +94,7 @@ def register():
      c.execute("INSERT INTO users (phone,password) VALUES (?,?)",(phone,pw))
     c.commit()
     c.close()
-    return S+WAVE+'<div style="position:relative;z-index:2;min-height:100vh;display:flex;align-items:center;justify-content:center"><div style="background:rgba(0,0,0,0.7);border:1px solid #0a84ff;border-radius:16px;padding:30px;text-align:center"><p style="color:#4ade80">Registration Successful!</p><script>setTimeout(function(){location.href="/login"},1200)</script></div></div>'
+    return S+WAVE+'<div style="position:relative;z-index:2;min-height:100vh;display:flex;align-items:center;justify-content:center"><div style="background:rgba(0,0,0,0.7);border:1px solid #0a84ff;border-radius:16px;padding:30px;text-align:center"><p style="color:#4ade80">Registration Successful!</p><script>setTimeout(function(){location.href="/login"},100)</script></div></div>'
  colors=["#3b82f6","#f59e0b","#10b981","#a855f7","#ec4899"]
  col_html="".join(['<span style="color:'+random.choice(colors)+';font-weight:900;margin:1px">'+ch+'</span>' for ch in captcha])
  html='<style>.reg-wrap{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-top:10vh;padding-left:18px;padding-right:18px}.welcome{font-size:34px;font-weight:800;color:#fff;margin-bottom:22px}.pill{width:100%;max-width:360px;height:52px;background:rgba(0,0,0,0.55);border:1px solid #555;border-radius:26px;display:flex;align-items:center;padding:0 16px;margin:9px 0;position:relative}.pill input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:15px;margin-left:10px}.captcha-box{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#fff;border-radius:8px;padding:6px 14px;font-size:22px;letter-spacing:3px;font-weight:800}.reg-btn{width:100%;max-width:360px;height:50px;background:transparent;border:1.6px solid #0a84ff;border-radius:26px;color:#0a84ff;font-size:19px;font-weight:600;margin-top:18px;cursor:pointer}.err{color:#ff6b6b;font-size:13px;max-width:360px;text-align:center;margin:6px;background:rgba(255,0,0,0.08);padding:8px;border-radius:8px}</style><div class="reg-wrap"><div class="welcome">Welcome</div><div class="err">'+m+'</div><form method="POST" style="width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center"><input type="hidden" name="real_captcha" value="'+captcha+'"><div class="pill"><input name="phone" placeholder="Phone Number" required></div><div class="pill"><input name="password" type="password" placeholder="Set Password" required></div><div class="pill"><input name="confirm" type="password" placeholder="Confirm Password" required></div><div class="pill"><input name="captcha_input" placeholder="Verification Code" required><div class="captcha-box">'+col_html+'</div></div><div class="pill"><input name="invite" placeholder="Invitation Code"></div><button class="reg-btn">Register</button><div style="margin-top:14px"><a href="/login" style="color:#aaa;text-decoration:none">‹ Login</a></div></form></div>'
@@ -86,7 +112,7 @@ def login():
   c.close()
   if u:
    session["uid"]=u["id"]
-   return S+WAVE+'<div class="card"><p style="color:#4ade80">Login successful</p><script>setTimeout(function(){location.href="/home"},800)</script></div>'
+   return S+WAVE+'<div class="card"><p style="color:#4ade80">Login successful</p><script>setTimeout(function(){location.href="/home"},100)</script></div>'
   else:
    m="Wrong password. Please try again." if ex else "Phone not registered. Please register first."
  html='<style>.login-wrap{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-top:18vh;padding-left:18px;padding-right:18px}.welcome{font-size:36px;font-weight:800;color:#fff;margin-bottom:28px}.pill{width:100%;max-width:360px;height:52px;background:rgba(0,0,0,0.5);border:1px solid #555;border-radius:14px;display:flex;align-items:center;padding:0 14px;margin:10px 0}.pill input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:15px;margin-left:10px}.login-btn{width:100%;max-width:360px;height:50px;background:transparent;border:1.5px solid #0a84ff;border-radius:12px;color:#0a84ff;font-size:18px;font-weight:600;margin-top:22px;cursor:pointer}.err{color:#ff6b6b;font-size:13px;max-width:360px;text-align:center;margin:6px}.bot{width:100%;max-width:360px;display:flex;justify-content:space-between;margin-top:16px;color:#bbb;font-size:13px}.bot a{color:#bbb;text-decoration:none}</style><div class="login-wrap"><div class="welcome">Welcome</div><div class="err">'+m+'</div><form method="POST" style="width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center"><div class="pill"><input name="phone" placeholder="Phone Number" required></div><div class="pill"><input name="password" type="password" placeholder="Login Password" required></div><button class="login-btn">Login</button><div class="bot"><a href="/register">Register</a><a href="/reset">Forgot your password?</a></div></form></div>'
