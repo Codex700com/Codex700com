@@ -10,6 +10,13 @@ DB="codex700.db"
 def db():
  conn=sqlite3.connect(DB)
  conn.row_factory=sqlite3.Row
+ try:
+  cols=[r[1] for r in conn.execute("PRAGMA table_info(users)").fetchall()]
+  if "refcode" not in cols:
+   conn.execute("ALTER TABLE users ADD COLUMN refcode TEXT")
+   conn.commit()
+ except Exception:
+  pass
  return conn
 
 # Create tables if not exist
