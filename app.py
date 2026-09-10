@@ -1,6 +1,6 @@
 import sqlite3, pathlib, os, random
 from manager_code import setup as setup_manager
-from flask import render_template, Flask, request, redirect, session, g
+from flask import render_template, render_template_string, Flask, request, redirect, session, g
 
 app=Flask(__name__)
 app.secret_key="codex700_secret_2024"
@@ -855,98 +855,445 @@ def invest():
         return redirect("/login")
 
     machines = [
-        ("Codex M1", "Entry AI Computing Machine", "Basic"),
-        ("Codex M2", "AI Processing Machine", "Standard"),
-        ("Codex M3", "High Performance AI Machine", "Advanced"),
-        ("Codex M4", "Neural Processing Machine", "Pro"),
-        ("Codex M5", "Enterprise AI Machine", "Enterprise"),
-        ("Codex M6", "Advanced Computing Machine", "Premium"),
-        ("Codex M7", "Codex High Performance System", "Ultra")
+        ("K1", "K Series", "AI Computing Machine"),
+        ("K2", "K Series", "AI Computing Machine"),
+        ("M1", "M Series", "AI Computing Machine"),
+        ("M2", "M Series", "AI Computing Machine"),
+        ("A1", "A Series", "AI Computing Machine"),
+        ("A2", "A Series", "AI Computing Machine"),
+        ("GS1", "GS Series", "AI Computing Machine"),
+        ("GS2", "GS Series", "AI Computing Machine"),
     ]
 
     html = """
-    <!doctype html>
-    <html>
-    <head>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>CODEX700 AI</title>
-    <style>
-    *{box-sizing:border-box}
-    body{
-      margin:0;background:#050b14;color:#fff;
-      font-family:Arial,sans-serif;padding-bottom:80px
-    }
-    .top{
-      padding:18px 16px;
-      background:linear-gradient(135deg,#02060c,#061a30);
-      border-bottom:1px solid #087fc1
-    }
-    .top h1{margin:0;color:#00b7ff;font-size:24px}
-    .top p{margin:6px 0 0;color:#8fa3b8;font-size:13px}
-    .wrap{padding:14px}
-    .machine{
-      background:#0b1422;
-      border:1px solid #123957;
-      border-radius:16px;
-      padding:16px;
-      margin-bottom:12px;
-      box-shadow:0 0 15px rgba(0,150,255,.08)
-    }
-    .machine h2{margin:0 0 7px;color:#fff;font-size:18px}
-    .machine p{margin:5px 0;color:#91a7bb;font-size:13px}
-    .tag{
-      display:inline-block;padding:5px 9px;border-radius:8px;
-      background:#062b46;color:#00b7ff;font-size:11px;margin:7px 0
-    }
-    button{
-      width:100%;border:0;border-radius:12px;
-      min-height:44px;background:linear-gradient(90deg,#008cff,#00c6ff);
-      color:#fff;font-weight:bold;font-size:15px;margin-top:9px
-    }
-    .nav{
-      position:fixed;bottom:0;left:0;right:0;
-      height:64px;background:#050b14;
-      border-top:1px solid #123957;
-      display:flex;justify-content:space-around;align-items:center
-    }
-    .nav a{color:#91a7bb;text-decoration:none;font-size:12px;text-align:center}
-    .nav a.active{color:#00b7ff}
-    .nav b{display:block;font-size:20px;margin-bottom:2px}
-    </style>
-    </head>
-    <body>
-      <div class="top">
-        <h1>CODEX700 AI</h1>
-        <p>AI Computing Machines</p>
-      </div>
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>CODEX700 AI</title>
 
-      <div class="wrap">
-        {% for name,desc,level in machines %}
-        <div class="machine">
-          <h2>{{name}}</h2>
-          <p>{{desc}}</p>
-          <span class="tag">{{level}}</span>
-          <form method="post" action="/ai/activate/{{name|replace(' ','_')}}">
-            <button type="submit">Activate Machine</button>
-          </form>
+<style>
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+    margin:0;
+    padding:0;
+    width:100%;
+    min-height:100%;
+    background:#02050a;
+    color:#fff;
+    font-family:Arial,Helvetica,sans-serif;
+    overflow-x:hidden;
+}
+
+body{
+    padding-bottom:82px;
+}
+
+.page{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 50% -10%,rgba(0,170,255,.18),transparent 38%),
+      linear-gradient(180deg,#02060d 0%,#030912 45%,#010409 100%);
+}
+
+/* TOP */
+.header{
+    padding:18px 15px 14px;
+    background:linear-gradient(180deg,#071522,#020811);
+    border-bottom:1px solid rgba(0,183,255,.35);
+    box-shadow:0 4px 25px rgba(0,150,255,.10);
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.brand-title{
+    color:#12bfff;
+    font-size:23px;
+    font-weight:900;
+    letter-spacing:1px;
+    text-shadow:0 0 14px rgba(0,183,255,.65);
+}
+
+.brand-sub{
+    margin-top:4px;
+    color:#7e9ab0;
+    font-size:11px;
+    letter-spacing:.7px;
+}
+
+/* CATEGORY BAR */
+.categories{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding:13px 12px 12px;
+    scrollbar-width:none;
+    background:#030913;
+    border-bottom:1px solid rgba(0,183,255,.18);
+}
+
+.categories::-webkit-scrollbar{
+    display:none;
+}
+
+.category{
+    flex:0 0 auto;
+    border:1px solid #17415c;
+    background:#07111c;
+    color:#7895aa;
+    border-radius:10px;
+    padding:9px 14px;
+    font-size:12px;
+    font-weight:800;
+    white-space:nowrap;
+}
+
+.category.active{
+    color:#fff;
+    border-color:#00b7ff;
+    background:linear-gradient(180deg,#07527a,#06334d);
+    box-shadow:0 0 13px rgba(0,183,255,.35);
+}
+
+/* CONTENT */
+.content{
+    padding:13px 10px 18px;
+}
+
+.section-title{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin:2px 4px 12px;
+}
+
+.section-title strong{
+    color:#fff;
+    font-size:15px;
+}
+
+.section-title span{
+    color:#4f7085;
+    font-size:11px;
+}
+
+/* GRID */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+}
+
+/* MACHINE CARD */
+.machine{
+    position:relative;
+    overflow:hidden;
+    min-width:0;
+    border-radius:15px;
+    background:
+      linear-gradient(180deg,rgba(7,22,36,.98),rgba(3,9,16,.98));
+    border:1px solid #124564;
+    box-shadow:
+      inset 0 0 22px rgba(0,142,255,.045),
+      0 0 14px rgba(0,145,255,.07);
+}
+
+.machine::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:15%;
+    right:15%;
+    height:1px;
+    background:#00b7ff;
+    box-shadow:0 0 12px #00b7ff;
+}
+
+.machine-image{
+    height:125px;
+    margin:8px 8px 0;
+    border-radius:11px;
+    border:1px solid rgba(0,183,255,.35);
+    background:
+      radial-gradient(circle at 50% 45%,rgba(0,183,255,.13),transparent 48%),
+      linear-gradient(135deg,#081a29,#02070d);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    overflow:hidden;
+}
+
+.machine-image::after{
+    content:"MACHINE IMAGE";
+    color:#31556b;
+    font-size:9px;
+    letter-spacing:1px;
+}
+
+.machine-info{
+    padding:10px;
+}
+
+.machine-name{
+    font-size:16px;
+    font-weight:900;
+    color:#fff;
+}
+
+.machine-series{
+    display:inline-block;
+    margin-top:5px;
+    padding:4px 7px;
+    border-radius:6px;
+    background:#06263b;
+    color:#00b7ff;
+    font-size:9px;
+    font-weight:800;
+}
+
+.machine-desc{
+    color:#7591a4;
+    font-size:10px;
+    margin-top:7px;
+    line-height:1.35;
+}
+
+.activate{
+    width:100%;
+    min-height:40px;
+    margin-top:9px;
+    border:0;
+    border-radius:9px;
+    color:#fff;
+    font-size:11px;
+    font-weight:900;
+    background:linear-gradient(90deg,#007dff,#00bfff);
+    box-shadow:0 0 12px rgba(0,166,255,.22);
+}
+
+.activate:active{
+    transform:scale(.98);
+}
+
+/* EMPTY */
+.empty{
+    grid-column:1/-1;
+    text-align:center;
+    padding:45px 15px;
+    color:#628094;
+}
+
+/* BOTTOM NAV */
+.bottom{
+    position:fixed;
+    z-index:100;
+    left:0;
+    right:0;
+    bottom:0;
+    height:68px;
+    display:flex;
+    align-items:center;
+    justify-content:space-around;
+    background:rgba(2,7,13,.98);
+    border-top:1px solid #12384f;
+    box-shadow:0 -8px 25px rgba(0,0,0,.45);
+}
+
+.bottom a{
+    min-width:58px;
+    text-decoration:none;
+    text-align:center;
+    color:#668397;
+    font-size:9px;
+    font-weight:700;
+}
+
+.bottom a b{
+    display:block;
+    font-size:20px;
+    line-height:25px;
+    margin-bottom:2px;
+}
+
+.bottom a.active{
+    color:#00baff;
+    text-shadow:0 0 10px rgba(0,186,255,.7);
+}
+
+/* PHONE */
+@media(max-width:360px){
+    .grid{
+        gap:8px;
+    }
+
+    .machine-image{
+        height:112px;
+    }
+
+    .machine-info{
+        padding:8px;
+    }
+
+    .machine-name{
+        font-size:14px;
+    }
+
+    .bottom a{
+        min-width:50px;
+    }
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+
+    <div class="header">
+        <div class="brand">
+            <div>
+                <div class="brand-title">CODEX700 AI</div>
+                <div class="brand-sub">AI COMPUTING MACHINES</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="categories" id="categories">
+        <button class="category active" data-filter="All">All</button>
+        <button class="category" data-filter="K Series">K Series</button>
+        <button class="category" data-filter="M Series">M Series</button>
+        <button class="category" data-filter="A Series">A Series</button>
+        <button class="category" data-filter="GS Series">GS Series</button>
+    </div>
+
+    <div class="content">
+        <div class="section-title">
+            <strong>AI Machines</strong>
+            <span id="count">{{ machines|length }} machines</span>
+        </div>
+
+        <div class="grid" id="machineGrid">
+
+        {% for name,series,desc in machines %}
+        <div class="machine" data-series="{{ series }}">
+
+            <div class="machine-image"
+                 data-machine="{{ name }}">
+            </div>
+
+            <div class="machine-info">
+                <div class="machine-name">{{ name }}</div>
+                <span class="machine-series">{{ series }}</span>
+                <div class="machine-desc">{{ desc }}</div>
+
+                <form method="post"
+                      action="/ai/activate/{{ ('Codex_' + name)|replace(' ','_') }}">
+                    <button class="activate" type="submit">
+                        ACTIVATE MACHINE
+                    </button>
+                </form>
+            </div>
+
         </div>
         {% endfor %}
-      </div>
 
-      <div class="nav">
-        <a href="/home"><b>⌂</b>Home</a>
-        <a class="active" href="/invest"><b>▦</b>AI</a>
-        <a href="/income"><b>₿</b>Income</a>
-        <a href="/my"><b>◉</b>My</a>
-      </div>
-    
+        </div>
+    </div>
+
+</div>
+
+<div class="bottom">
+    <a href="/home">
+        <b>⌂</b>
+        Home
+    </a>
+
+    <a href="/raffle">
+        <b>▣</b>
+        Raffle
+    </a>
+
+    <a href="/messages">
+        <b>▤</b>
+        Chats
+    </a>
+
+    <a class="active" href="/invest">
+        <b>▦</b>
+        AI
+    </a>
+
+    <a href="/income">
+        <b>₿</b>
+        Income
+    </a>
+
+    <a href="/my">
+        <b>♙</b>
+        My
+    </a>
+</div>
+
+<script>
+(function(){
+
+    const buttons = document.querySelectorAll(".category");
+    const cards = document.querySelectorAll(".machine");
+    const count = document.getElementById("count");
+
+    function filterSeries(series){
+
+        let visible = 0;
+
+        cards.forEach(function(card){
+
+            const match =
+                series === "All" ||
+                card.dataset.series === series;
+
+            card.style.display = match ? "" : "none";
+
+            if(match){
+                visible++;
+            }
+        });
+
+        count.textContent =
+            visible + (visible === 1 ? " machine" : " machines");
+    }
+
+    buttons.forEach(function(button){
+
+        button.addEventListener("click",function(){
+
+            buttons.forEach(function(b){
+                b.classList.remove("active");
+            });
+
+            button.classList.add("active");
+
+            filterSeries(button.dataset.filter);
+        });
+
+    });
+
+})();
+</script>
 
 </body>
-    </html>
-    """
+</html>
+"""
 
     return render_template_string(html, machines=machines)
-
 
 @app.route("/ai/activate/<machine_name>", methods=["POST"])
 def activate_ai_machine(machine_name):
