@@ -788,7 +788,7 @@ def my_page():
 <div class="services">
 <a class="service" href="/deposit"><div class="icon">▣</div>Deposit</a>
 <a class="service" href="/withdraw"><div class="icon">♢</div>Withdraw</a>
-<a class="service" href="/card"><div class="icon">▤</div>Card</a>
+<a class="service" href="/home"><div class="icon">▤</div>Card</a>
 <a class="service" href="/home"><div class="icon">$</div>Bill</a>
 <a class="service" href="/invite"><div class="icon">♙</div>Invite</a>
 <a class="service" href="/home"><div class="icon">♧</div>My team</a>
@@ -2123,6 +2123,8 @@ function saveQR(){
 def raffle_page():
     return redirect("/home")
 
+if __name__=="__main__":
+    app.run(host="0.0.0.0",port=5000,debug=False)
 
 @app.route("/reward", methods=["GET","POST"])
 def reward_page():
@@ -2264,622 +2266,51 @@ body{background:#000;color:#fff;font-family:Georgia,serif}
 </div>"""
 
 
-
-@app.route("/card", methods=["GET","POST"])
-def card_page():
-    if "uid" not in session:
-        return redirect("/login")
-
-    c = db()
-
-    if request.method == "POST":
-        mtn_number = request.form.get("mtn_number","").strip()
-        mtn_name = request.form.get("mtn_name","").strip()
-        airtel_number = request.form.get("airtel_number","").strip()
-        airtel_name = request.form.get("airtel_name","").strip()
-        usdt_wallet = request.form.get("usdt_wallet","").strip()
-
-        c.execute("""
-            UPDATE users
-            SET mtn_number=?,
-                mtn_name=?,
-                airtel_number=?,
-                airtel_name=?,
-                usdt_wallet=?
-            WHERE id=?
-        """, (
-            mtn_number,
-            mtn_name,
-            airtel_number,
-            airtel_name,
-            usdt_wallet,
-            session["uid"]
-        ))
-
-        c.commit()
-
-    u = c.execute(
-        "SELECT * FROM users WHERE id=?",
-        (session["uid"],)
-    ).fetchone()
-    c.close()
-
-    return render_template_string("""
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>My Card</title>
-
-<style>
-*{
- box-sizing:border-box;
- -webkit-tap-highlight-color:transparent;
-}
-
-html,body{
- margin:0;
- padding:0;
- width:100%;
- min-height:100%;
-}
-
-body{
- background:#00050a;
- color:#fff;
- font-family:Georgia,"Times New Roman",serif;
- background-image:
- radial-gradient(circle,#06314a 1.2px,transparent 1.4px);
- background-size:18px 18px;
-}
-
-.card-page{
- width:100%;
- max-width:480px;
- margin:auto;
- padding-bottom:110px;
-}
-
-.head{
- height:84px;
- display:flex;
- align-items:center;
- justify-content:center;
- position:relative;
- background:#00050a;
- border-bottom:1px solid #08bfff55;
-}
-
-.back{
- position:absolute;
- left:28px;
- top:14px;
- width:64px;
- height:64px;
- border:1px solid #00bfff;
- border-radius:18px;
- display:flex;
- align-items:center;
- justify-content:center;
- color:#00bfff;
- text-decoration:none;
- font-family:Arial,sans-serif;
- font-size:43px;
- box-shadow:0 0 12px #00bfff33;
-}
-
-.title{
- color:#08bfff;
- font-size:28px;
- font-weight:bold;
- text-shadow:0 0 10px #00bfff55;
-}
-
-.intro{
- margin:30px 28px 0;
- color:#c9c9c9;
- font-size:17px;
- line-height:1.65;
-}
-
-.box{
- margin:28px 28px 0;
- padding:28px;
- border:1px solid #00bfff;
- border-radius:22px;
- background:rgba(0,7,13,.90);
- box-shadow:0 0 12px #00bfff22;
-}
-
-.box h2{
- margin:0 0 25px;
- color:#08bfff;
- font-size:26px;
- font-weight:normal;
-}
-
-.label{
- display:block;
- color:#fff;
- font-size:20px;
- margin:0 0 10px;
-}
-
-input{
- width:100%;
- height:78px;
- padding:0 20px;
- margin:0 0 25px;
- border:1px solid #087fb0;
- border-radius:16px;
- background:#050d15;
- color:#fff;
- font-family:Georgia,"Times New Roman",serif;
- font-size:20px;
- outline:none;
-}
-
-input::placeholder{
- color:#858585;
-}
-
-.save{
- width:100%;
- height:78px;
- margin-top:2px;
- border:0;
- border-radius:15px;
- background:#08bfff;
- color:#fff;
- font-family:Georgia,"Times New Roman",serif;
- font-size:22px;
- font-weight:bold;
- box-shadow:0 0 15px #00bfff33;
-}
-
-.bottom-nav{
- position:fixed;
- left:0;
- right:0;
- bottom:0;
- width:100%;
- height:92px;
- z-index:1000;
- display:grid;
- grid-template-columns:repeat(6,1fr);
- background:#000;
- border-top:1px solid #08bfff55;
-}
-
-.bottom-nav a{
- min-width:0;
- height:92px;
- display:flex;
- flex-direction:column;
- align-items:center;
- justify-content:center;
- gap:4px;
- text-decoration:none;
- color:#fff;
- font-family:Georgia,"Times New Roman",serif;
- font-size:15px;
- white-space:nowrap;
-}
-
-.nav-icon{
- height:38px;
- display:flex;
- align-items:center;
- justify-content:center;
- font-family:Arial,sans-serif;
- font-size:29px;
- line-height:1;
-}
-
-.bottom-nav .active{
- color:#08bfff;
-}
-
-@media(max-width:360px){
- .box{
-  margin-left:20px;
-  margin-right:20px;
-  padding:22px;
- }
- .intro{
-  margin-left:20px;
-  margin-right:20px;
- }
- .bottom-nav a{
-  font-size:12px;
- }
- .nav-icon{
-  font-size:25px;
- }
-}
-</style>
-</head>
-
-<body>
-
-<div class="card-page">
-
- <div class="head">
-  <a class="back" href="/my">‹</a>
-  <div class="title">My Card</div>
- </div>
-
- <div class="intro">
-  Save your withdrawal details once — the withdraw page will use them automatically.
- </div>
-
- <form method="POST">
-
-  <div class="box">
-   <h2>MTN Uganda</h2>
-
-   <label class="label">Mobile number</label>
-   <input
-    type="tel"
-    name="mtn_number"
-    value="{{ u['mtn_number'] or '' }}"
-    placeholder="0770000000"
-    inputmode="tel">
-
-   <label class="label">Registered name</label>
-   <input
-    type="text"
-    name="mtn_name"
-    value="{{ u['mtn_name'] or '' }}"
-    placeholder="Name on the SIM">
-  </div>
-
-  <div class="box">
-   <h2>Airtel Uganda</h2>
-
-   <label class="label">Mobile number</label>
-   <input
-    type="tel"
-    name="airtel_number"
-    value="{{ u['airtel_number'] or '' }}"
-    placeholder="0750000000"
-    inputmode="tel">
-
-   <label class="label">Registered name</label>
-   <input
-    type="text"
-    name="airtel_name"
-    value="{{ u['airtel_name'] or '' }}"
-    placeholder="Name on the SIM">
-  </div>
-
-  <div class="box">
-   <h2>USDT (TRC20)</h2>
-
-   <label class="label">Wallet address</label>
-   <input
-    type="text"
-    name="usdt_wallet"
-    value="{{ u['usdt_wallet'] or '' }}"
-    placeholder="T...">
-  </div>
-
-  <div style="margin:28px">
-   <button class="save" type="submit">Save card</button>
-  </div>
-
- </form>
-
-</div>
-
-<div class="bottom-nav">
-
- <a href="/home">
-  <div class="nav-icon">⌂</div>
-  <div>Home</div>
- </a>
-
- <a href="/raffle">
-  <div class="nav-icon">▣</div>
-  <div>Raffle</div>
- </a>
-
- <a href="/support">
-  <div class="nav-icon">▣</div>
-  <div>chats</div>
- </a>
-
- <a href="/invest">
-  <div class="nav-icon">▣</div>
-  <div>AI</div>
- </a>
-
- <a href="/income">
-  <div class="nav-icon">₿</div>
-  <div>Income</div>
- </a>
-
- <a href="/my" class="active">
-  <div class="nav-icon">♙</div>
-  <div>My</div>
- </a>
-
-</div>
-
-</body>
-</html>
-""", u=u)
-
-
-@app.route("/withdraw", methods=["GET", "POST"])
+@app.route("/withdraw")
 def withdraw_page():
     if "uid" not in session:
         return redirect("/login")
-    c = db()
-    u = c.execute("SELECT * FROM users WHERE id=?", (session["uid"],)).fetchone()
-    if not u:
-        c.close()
-        return redirect("/login")
-
-    balance = u["balance"] or 0
-    mtn_number = u["mtn_number"] or ""
-    airtel_number = u["airtel_number"] or ""
-    usdt_wallet = u["usdt_wallet"] or ""
+    c=db()
+    u=c.execute("SELECT * FROM users WHERE id=?",(session["uid"],)).fetchone()
     c.close()
+    balance=u["balance"] if u and "balance" in u.keys() else 0
 
-    return S + """
-<style>
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;background:#000;color:#ddd;font-family:Georgia,serif}
-body{
- background:
- radial-gradient(circle at 12px 12px,rgba(0,190,255,.14) 1.2px,transparent 1.8px),
- #000;
- background-size:34px 34px;
-}
-.wpage{min-height:100vh;padding:0 28px 125px;max-width:760px;margin:auto}
-.whead{
- height:106px;margin:0 -28px 0;border-bottom:1px solid #087fa8;
- display:flex;align-items:center;justify-content:center;position:relative;
- background:rgba(0,0,5,.94)
-}
-.wback{
- position:absolute;left:28px;top:18px;width:64px;height:64px;
- border:1px solid #00bfff;border-radius:17px;
- display:flex;align-items:center;justify-content:center;
- color:#08c8ff;font:43px Arial,sans-serif;text-decoration:none;
- box-shadow:0 0 14px rgba(0,190,255,.28)
-}
-.wtitle{color:#08c8ff;font-size:29px;font-weight:bold}
-.wbox{
- border:1px solid #087fa8;border-radius:23px;
- background:rgba(0,5,10,.68);padding:28px;margin-top:28px;
- box-shadow:0 0 14px rgba(0,170,230,.08)
-}
-.balbox{text-align:center;height:145px;padding-top:23px}
-.blabel{font-size:25px;color:#aaa}
-.bnum{margin-top:7px;color:#08c8ff;font-size:50px;font-weight:bold}
-.payout-title{font-size:25px;color:#bbb;margin-bottom:24px}
-.methods{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.method{
- height:59px;border:1px solid #087fa8;border-radius:17px;
- display:flex;align-items:center;justify-content:center;
- color:#ddd;font-size:20px;cursor:pointer;background:rgba(0,0,0,.35)
-}
-.method.active{
- background:#0cc2f2;border-color:#0cc2f2;color:#fff;
- box-shadow:0 0 16px rgba(0,195,255,.35)
-}
-.alabel{display:block;margin-top:25px;margin-bottom:10px;font-size:25px;color:#eee}
-.winput{
- width:100%;height:78px;border:1px solid #087fa8;border-radius:17px;
- background:#050c14;color:#fff;padding:0 22px;
- font:24px Georgia,serif;outline:none
-}
-.winput:focus{border-color:#08c8ff}
-.hint{margin-top:9px;font-size:18px;color:#aaa}
-.warn{
- margin-top:25px;border:1px solid #8d1524;border-radius:17px;
- background:rgba(75,0,8,.34);padding:22px
-}
-.warn-title{font-size:24px;color:#eee;margin-bottom:8px}
-.warn-text{font-size:19px;line-height:1.48;color:#bbb}
-.link{display:block;margin-top:8px;color:#08c8ff;text-decoration:none;font-size:19px}
-.dest-label{margin-top:27px;font-size:25px;color:#eee}
-.saved{
- margin-top:10px;min-height:78px;border:1px solid #087fa8;
- border-radius:17px;background:#050c14;color:#08c8ff;
- padding:22px;font-size:21px;word-break:break-all
-}
-.saved-note{margin-top:8px;color:#aaa;font-size:17px}
-.summary{
- margin-top:27px;border:1px solid #087fa8;border-radius:20px;
- padding:24px 21px;background:rgba(0,5,10,.52)
-}
-.row{display:flex;justify-content:space-between;gap:15px;font-size:23px;margin-bottom:15px}
-.row .v{color:#eee}
-.row.fee .v{color:#e51d3b}
-.row.receive{font-weight:bold;margin-bottom:17px}
-.row.receive .v{color:#08c8ff}
-.sline{border-top:1px solid #087fa8;margin:10px 0 15px}
-.note{color:#aaa;font-size:17px;line-height:1.55;margin-top:10px}
-.req{
- width:100%;height:86px;border:0;border-radius:18px;
- background:#0ca3ca;color:#aaa;font:25px Georgia,serif;
- font-weight:bold;margin-top:25px
-}
-.htitle{font-size:28px;color:#fff;font-weight:bold;margin:32px 0 24px}
-.filters{display:flex;gap:12px;overflow:hidden;margin-bottom:26px}
-.filter{
- white-space:nowrap;padding:14px 20px;border-radius:28px;
- background:#050d18;border:1px solid #061d2a;color:#aaa;font-size:18px
-}
-.filter.active{background:#08bce9;border-color:#08bce9;color:#fff}
-.history{
- min-height:380px;border:1px solid #061d2a;border-radius:25px;
- background:rgba(0,0,4,.76);display:flex;flex-direction:column;
- align-items:center;justify-content:center;text-align:center
-}
-.hicon{
- width:96px;height:96px;border-radius:50%;background:#06101c;
- display:flex;align-items:center;justify-content:center;
- font:44px Arial;margin-bottom:27px
-}
-.hempty{font-size:22px;color:#bbb}
-.refresh{
- margin-top:27px;padding:16px 31px;border:0;border-radius:30px;
- background:#08bce9;color:#fff;font:19px Georgia,serif
-}
-.bottom-nav{
- position:fixed;left:0;right:0;bottom:0;height:108px;
- background:#000;border-top:1px solid #063344;
- display:grid;grid-template-columns:repeat(6,1fr);z-index:9999
-}
-.bottom-nav a{
- color:#fff;text-decoration:none;display:flex;flex-direction:column;
- align-items:center;justify-content:center;gap:4px;font-size:17px
-}
-.nav-icon{font:38px/39px Arial,sans-serif}
-@media(max-width:520px){
- .methods{gap:10px}
- .method{font-size:18px}
-}
+    return S+"""<style>
+body{background:#000;color:#fff;font-family:Georgia,serif}
+.page{min-height:100vh;padding:20px 15px 100px;box-sizing:border-box}
+.head{display:flex;align-items:center;gap:15px;margin-bottom:25px}
+.back{color:#00baff;text-decoration:none;font-size:35px}
+.title{color:#00baff;font-size:26px;font-weight:bold}
+.card{background:#02080d;border:1px solid #078cff;border-radius:22px;padding:20px;margin-bottom:18px}
+.balance{text-align:center}
+.label{color:#aaa}
+.amount{color:#00baff;font-size:34px;font-weight:bold;margin-top:8px}
+.methods{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:12px}
+.method{padding:13px 3px;text-align:center;border:1px solid #078cff;border-radius:12px;font-size:12px}
+.method.active{background:#08b9ee}
+input{width:100%;box-sizing:border-box;padding:16px;margin-top:10px;border-radius:14px;border:1px solid #078cff;background:#050d15;color:#fff;font-size:16px}
+.note{color:#aaa;font-size:13px;line-height:1.5}
+.disabled{width:100%;padding:16px;border:0;border-radius:14px;background:#075d78;color:#aaa;font-size:17px;font-weight:bold}
 </style>
-
-<div class="wpage">
-<div class="whead"><a class="wback" href="/my">←</a><div class="wtitle">Withdraw</div></div>
-
-<div class="wbox balbox">
-<div class="blabel">Available balance</div>
-<div class="bnum">{{ balance }}</div>
-</div>
-
-<div class="wbox">
-<div class="payout-title">Payout method</div>
+<div class="page">
+<div class="head"><a class="back" href="/my">‹</a><div class="title">Withdraw</div></div>
+<div class="card balance"><div class="label">Available Balance</div><div class="amount">"""+str(balance)+"""</div></div>
+<div class="card">
+<div class="label">Payout Method</div>
 <div class="methods">
-<div class="method active" id="mtnBtn" onclick="setMethod('mtn')">MTN UG</div>
-<div class="method" id="airtelBtn" onclick="setMethod('airtel')">Airtel UG</div>
-<div class="method" id="usdtBtn" onclick="setMethod('usdt')">USDT TRC20</div>
+<div class="method active">MTN UG</div>
+<div class="method">Airtel UG</div>
+<div class="method">USDT</div>
 </div>
-
-<div id="ugxArea">
-<label class="alabel">Amount (UGX)</label>
-<input class="winput" id="ugxAmount" type="number" placeholder="5000" oninput="calcUGX()">
-<div class="hint">Minimum withdrawal is 5,000 UGX</div>
-
-<div class="warn">
-<div class="warn-title">Withdrawal details required</div>
-<div class="warn-text">Save your phone number and the name registered on that number on your card before withdrawing.</div>
-<a class="link" href="/card">Save my card details</a>
+<div style="margin-top:20px" class="label">Amount (UGX)</div>
+<input type="number" placeholder="Enter amount">
 </div>
-
-<div class="dest-label">Destination phone number</div>
-<div class="saved" id="destination">Saved on your card</div>
-<div class="saved-note">Taken from your saved card. Change it on the Card page.</div>
-
-<div class="summary">
-<div class="row"><span>Amount (UGX)</span><span class="v" id="amountValue">0.00</span></div>
-<div class="row fee"><span>Withdrawal fee (10%)</span><span class="v" id="feeValue">-0.00</span></div>
-<div class="row receive"><span>You receive</span><span class="v" id="receiveValue">0.00</span></div>
-<div class="note">The full amount is deducted from your balance as soon as you request.</div>
-<div class="note">You must have at least one active AI machine to withdraw.</div>
+<div class="card">
+<div>Amount <span style="float:right;color:#00baff">0.00</span></div>
+<div>Fee <span style="float:right;color:#00baff">0.00</span></div>
+<div style="margin-top:8px"><b>You receive</b><span style="float:right;color:#00baff">0.00</span></div>
+<p class="note">Withdrawal functionality is currently unavailable in this interface.</p>
+<button class="disabled" disabled>Request Withdrawal</button>
 </div>
-
-<div class="warn">
-<div class="warn-title">Active AI machine required</div>
-<div class="warn-text">You must own at least one active AI machine before you can withdraw.</div>
-<a class="link" href="/invest">Buy an AI machine</a>
-</div>
-<button class="req" disabled>Request withdrawal</button>
-</div>
-
-<div id="usdtArea" style="display:none">
-<label class="alabel">Amount (in USDT)</label>
-<input class="winput" id="usdtAmount" type="number" placeholder="e.g. 10" oninput="calcUSDT()">
-<div class="hint">Network TRC20 · 1 USDT = 3,800 UGX · Minimum 1.32 USDT</div>
-
-<div class="warn">
-<div class="warn-title">Withdrawal details required</div>
-<div class="warn-text">Save your USDT TRC20 wallet address on your card before withdrawing.</div>
-<a class="link" href="/card">Save my card details</a>
-</div>
-
-<div class="dest-label">Destination wallet address</div>
-<div class="saved">{{ usdt_wallet if usdt_wallet else "Saved on your card" }}</div>
-<div class="saved-note">Taken from your saved card. Change it on the Card page.</div>
-
-<div class="summary">
-<div class="row"><span>USDT requested</span><span class="v" id="usdtRequested">0.00 USDT</span></div>
-<div class="row fee"><span>Fee (10%)</span><span class="v" id="usdtFee">-0.00 USDT</span></div>
-<div class="row receive"><span>You receive (TRC20)</span><span class="v" id="usdtReceive">0.00 USDT</span></div>
-<div class="sline"></div>
-<div class="row"><span>Amount (UGX)</span><span class="v" id="usdtUGX">0.00</span></div>
-<div class="row fee"><span>Withdrawal fee (10%)</span><span class="v" id="usdtUGXFee">-0.00</span></div>
-<div class="row receive"><span>You receive</span><span class="v" id="usdtUGXReceive">0.00</span></div>
-<div class="note">The full amount is deducted from your balance as soon as you request.</div>
-<div class="note">You must have at least one active AI machine to withdraw.</div>
-</div>
-
-<div class="warn">
-<div class="warn-title">Active AI machine required</div>
-<div class="warn-text">You must own at least one active AI machine before you can withdraw.</div>
-<a class="link" href="/invest">Buy an AI machine</a>
-</div>
-<button class="req" disabled>Request withdrawal</button>
-</div>
-</div>
-
-<div class="htitle">Transaction history</div>
-<div class="filters">
-<div class="filter">All</div><div class="filter">Deposit</div><div class="filter active">Withdraw</div><div class="filter">Earnings</div><div class="filter">Commission</div>
-</div>
-<div class="history">
-<div class="hicon">▱</div><div class="hempty">No withdrawal history available.</div>
-<button class="refresh" onclick="location.reload()">Refresh</button>
-</div>
-</div>
-
-<div class="bottom-nav">
-<a href="/home"><div class="nav-icon">▤</div><div>Home</div></a>
-<a href="/raffle"><div class="nav-icon">◧</div><div>Raffle</div></a>
-<a href="/support"><div class="nav-icon">▣</div><div>chats</div></a>
-<a href="/invest"><div class="nav-icon">▦</div><div>AI</div></a>
-<a href="/income"><div class="nav-icon">₿</div><div>Income</div></a>
-<a href="/my"><div class="nav-icon">♙</div><div>My</div></a>
-</div>
-
-<script>
-const mtnNumber={{ mtn_number|tojson }};
-const airtelNumber={{ airtel_number|tojson }};
-
-function setMethod(type){
- document.getElementById("mtnBtn").classList.toggle("active",type==="mtn");
- document.getElementById("airtelBtn").classList.toggle("active",type==="airtel");
- document.getElementById("usdtBtn").classList.toggle("active",type==="usdt");
- document.getElementById("ugxArea").style.display=type==="usdt"?"none":"block";
- document.getElementById("usdtArea").style.display=type==="usdt"?"block":"none";
- if(type==="mtn") document.getElementById("destination").innerText=mtnNumber||"Saved on your card";
- if(type==="airtel") document.getElementById("destination").innerText=airtelNumber||"Saved on your card";
-}
-function calcUGX(){
- let a=parseFloat(document.getElementById("ugxAmount").value)||0, f=a*.10, r=a-f;
- document.getElementById("amountValue").innerText=a.toFixed(2);
- document.getElementById("feeValue").innerText="-"+f.toFixed(2);
- document.getElementById("receiveValue").innerText=r.toFixed(2);
-}
-function calcUSDT(){
- let a=parseFloat(document.getElementById("usdtAmount").value)||0, f=a*.10, r=a-f;
- document.getElementById("usdtRequested").innerText=a.toFixed(2)+" USDT";
- document.getElementById("usdtFee").innerText="-"+f.toFixed(2)+" USDT";
- document.getElementById("usdtReceive").innerText=r.toFixed(2)+" USDT";
- document.getElementById("usdtUGX").innerText=(a*3800).toFixed(2);
- document.getElementById("usdtUGXFee").innerText="-"+(f*3800).toFixed(2);
- document.getElementById("usdtUGXReceive").innerText=(r*3800).toFixed(2);
-}
-setMethod("mtn");
-</script>
-"""
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0",port=5000,debug=False)
+</div>"""
 
