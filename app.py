@@ -151,10 +151,13 @@ def register():
     m="Phone already registered"
     c.close()
    else:
-    try:
-     c.execute("INSERT INTO users (phone,password,invite_code) VALUES (?,?,?)",(phone,pw,invite))
-    except:
-     c.execute("INSERT INTO users (phone,password) VALUES (?,?)",(phone,pw))
+    import secrets, string
+    chars=string.ascii_uppercase+string.digits
+    while True:
+     my_refcode="".join(secrets.choice(chars) for _ in range(8))
+     if not c.execute("SELECT id FROM users WHERE refcode=?",(my_refcode,)).fetchone():
+      break
+    c.execute("INSERT INTO users (phone,password,refcode) VALUES (?,?,?)",(phone,pw,my_refcode))
     c.commit()
     c.close()
     return S+'<div style="position:relative;z-index:2;min-height:100vh;display:flex;align-items:center;justify-content:center"><div style="background:rgba(0,0,0,0.7);border:1px solid #0a84ff;border-radius:16px;padding:30px;text-align:center"><p style="color:#4ade80">Registration Successful!</p><script>setTimeout(function(){location.href="/login"},100)</script></div></div>'
@@ -787,7 +790,7 @@ def my_page():
 <a class="service" href="/withdraw"><div class="icon">♢</div>Withdraw</a>
 <a class="service" href="/home"><div class="icon">▤</div>Card</a>
 <a class="service" href="/home"><div class="icon">$</div>Bill</a>
-<a class="service" href="/home"><div class="icon">♙</div>Invite</a>
+<a class="service" href="/invite"><div class="icon">♙</div>Invite</a>
 <a class="service" href="/home"><div class="icon">♧</div>My team</a>
 <a class="service" href="/home"><div class="icon">☆</div>VIP Task</a>
 <a class="service" href="/reward"><div class="icon">🎁</div>Reward</a>
@@ -1631,6 +1634,490 @@ def activate_ai_machine(machine_name):
     con.close()
 
     return redirect("/income")
+
+
+@app.route("/invite")
+def invite_page():
+    if "uid" not in session:
+        return redirect("/login")
+
+    c = db()
+    user = c.execute(
+        "SELECT refcode FROM users WHERE id=?",
+        (session["uid"],)
+    ).fetchone()
+    c.close()
+
+    refcode = user["refcode"] if user and user["refcode"] else "CODEX700"
+    invite_link = "https://codex700com.onrender.com/register?ref=" + refcode
+
+    return render_template_string("""
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Invite Friends</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+    margin:0;
+    padding:0;
+    width:100%;
+    min-height:100%;
+}
+
+body{
+    background:#00050a;
+    color:#fff;
+    font-family:Georgia,"Times New Roman",serif;
+    background-image:
+        radial-gradient(circle,#06314a 1.2px,transparent 1.4px);
+    background-size:18px 18px;
+}
+
+.invite-page{
+    width:100%;
+    max-width:480px;
+    margin:auto;
+    padding-bottom:105px;
+}
+
+/* HEADER */
+.invite-header{
+    height:82px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    border-bottom:1px solid #08bfff55;
+    background:#00050a;
+}
+
+.invite-back{
+    position:absolute;
+    left:28px;
+    top:14px;
+    width:64px;
+    height:64px;
+    border:1px solid #00bfff;
+    border-radius:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#00bfff;
+    font-family:Arial,sans-serif;
+    font-size:43px;
+    text-decoration:none;
+    box-shadow:0 0 12px #00bfff33;
+}
+
+.invite-title{
+    color:#08bfff;
+    font-size:28px;
+    font-weight:bold;
+    letter-spacing:.3px;
+    text-shadow:0 0 10px #00bfff66;
+}
+
+/* CARDS */
+.invite-card{
+    margin:24px 28px 0;
+    padding:28px;
+    border:1px solid #00bfff;
+    border-radius:22px;
+    background:rgba(0,7,13,.90);
+    box-shadow:
+        0 0 12px #00bfff22,
+        inset 0 0 22px #00bfff0b;
+}
+
+.invite-card h2{
+    margin:0 0 18px;
+    color:#08bfff;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.small-text{
+    color:#c7c7c7;
+    font-size:17px;
+    line-height:1.65;
+}
+
+.code-label{
+    color:#08bfff;
+    text-align:center;
+    font-size:16px;
+    margin-bottom:10px;
+}
+
+.code{
+    text-align:center;
+    font-family:Arial,sans-serif;
+    font-size:30px;
+    font-weight:bold;
+    letter-spacing:4px;
+    margin:8px 0 20px;
+}
+
+.link-box{
+    width:100%;
+    padding:14px;
+    border:1px solid #00bfff77;
+    border-radius:10px;
+    background:#000308;
+    color:#d8f7ff;
+    font-family:Arial,sans-serif;
+    font-size:14px;
+    line-height:1.5;
+    word-break:break-all;
+}
+
+.button-row{
+    display:flex;
+    gap:14px;
+    margin-top:18px;
+}
+
+.invite-btn{
+    flex:1;
+    min-height:58px;
+    border:1px solid #00bfff;
+    border-radius:12px;
+    background:#03b8ee;
+    color:#001018;
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:19px;
+    font-weight:bold;
+    box-shadow:0 0 12px #00bfff33;
+}
+
+.outline-btn{
+    background:#00070d;
+    color:#fff;
+}
+
+/* QR */
+.qr-title{
+    text-align:center;
+    color:#cfcfcf !important;
+    font-size:22px !important;
+    margin-bottom:12px !important;
+}
+
+.qr-description{
+    text-align:center;
+    color:#bdbdbd;
+    font-size:16px;
+    line-height:1.5;
+}
+
+.qr{
+    display:block;
+    width:340px;
+    height:340px;
+    max-width:100%;
+    margin:24px auto;
+    padding:12px;
+    background:#fff;
+    border-radius:24px;
+}
+
+/* STATS */
+.stats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.stat{
+    overflow:hidden;
+    border:1px solid #00bfff;
+    border-radius:20px;
+    background:#fff;
+    text-align:center;
+    box-shadow:0 0 14px #00bfff22;
+}
+
+.stat-number{
+    height:88px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#080d14;
+    font-size:29px;
+    font-weight:bold;
+}
+
+.stat-label{
+    min-height:53px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px;
+    background:#08bfff;
+    color:#fff;
+    font-size:17px;
+}
+
+/* COMMISSION */
+.commission-title{
+    color:#08bfff !important;
+}
+
+.commission-text{
+    color:#d4d4d4;
+    font-size:17px;
+    line-height:1.65;
+}
+
+.commission-text strong{
+    color:#fff;
+}
+
+/* BOTTOM NAVIGATION */
+.bottom-nav{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    width:100%;
+    height:92px;
+    z-index:1000;
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    background:#000;
+    border-top:1px solid #08bfff55;
+}
+
+.bottom-nav a{
+    min-width:0;
+    height:92px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    text-decoration:none;
+    color:#fff;
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:15px;
+    white-space:nowrap;
+}
+
+.bottom-nav .nav-icon{
+    height:38px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:Arial,sans-serif;
+    font-size:29px;
+    line-height:1;
+}
+
+.bottom-nav .active{
+    color:#08bfff;
+}
+
+.bottom-nav a:active{
+    opacity:.75;
+}
+
+@media(max-width:360px){
+    .bottom-nav a{
+        font-size:12px;
+    }
+    .bottom-nav .nav-icon{
+        font-size:25px;
+    }
+    .invite-card{
+        margin-left:20px;
+        margin-right:20px;
+        padding:22px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="invite-page">
+
+    <div class="invite-header">
+        <a class="invite-back" href="/my">‹</a>
+        <div class="invite-title">Invite Friends</div>
+    </div>
+
+    <div class="invite-card">
+        <div class="code-label">Your invitation code</div>
+
+        <div class="code" id="refcode">{{ refcode }}</div>
+
+        <button class="invite-btn"
+                onclick="copyText('{{ refcode }}')">
+            Copy code
+        </button>
+    </div>
+
+    <div class="invite-card">
+        <h2>Invitation link</h2>
+
+        <div class="link-box" id="inviteLink">
+            {{ invite_link }}
+        </div>
+
+        <div class="button-row">
+            <button class="invite-btn"
+                    onclick="copyText('{{ invite_link }}')">
+                Copy link
+            </button>
+
+            <button class="invite-btn outline-btn"
+                    onclick="shareLink()">
+                Share
+            </button>
+        </div>
+    </div>
+
+    <div class="invite-card">
+        <h2 class="qr-title">Scan to register</h2>
+
+        <div class="qr-description">
+            Friends scan this code with their phone camera to open your registration link.
+        </div>
+
+        <img class="qr"
+             src="https://api.qrserver.com/v1/create-qr-code/?size=340x340&data={{ invite_link|urlencode }}"
+             alt="Invitation QR Code">
+
+        <div class="button-row">
+            <button class="invite-btn outline-btn"
+                    onclick="saveQR()">
+                ↓ &nbsp; Save QR
+            </button>
+
+            <button class="invite-btn outline-btn"
+                    onclick="shareLink()">
+                ♧ &nbsp; Share link
+            </button>
+        </div>
+    </div>
+
+    <div class="invite-card">
+        <div class="stats">
+
+            <div class="stat">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Total invites</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-number">0.00</div>
+                <div class="stat-label">Commission earned</div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="invite-card">
+        <h2 class="commission-title">Commission</h2>
+
+        <div class="commission-text">
+            <strong>Level 1 — 10% of every deposit made by people you invited directly</strong>
+            <br><br>
+            Level 2 and Level 3 no longer pay commission.
+            You must own an active AI machine to receive commission.
+        </div>
+    </div>
+
+</div>
+
+<!-- SAME SIX MAIN NAV ITEMS -->
+<div class="bottom-nav">
+
+    <a href="/home">
+        <div class="nav-icon">⌂</div>
+        <div>Home</div>
+    </a>
+
+    <a href="/raffle">
+        <div class="nav-icon">▣</div>
+        <div>Raffle</div>
+    </a>
+
+    <a href="/support">
+        <div class="nav-icon">▣</div>
+        <div>chats</div>
+    </a>
+
+    <a href="/invest">
+        <div class="nav-icon">▣</div>
+        <div>AI</div>
+    </a>
+
+    <a href="/income">
+        <div class="nav-icon">₿</div>
+        <div>Income</div>
+    </a>
+
+    <a href="/my" class="active">
+        <div class="nav-icon">♙</div>
+        <div>My</div>
+    </a>
+
+</div>
+
+<script>
+function copyText(text){
+    if(navigator.clipboard){
+        navigator.clipboard.writeText(text).then(function(){
+            alert("Copied successfully");
+        });
+    }else{
+        var area=document.createElement("textarea");
+        area.value=text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand("copy");
+        area.remove();
+        alert("Copied successfully");
+    }
+}
+
+function shareLink(){
+    var link="{{ invite_link }}";
+
+    if(navigator.share){
+        navigator.share({
+            title:"Join Codex700",
+            text:"Join Codex700 using my invitation link.",
+            url:link
+        });
+    }else{
+        copyText(link);
+    }
+}
+
+function saveQR(){
+    var img=document.querySelector(".qr");
+    var a=document.createElement("a");
+    a.href=img.src;
+    a.download="codex700-invitation-qr.png";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+}
+</script>
+
+</body>
+</html>
+""", refcode=refcode, invite_link=invite_link)
+
 
 @app.route("/raffle")
 def raffle_page():
