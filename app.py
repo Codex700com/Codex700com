@@ -561,12 +561,13 @@ def home():
 </div>
 
 <div class="bottom-nav">
- <a class="nav-item active" href="/home"><span class="nav-icon">⌂</span>Home</a>
- <a class="nav-item" href="/raffle"><span class="nav-icon">▣</span>Raffle</a>
- <a class="nav-item" href="/support"><span class="nav-icon">▤</span>Chats</a>
- <a class="nav-item" href="/invest"><span class="nav-icon">▦</span>AI</a>
- <a class="nav-item" href="/income"><span class="nav-icon">₿</span>Income</a>
- <a class="nav-item" href="/my"><span class="nav-icon">♙</span>My</a>
+ <a class="nav-item active" href="/home"><span class="nav-icon">⌂</span><span>Home</span></a>
+ <a class="nav-item" href="/raffle"><span class="nav-icon">▦</span><span>Raffle</span></a>
+ <a class="nav-item" href="/support"><span class="nav-icon">▤</span><span>Chats</span></a>
+ <a class="nav-item" href="/invest"><span class="nav-icon">▣</span><span>AI</span></a>
+ <a class="nav-item" href="/income"><span class="nav-icon">₿</span><span>Income</span></a>
+ <a class="nav-item" href="/my"><span class="nav-icon">♙</span><span>My</span></a>
+</div>
 
 <script>
 (function(){
