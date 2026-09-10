@@ -1,111 +1,130 @@
-<!DOCTYPE html><html><head><style>/* CODEX BLUE-BLACK-WHITE THEME */body{background:transparent!important;color:#fff!important}.card,.box,.panel{background:#111!important;border:1px solid #00b0ff!important;color:#fff!important}button,.btn{background:#00b0ff!important;color:#000!important;border:none!important;font-weight:700}a{color:#00b0ff!important}input,select,textarea{background:#111!important;color:#fff!important;border:1px solid #00b0ff!important}h1,h2,h3{color:#fff!important}</style><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<style>*{box-sizing:border-box}body{margin:0;background:#020a24;color:#fff;font-family:Inter,system-ui,Arial;padding-bottom:20px}
-.top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #1e90ff44}
-.logo b{font-size:26px;color:#00cfff}.logo span{font-size:9px;letter-spacing:3px}
-.head{padding:12px 14px}.head h1{margin:0;font-size:32px}
-.bcard{margin:10px;border:1.5px solid #1e90ff;border-radius:14px;padding:14px;background:#111}
-.bcard h2{color:#00cfff;font-size:30px;margin:4px 0}
-.box{margin:10px;border:1.5px solid #1e90ff66;border-radius:14px;padding:14px;background:#041338}
-input{width:100%;padding:14px;border-radius:10px;border:1px solid #1e90ff88;background:#020a24;color:#fff;margin:6px 0}
-.pay{display:flex;gap:10px}.pm{flex:1;border:1px solid #1e90ff88;border-radius:12px;padding:12px;background:#020a24;cursor:pointer;text-align:center}
-.pm.sel{border-color:#00cfff;box-shadow:0 0 12px #00cfff88}
-.cbtn{display:block;margin:14px 10px;background:#111;text-align:center;padding:16px;border-radius:14px;color:#fff;font-weight:900;font-size:18px;border:none;width:calc(100% - 20px)}
-</style>
-<script>
-function upd(){let a=parseInt(document.getElementById('amt').value||0);let f=Math.round(a*0.097);document.getElementById('sA').innerText='UGX '+a.toLocaleString();document.getElementById('sF').innerText='UGX '+f.toLocaleString();document.getElementById('sN').innerText='UGX '+(a-f).toLocaleString();}
-function sel(el){document.querySelectorAll('.pm').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');el.querySelector('input').checked=true;}
-</script><style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Withdraw</title>
+<link rel="stylesheet" href="/static/css/codex-waves.css">
 <style>
-:root{ --main-blue:#00b0ff !important; }
-body{ background:transparent !important; color:#fff !important; }
-.card, .info-box, .detail-card{ background:#111 !important; border-radius:12px !important; }
-.price, .amount-blue{ color:#00b0ff !important; font-weight:700; }
-.btn-primary, .invest-btn, button[type=submit]{ background:#00b0ff !important; border:none !important; color:#fff !important; border-radius:10px !important; }
-</style>
-<style>:root{--main-blue:#00b0ff!important}body{background:transparent!important}button,.btn,.btn-primary,.invest-btn,input[type=submit]{background:#00b0ff!important;border-color:#00b0ff!important;color:#fff!important}*{border-color:#00b0ff33!important}</style>
-
-<style>body{font-size:14px!important;line-height:1.4!important}h1{font-size:20px!important}h2{font-size:18px!important}h3{font-size:16px!important}p,div,span,a,button{font-size:14px!important}</style><style>
-body{background:radial-gradient(ellipse at top,#0a1e3f 0%,#050a14 60%)!important;color:#e0f0ff!important;font-family:Arial,sans-serif!important}
-.card,.container,.box{background:#111!important;border:1px solid rgba(0,229,255,0.25)!important;border-radius:12px!important;box-shadow:0 0 20px rgba(30,144,255,0.15)!important;color:#e0f0ff!important}
-h1,h2,h3{color:#00e5ff!important;text-shadow:0 0 12px rgba(0,229,255,0.6)!important}
-button,.btn{background:linear-gradient(90deg,#1e90ff,#00e5ff)!important;color:#001220!important;border:none!important;border-radius:8px!important;font-weight:800!important;box-shadow:0 0 15px rgba(0,229,255,0.4)!important}
-.num,.balance,.amount{color:#00ff88!important;text-shadow:0 0 12px rgba(0,255,136,0.6)!important}
-a{color:#00e5ff!important}
-input,select{background:#050a14!important;color:#fff!important;border:1px solid #00b0ff!important;border-radius:8px!important}
+  body { background:#020210; color:#fff; font-family:Arial; margin:0; padding:0; }
+  .header { text-align:center; padding:15px; color:#00e5ff; font-size:20px; font-weight:700; border-bottom:1px solid #0a2a4a; }
+  .back { position:absolute; left:15px; top:12px; color:#00e5ff; font-size:22px; text-decoration:none; }
+  .container { padding:15px; max-width:500px; margin:auto; }
+  .card { background:#0a0f1a; border:1px solid #123a5c; border-radius:12px; padding:15px; margin-bottom:15px; }
+  .label { color:#9fb3c8; font-size:13px; margin-bottom:8px; }
+  .balance { text-align:center; font-size:32px; color:#00e5ff; font-weight:700; }
+  .payout-btns { display:flex; gap:8px; margin-bottom:15px; }
+  .payout-btn { flex:1; padding:10px; border:1px solid #123a5c; border-radius:8px; background:#0a0f1a; color:#fff; text-align:center; cursor:pointer; }
+  .payout-btn.active { background:linear-gradient(90deg,#00c6ff,#0072ff); border:none; }
+  input { width:100%; padding:12px; background:#050a14; border:1px solid #123a5c; border-radius:8px; color:#fff; margin-bottom:5px; }
+  .alert-red { background:#2a0f14; border:1px solid #a12a4a; border-radius:8px; padding:12px; margin:12px 0; }
+  .alert-red b { color:#fff; }
+  .alert-red a { color:#00e5ff; text-decoration:none; }
+  .row { display:flex; justify-content:space-between; padding:5px 0; }
+  .row .red { color:#ff4d6d; }
+  .row .blue { color:#00e5ff; font-weight:700; }
+  .btn-primary { width:100%; padding:14px; border:none; border-radius:10px; background:linear-gradient(90deg,#00c6ff,#0072ff); color:#fff; font-size:16px; font-weight:700; margin-top:10px; }
+  .btn-primary:disabled { opacity:0.4; }
+  .tabs { display:flex; gap:8px; margin:15px 0; }
+  .tab { padding:8px 14px; background:#0a0f1a; border-radius:20px; font-size:13px; color:#9fb3c8; }
+  .tab.active { background:linear-gradient(90deg,#00c6ff,#0072ff); color:#fff; }
+  .history-box { text-align:center; padding:40px 0; color:#9fb3c8; }
+  .history-box .icon { font-size:40px; margin-bottom:10px; }
+  .dots-bg { background-image: radial-gradient(#123a5c 1px, transparent 1px); background-size:20px 20px; }
 </style>
 </head>
+<body class="dots-bg">
+<div class="header"><a href="/" class="back">←</a> Withdraw</div>
 
-<style>
-.wave-bg-global{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;background:transparent000;overflow:hidden}
-.wave-bg-global canvas{display:block;width:100%;height:100%}
-</style>
-<div class="wave-bg-global"><canvas id="waveCanvasGlobal"></canvas></div>
+<div class="container">
+  <div class="card">
+    <div class="label">Available balance</div>
+    <div class="balance" id="balance">0.00</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Payout method</div>
+    <div class="payout-btns">
+      <div class="payout-btn active" onclick="switchMethod('mtn', this)">MTN UG</div>
+      <div class="payout-btn" onclick="switchMethod('airtel', this)">Airtel UG</div>
+      <div class="payout-btn" onclick="switchMethod('usdt', this)">USDT TRC20</div>
+    </div>
+
+    <div id="mtn-section">
+      <div class="label">Amount (UGX)</div>
+      <input type="number" id="amount" placeholder="5000" oninput="calc()">
+      <div class="label">Minimum withdrawal is 5,000 UGX</div>
+      <div class="alert-red">
+        <b>Withdrawal details required</b><br>
+        Save your phone number and the name registered on that number on your card before withdrawing.<br>
+        <a href="/card">Save my card details</a>
+      </div>
+      <div class="label">Destination phone number</div>
+      <input type="text" placeholder="Saved on your card" readonly>
+      <div class="label">Taken from your saved card. Change it on the Card page.</div>
+    </div>
+
+    <div id="usdt-section" style="display:none;">
+      <div class="label">Amount (in USDT)</div>
+      <input type="number" id="amount_usdt" placeholder="e.g. 10" oninput="calc()">
+      <div class="label">Network TRC20 • 1 USDT = 3,800 UGX • Minimum 1.32 USDT</div>
+      <div class="alert-red">
+        <b>Withdrawal details required</b><br>
+        Save your USDT TRC20 wallet address on your card before withdrawing.<br>
+        <a href="/card">Save my card details</a>
+      </div>
+      <div class="label">Destination wallet address</div>
+      <input type="text" placeholder="Saved on your card" readonly>
+      <div class="label">Taken from your saved card. Change it on the Card page.</div>
+    </div>
+
+    <div class="card" style="margin-top:10px;">
+      <div class="row"><span>Amount (UGX)</span><span id="amt_ugx">0.00</span></div>
+      <div class="row"><span>Withdrawal fee (10%)</span><span class="red" id="fee">-0.00</span></div>
+      <div class="row"><span><b>You receive</b></span><span class="blue" id="receive">0.00</span></div>
+      <div class="label">The full amount is deducted from your balance as soon as you request.</div>
+      <div class="label">You must have at least one active AI machine to withdraw.</div>
+    </div>
+
+    <div class="alert-red">
+      <b>Active AI machine required</b><br>
+      You must own at least one active AI machine before you can withdraw.<br>
+      <a href="/ai">Buy an AI machine</a>
+    </div>
+
+    <button class="btn-primary" disabled>Request withdrawal</button>
+  </div>
+
+  <div><b>Transaction history</b></div>
+  <div class="tabs">
+    <div class="tab">All</div><div class="tab">Deposit</div><div class="tab active">Withdraw</div><div class="tab">Earnings</div><div class="tab">Commission</div>
+  </div>
+  <div class="card history-box">
+    <div class="icon">💳</div>
+    No withdrawal history available.<br>
+    <button class="btn-primary" style="width:120px; margin:auto; margin-top:10px;">Refresh</button>
+  </div>
+</div>
+
 <script>
-(function(){
-if(document.getElementById('waveCanvasGlobal').dataset.done) return;
-const cvs=document.getElementById('waveCanvasGlobal');
-cvs.dataset.done=1;
-const ctx=cvs.getContext('2d');
-let w,h,dpr;
-function resize(){
- dpr=window.devicePixelRatio||1;
- w=cvs.clientWidth; h=cvs.clientHeight;
- cvs.width=w*dpr; cvs.height=h*dpr;
- ctx.scale(dpr,dpr);
+let method = 'mtn';
+function switchMethod(m, btn){
+  method = m;
+  document.querySelectorAll('.payout-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('mtn-section').style.display = m=='usdt' ? 'none' : 'block';
+  document.getElementById('usdt-section').style.display = m=='usdt' ? 'block' : 'none';
+  calc();
 }
-resize();
-window.addEventListener('resize',resize);
-let t=0;
-function draw(){
- t+=0.015;
- ctx.clearRect(0,0,w,h);
- const cols=28, rows=22;
- const gapX=w/cols, gapY=h/rows;
- for(let y=0;y<rows;y++){
-  for(let x=0;x<cols;x++){
-   const px=x*gapX + gapX/2;
-   const py=y*gapY + gapY/2;
-   // wave formula like your image
-   const waveX = Math.sin(y*0.35 + t*1.2) * 25;
-   const waveY = Math.cos(x*0.3 + t*0.8) * 12;
-   const dist = Math.sqrt(Math.pow((x-cols/2)/cols,2)+Math.pow((y-rows/2)/rows,2));
-   const alpha = 0.95 - dist*0.9;
-   if(alpha<=0) continue;
-   const size = 1.8 + Math.sin(t + x*0.2)*0.8;
-   ctx.fillStyle=`rgba(120,200,255,${alpha})`;
-   ctx.shadowBlur=8;
-   ctx.shadowColor='#00c6ff';
-   ctx.beginPath();
-   ctx.arc(px+waveX, py+waveY, size, 0, Math.PI*2);
-   ctx.fill();
-   ctx.shadowBlur=0;
-  }
- }
- requestAnimationFrame(draw);
+function calc(){
+  let amt = method=='usdt' ? parseFloat(document.getElementById('amount_usdt').value)||0 : parseFloat(document.getElementById('amount').value)||0;
+  let ugx = method=='usdt' ? amt*3800 : amt;
+  let fee = ugx*0.1;
+  let rec = ugx-fee;
+  document.getElementById('amt_ugx').innerText = ugx.toFixed(2);
+  document.getElementById('fee').innerText = '-'+fee.toFixed(2);
+  document.getElementById('receive').innerText = rec.toFixed(2);
 }
-draw();
-})();
 </script>
-<body>
-<div class="top"><a href="/menu" style="font-size:26px;color:#00cfff;text-decoration:none">☰</a><div class="logo"><b>👑 CODEX</b><br><span>INVEST • GROW • WIN</span></div><div><a href="/notifications" style="text-decoration:none">🔔</a> <a href="/account" style="text-decoration:none">👤</a></div></div>
-<div class="head"><a href="/home" style="color:#fff;text-decoration:none;font-size:26px">‹</a> <h1 style="display:inline">WITHDRAW</h1><br><small style="margin-left:24px">Turn your earnings into real value 👑</small></div>
-<div class="bcard"><div>💼 Available Balance<h2>UGX {{ "{:,}".format(balance) }}</h2><small>Total Balance: UGX {{ "{:,}".format(balance) }}</small></div></div>
-<form method="POST" class="box">
-<label>Withdrawal Amount (UGX)</label><input id="amt" name="amount" type="number" placeholder="💲 Enter amount to withdraw" oninput="upd()" requi#00b0ff>
-<div style="font-size:12px">Minimum: <b>UGX 10,000</b> | Maximum: <b>UGX 10,000,000</b></div>
-<label style="margin-top:10px;display:block;font-weight:700">Payment Method</label>
-<div class="pay">
-<div class="pm sel" onclick="sel(this)"><span style="background:#00b0ff;color:#fff;padding:4px 8px;border-radius:6px;font-size:12px;font-weight:900">airtel money</span><br><b>Airtel Money</b><input type="radio" name="method" value="Airtel" checked hidden></div>
-<div class="pm" onclick="sel(this)"><span style="background:#ffcc00;padding:4px 8px;border-radius:6px;font-weight:900">MTN</span><br><b>MTN Mobile Money</b><input type="radio" name="method" value="MTN" hidden></div>
-</div>
-<label style="margin-top:10px;display:block;font-weight:700">Mobile Number</label><input name="phone" placeholder="📱 Enter mobile number (07xxxxxxxx)" requi#00b0ff>
-<label style="font-weight:700">Account Name</label><input name="name" placeholder="👤 Enter account name" requi#00b0ff>
-<div style="margin-top:10px;border:1px solid #1e90ff88;border-radius:10px;padding:10px">
-<div style="color:#00cfff;font-weight:900">🧾 WITHDRAWAL SUMMARY</div>
-<div style="display:flex;justify-content:space-between"><span>Withdrawal Amount</span><span id="sA">UGX 0</span></div>
-<div style="display:flex;justify-content:space-between"><span>Withdrawal Fee (9.7%)</span><span id="sF">UGX 0</span></div>
-<div style="display:flex;justify-content:space-between"><b>You Will Receive</b><b id="sN" style="color:#00cfff">UGX 0</b></div>
-</div>
-<div style="margin-top:10px;border:1px solid #ff4d6d88;border-radius:10px;padding:10px"><b style="color:#ff6b8a">⚠️ IMPORTANT</b><ul style="font-size:13px"><li>Make sure your mobile money number is correct.</li><li>Withdrawals are processed within 1-24 hours.</li><li>You will be notified once approved.</li></ul></div>
-<button class="cbtn">✈ CONFIRM WITHDRAWAL »</button>
-</form></body></html>
+</body>
+</html>
