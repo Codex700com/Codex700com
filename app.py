@@ -741,59 +741,7 @@ def my_page():
 .bottom .active{color:#00baff}
 @media(max-width:380px){.my-page{padding-left:8px;padding-right:8px}.icon{width:52px;height:52px}.service{font-size:12px}}
 </style>
-
-<style>
-.wave-bg-global{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;background:#000000;overflow:hidden}
-.wave-bg-global canvas{display:block;width:100%;height:100%}
-</style>
-<div class="wave-bg-global"><canvas id="waveCanvasGlobal"></canvas></div>
-<script>
-(function(){
-if(document.getElementById('waveCanvasGlobal').dataset.done) return;
-const cvs=document.getElementById('waveCanvasGlobal');
-cvs.dataset.done=1;
-const ctx=cvs.getContext('2d');
-let w,h,dpr;
-function resize(){
- dpr=window.devicePixelRatio||1;
- w=cvs.clientWidth; h=cvs.clientHeight;
- cvs.width=w*dpr; cvs.height=h*dpr;
- ctx.scale(dpr,dpr);
-}
-resize();
-window.addEventListener('resize',resize);
-let t=0;
-function draw(){
- t+=0.015;
- ctx.clearRect(0,0,w,h);
- const cols=28, rows=22;
- const gapX=w/cols, gapY=h/rows;
- for(let y=0;y<rows;y++){
-  for(let x=0;x<cols;x++){
-   const px=x*gapX + gapX/2;
-   const py=y*gapY + gapY/2;
-   // wave formula like your image
-   const waveX = Math.sin(y*0.35 + t*1.2) * 25;
-   const waveY = Math.cos(x*0.3 + t*0.8) * 12;
-   const dist = Math.sqrt(Math.pow((x-cols/2)/cols,2)+Math.pow((y-rows/2)/rows,2));
-   const alpha = 0.95 - dist*0.9;
-   if(alpha<=0) continue;
-   const size = 1.8 + Math.sin(t + x*0.2)*0.8;
-   ctx.fillStyle=`rgba(120,200,255,${alpha})`;
-   ctx.shadowBlur=8;
-   ctx.shadowColor='#00c6ff';
-   ctx.beginPath();
-   ctx.arc(px+waveX, py+waveY, size, 0, Math.PI*2);
-   ctx.fill();
-   ctx.shadowBlur=0;
-  }
- }
- requestAnimationFrame(draw);
-}
-draw();
-})();
-</script>
-<div class="my-page" style="position:relative;z-index:1;background:transparent">
+<div class="my-page">
 <div class="my-top">
 <div>
 <div class="my-welcome">Welcome to CODEX700</div>
@@ -835,7 +783,7 @@ draw();
 </script>
 
 <div class="services">
-<a class="service" href="/home"><div class="icon">▣</div>Deposit</a>
+<a class="service" href="/deposit"><div class="icon">▣</div>Deposit</a>
 <a class="service" href="/withdraw"><div class="icon">♢</div>Withdraw</a>
 <a class="service" href="/home"><div class="icon">▤</div>Card</a>
 <a class="service" href="/home"><div class="icon">$</div>Bill</a>
@@ -862,59 +810,6 @@ draw();
 
 setup_manager(app, db, S)
 
-
-
-<style>
-.wave-bg-global{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;background:#000000;overflow:hidden}
-.wave-bg-global canvas{display:block;width:100%;height:100%}
-</style>
-<div class="wave-bg-global"><canvas id="waveCanvasGlobal"></canvas></div>
-<script>
-(function(){
-if(document.getElementById('waveCanvasGlobal').dataset.done) return;
-const cvs=document.getElementById('waveCanvasGlobal');
-cvs.dataset.done=1;
-const ctx=cvs.getContext('2d');
-let w,h,dpr;
-function resize(){
- dpr=window.devicePixelRatio||1;
- w=cvs.clientWidth; h=cvs.clientHeight;
- cvs.width=w*dpr; cvs.height=h*dpr;
- ctx.scale(dpr,dpr);
-}
-resize();
-window.addEventListener('resize',resize);
-let t=0;
-function draw(){
- t+=0.015;
- ctx.clearRect(0,0,w,h);
- const cols=28, rows=22;
- const gapX=w/cols, gapY=h/rows;
- for(let y=0;y<rows;y++){
-  for(let x=0;x<cols;x++){
-   const px=x*gapX + gapX/2;
-   const py=y*gapY + gapY/2;
-   // wave formula like your image
-   const waveX = Math.sin(y*0.35 + t*1.2) * 25;
-   const waveY = Math.cos(x*0.3 + t*0.8) * 12;
-   const dist = Math.sqrt(Math.pow((x-cols/2)/cols,2)+Math.pow((y-rows/2)/rows,2));
-   const alpha = 0.95 - dist*0.9;
-   if(alpha<=0) continue;
-   const size = 1.8 + Math.sin(t + x*0.2)*0.8;
-   ctx.fillStyle=`rgba(120,200,255,${alpha})`;
-   ctx.shadowBlur=8;
-   ctx.shadowColor='#00c6ff';
-   ctx.beginPath();
-   ctx.arc(px+waveX, py+waveY, size, 0, Math.PI*2);
-   ctx.fill();
-   ctx.shadowBlur=0;
-  }
- }
- requestAnimationFrame(draw);
-}
-draw();
-})();
-</script>
 
 @app.route("/income")
 def income_page():
@@ -952,6 +847,350 @@ def income_page():
     page += '</style><div class="inc"><div class="title">Income</div>'+items+'</div>'
     page += '<div class="nav"><a href="/home"><i>⌂</i>Home</a><a href="/raffle"><i>▣</i>Raffle</a><a href="/support"><i>▤</i>Chats</a><a href="/invest"><i>▦</i>AI</a><a class="active" href="/income"><i>₿</i>Income</a><a href="/my"><i>♙</i>My</a></div>'
     return page
+
+
+
+@app.route("/deposit", methods=["GET", "POST"])
+def deposit():
+    if "uid" not in session:
+        return redirect("/login")
+
+    con = sqlite3.connect(DB)
+
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS deposit_requests(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            uid INTEGER NOT NULL,
+            method TEXT NOT NULL,
+            amount REAL NOT NULL,
+            payment_number TEXT NOT NULL,
+            transaction_id TEXT,
+            amount_sent REAL DEFAULT 0,
+            status TEXT DEFAULT 'PENDING',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    try:
+        con.execute("ALTER TABLE deposit_requests ADD COLUMN amount_sent REAL DEFAULT 0")
+        con.commit()
+    except sqlite3.OperationalError:
+        pass
+
+    method = request.args.get("method", "").strip()
+
+    if request.method == "POST":
+        method = request.form.get("method", "").strip()
+        amount = request.form.get("amount", "").strip()
+        payment_number = request.form.get("payment_number", "").strip()
+        transaction_id = request.form.get("transaction_id", "").strip()
+        amount_sent = request.form.get("amount_sent", "").strip()
+
+        errors = []
+
+        if method not in ("MTN UG", "Airtel UG"):
+            errors.append("Please select MTN UG or Airtel UG.")
+
+        try:
+            amount_value = float(amount)
+            if amount_value <= 0:
+                errors.append("Enter a valid amount.")
+        except:
+            amount_value = 0
+            errors.append("Enter a valid amount.")
+
+        try:
+            amount_sent_value = float(amount_sent)
+            if amount_sent_value <= 0:
+                errors.append("Enter the amount you sent.")
+        except:
+            amount_sent_value = 0
+            errors.append("Enter the amount you sent.")
+
+        if not payment_number:
+            errors.append("Enter the mobile number you paid from.")
+
+        if not transaction_id:
+            errors.append("Enter the transaction ID.")
+
+        if errors:
+            con.close()
+            return render_template_string("""
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Deposit</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#000;color:#fff;font-family:Arial,sans-serif}
+.wrap{max-width:600px;margin:auto;padding:18px 14px 95px}
+.top{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.back{width:45px;height:45px;border:1px solid #00aaff;border-radius:14px;color:#00c8ff;text-decoration:none;font-size:30px;text-align:center;line-height:40px}
+.title{font-size:25px;font-weight:900;color:#00bfff}
+.wave{height:4px;background:#00aaff;box-shadow:0 0 15px #008cff;border-radius:20px;margin-bottom:20px}
+.card{background:#02080e;border:1px solid #008cff;border-radius:20px;padding:18px;margin-bottom:15px;box-shadow:0 0 20px rgba(0,140,255,.15)}
+label{display:block;color:#a9c0d0;font-size:13px;margin:14px 0 7px}
+input{width:100%;height:52px;background:#020509;color:#fff;border:1px solid #087db8;border-radius:14px;padding:0 14px;font-size:16px;outline:none}
+button{width:100%;height:52px;border:0;border-radius:14px;background:#08aeea;color:#fff;font-size:16px;font-weight:900;margin-top:18px}
+.error{background:#250708;border:1px solid #ff4b4b;color:#ff9999;padding:13px;border-radius:14px;margin-bottom:15px}
+.nav{position:fixed;bottom:0;left:0;right:0;height:76px;background:#000;border-top:1px solid #12394e;display:grid;grid-template-columns:repeat(6,1fr);z-index:20}
+.nav a{color:#fff;text-decoration:none;text-align:center;font-size:11px;padding-top:12px}
+.nav b{display:block;font-size:25px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top"><a class="back" href="/deposit">‹</a><div class="title">Deposit</div></div>
+<div class="wave"></div>
+<div class="error">{{ errors|join(" ") }}</div>
+<div class="card">
+<form method="POST">
+<input type="hidden" name="method" value="{{ method }}">
+<label>Deposit amount</label>
+<input name="amount" type="number" value="{{ amount }}" required>
+
+<label>Mobile number you paid from</label>
+<input name="payment_number" value="{{ payment_number }}" required>
+
+<label>Transaction ID</label>
+<input name="transaction_id" value="{{ transaction_id }}" required>
+
+<label>Amount sent</label>
+<input name="amount_sent" type="number" value="{{ amount_sent }}" required>
+
+<button type="submit">CONTINUE</button>
+</form>
+</div>
+</div>
+<div class="nav">
+<a href="/home"><b>⌂</b>Home</a>
+<a href="/raffle"><b>▣</b>Raffle</a>
+<a href="/messages"><b>▤</b>Chats</a>
+<a href="/invest"><b>▦</b>AI</a>
+<a href="/income"><b>₿</b>Income</a>
+<a href="/my"><b>♙</b>My</a>
+</div>
+</body>
+</html>
+""", errors=errors, method=method, amount=amount,
+amount_sent=amount_sent, payment_number=payment_number,
+transaction_id=transaction_id)
+
+        con.execute("""
+            INSERT INTO deposit_requests
+            (uid, method, amount, payment_number, transaction_id, amount_sent, status)
+            VALUES (?, ?, ?, ?, ?, ?, 'PENDING')
+        """, (
+            session["uid"],
+            method,
+            amount_value,
+            payment_number,
+            transaction_id,
+            amount_sent_value
+        ))
+
+        con.commit()
+        con.close()
+
+        return render_template_string("""
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Deposit Pending</title>
+<style>
+body{margin:0;background:#000;color:#fff;font-family:Arial;text-align:center}
+.box{margin:100px 18px;padding:30px 20px;background:#030a10;border:1px solid #00aaff;border-radius:22px;box-shadow:0 0 25px rgba(0,170,255,.2)}
+.ok{font-size:55px;color:#00d084}
+h2{color:#00c8ff}
+p{color:#a9bdc9;line-height:1.6}
+a{display:block;margin-top:25px;background:#08aeea;color:#fff;text-decoration:none;padding:15px;border-radius:14px;font-weight:900}
+</style>
+</head>
+<body>
+<div class="box">
+<div class="ok">✓</div>
+<h2>Deposit Request Pending</h2>
+<p>Your deposit request has been submitted and is waiting for review.</p>
+<a href="/home">BACK TO HOME</a>
+</div>
+</body>
+</html>
+""")
+
+    con.close()
+
+    # SCREEN 1: choose network
+    if method not in ("MTN UG", "Airtel UG"):
+        return render_template_string("""
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Deposit</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#000;color:#fff;font-family:Arial,sans-serif}
+.wrap{max-width:600px;margin:auto;padding:20px 14px 95px}
+.title{text-align:center;color:#00c8ff;font-size:27px;font-weight:900;margin:10px 0 18px}
+.wave{height:4px;background:#00aaff;border-radius:20px;box-shadow:0 0 18px #008cff;margin-bottom:22px}
+.card{background:#02080e;border:1px solid #008cff;border-radius:20px;padding:20px;margin-bottom:15px;box-shadow:0 0 22px rgba(0,140,255,.15)}
+.card h2{margin:0 0 8px;color:#fff}
+.card p{color:#91a9b9;font-size:13px}
+.choose{display:block;text-decoration:none;color:#fff;border:1px solid #087db8;background:#03070b;border-radius:17px;padding:20px;margin-top:13px;font-size:18px;font-weight:900}
+.choose span{color:#00c8ff;float:right}
+.nav{position:fixed;bottom:0;left:0;right:0;height:76px;background:#000;border-top:1px solid #12394e;display:grid;grid-template-columns:repeat(6,1fr);z-index:20}
+.nav a{color:#fff;text-decoration:none;text-align:center;font-size:11px;padding-top:12px}
+.nav b{display:block;font-size:25px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="title">Deposit</div>
+<div class="wave"></div>
+<div class="card">
+<h2>Choose Payment Method</h2>
+<p>Select the mobile-money network you want to use.</p>
+
+<a class="choose" href="/deposit?method=MTN%20UG">
+MTN Money <span>›</span>
+</a>
+
+<a class="choose" href="/deposit?method=Airtel%20UG">
+Airtel Money <span>›</span>
+</a>
+</div>
+</div>
+
+<div class="nav">
+<a href="/home"><b>⌂</b>Home</a>
+<a href="/raffle"><b>▣</b>Raffle</a>
+<a href="/messages"><b>▤</b>Chats</a>
+<a href="/invest"><b>▦</b>AI</a>
+<a href="/income"><b>₿</b>Income</a>
+<a href="/my"><b>♙</b>My</a>
+</div>
+</body>
+</html>
+""")
+
+    # SCREEN 2: selected network
+    return render_template_string("""
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Deposit</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#000;color:#fff;font-family:Arial,sans-serif}
+.wrap{max-width:600px;margin:auto;padding:18px 14px 95px}
+.top{display:flex;align-items:center;gap:13px;margin-bottom:15px}
+.back{width:45px;height:45px;border:1px solid #008cff;border-radius:14px;color:#00c8ff;text-decoration:none;font-size:30px;text-align:center;line-height:40px}
+.title{color:#00c8ff;font-size:25px;font-weight:900}
+.wave{height:4px;background:#00aaff;border-radius:20px;box-shadow:0 0 18px #008cff;margin-bottom:18px}
+.card{background:#02080e;border:1px solid #008cff;border-radius:20px;padding:18px;margin-bottom:15px;box-shadow:0 0 24px rgba(0,140,255,.15)}
+.network{font-size:21px;font-weight:900;margin-bottom:4px}
+.amount{color:#a9bdc9;margin-bottom:18px}
+.paybox{border:1px solid #087db8;border-radius:17px;background:#010407;padding:15px;margin-bottom:15px}
+.paytitle{color:#00c8ff;font-weight:900;font-size:17px;margin-bottom:10px}
+.numberbox{height:58px;border:1px solid #12658d;border-radius:14px;display:flex;align-items:center;justify-content:space-between;padding-left:14px}
+.empty{color:#506875;font-size:22px}
+.copy{background:#08aeea;color:#fff;border:0;border-radius:13px;padding:13px 18px;font-weight:900}
+.info{color:#aabcc8;line-height:1.6;font-size:13px}
+.info strong{color:#00c8ff}
+label{display:block;color:#a9bdc9;font-size:13px;margin:14px 0 7px}
+input{width:100%;height:52px;background:#020509;color:#fff;border:1px solid #087db8;border-radius:14px;padding:0 14px;font-size:16px;outline:none}
+button.continue{width:100%;height:52px;border:0;border-radius:14px;background:#08aeea;color:#fff;font-size:16px;font-weight:900;margin-top:18px}
+.nav{position:fixed;bottom:0;left:0;right:0;height:76px;background:#000;border-top:1px solid #12394e;display:grid;grid-template-columns:repeat(6,1fr);z-index:20}
+.nav a{color:#fff;text-decoration:none;text-align:center;font-size:11px;padding-top:12px}
+.nav b{display:block;font-size:25px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="top">
+<a class="back" href="/deposit">‹</a>
+<div class="title">Deposit</div>
+</div>
+
+<div class="wave"></div>
+
+<div class="card">
+
+<div class="network">{{ method.replace(" UG"," Money") }}</div>
+<div class="amount">Enter the amount you want to request</div>
+
+<div class="paybox">
+<div class="paytitle">Send to number</div>
+
+<div class="numberbox">
+<span class="empty"></span>
+<button class="copy" type="button" onclick="copyEmpty()">▣ Copy</button>
+</div>
+
+<div class="info" style="margin-top:14px">
+<strong>Payment details</strong><br>
+The recipient number is intentionally not displayed here.
+</div>
+
+<div class="info" style="margin-top:12px">
+<strong>How to complete your request</strong><br>
+1. Complete your payment using your chosen mobile-money service.<br>
+2. Return here and enter the number you paid from.<br>
+3. Enter your transaction ID.<br>
+4. Enter the amount you sent.<br>
+5. Tap Continue.
+</div>
+</div>
+
+<form method="POST">
+
+<input type="hidden" name="method" value="{{ method }}">
+
+<label>Amount</label>
+<input type="number" name="amount" min="1" step="1"
+placeholder="Enter amount" required>
+
+<label>Mobile number you paid from</label>
+<input type="text" name="payment_number"
+inputmode="tel" placeholder="Enter your mobile number" required>
+
+<label>Transaction ID</label>
+<input type="text" name="transaction_id"
+placeholder="Enter transaction ID" required>
+
+<label>Amount sent</label>
+<input type="number" name="amount_sent"
+min="1" step="1" inputmode="numeric"
+placeholder="Enter amount you sent" required>
+
+<button class="continue" type="submit">CONTINUE</button>
+
+</form>
+</div>
+</div>
+
+<div class="nav">
+<a href="/home"><b>⌂</b>Home</a>
+<a href="/raffle"><b>▣</b>Raffle</a>
+<a href="/messages"><b>▤</b>Chats</a>
+<a href="/invest"><b>▦</b>AI</a>
+<a href="/income"><b>₿</b>Income</a>
+<a href="/my"><b>♙</b>My</a>
+</div>
+
+<script>
+function copyEmpty(){
+    navigator.clipboard.writeText("").catch(function(){});
+}
+</script>
+
+</body>
+</html>
+""", method=method)
 
 
 @app.route("/invest", methods=["GET"])
