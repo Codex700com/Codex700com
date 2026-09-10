@@ -24,3 +24,27 @@ app.py.broken_login2_20260909_065739.py
 app.py.broken_login_20260909_065637.py
 app_backup_20260908_222209.py
 templates/invest.html.before_admin_upgrade
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs and local runtime files
+*.log
+cookies.txt
+
+# Backup files
+*.bak
+*.bak2
+*_backup.py
+*_backup_old.py
+*.before_*
+*.before_*/ 
+templates_before_*/
+templates/*~ 
+
+# Temporary/test scripts and files
+dbg.py
+patch_checkin.py
+patch.py

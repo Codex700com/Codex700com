@@ -1,54 +1,228 @@
-<!DOCTYPE html><html><head><style>/* CODEX BLUE-BLACK-WHITE THEME */body{background:#000!important;color:#fff!important}.card,.box,.panel{background:#111!important;border:1px solid #00b0ff!important;color:#fff!important}button,.btn{background:#00b0ff!important;color:#000!important;border:none!important;font-weight:700}a{color:#00b0ff!important}input,select,textarea{background:#111!important;color:#fff!important;border:1px solid #00b0ff!important}h1,h2,h3{color:#fff!important}</style><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><style>
-body{margin:0;background:#000;color:#fff;font-family:Arial} .top{display:flex;align-items:center;justify-content:space-between;padding:10px 15px;background:#021033;border-bottom:1px solid #0a2a6b}
-.logo{font-size:28px;font-weight:900;color:gold;letter-spacing:1px} .logo small{display:block;font-size:10px;color:#fff;letter-spacing:3px}
-.banner{background:radial-gradient(circle at 20% 20%,#0a2a6b,#000);padding:15px;text-align:center;border-bottom:2px solid gold;position:relative}
-.banner h1{margin:0;font-size:42px;color:gold;font-style:italic} .banner h1 span{color:#4da6ff}
-.btn-gold{background:linear-gradient(180deg,#ffdf6b,#c89b00);color:#000;border:0;padding:12px 20px;border-radius:25px;font-weight:800}
-.card{margin:10px;background:#031540;border:1px solid #0f3d9a;border-radius:12px;padding:12px}
-.row{display:flex;justify-content:space-between;align-items:center}
-.tickets{font-size:22px;font-weight:800} .timer{display:flex;gap:5px;margin-top:5px} .timer div{background:#02215e;padding:5px 8px;border-radius:6px;color:#4dd2ff;font-weight:700}
-.how{display:flex;gap:8px} .how div{flex:1;background:#021033;border:1px solid #0f3d9a;border-radius:10px;padding:10px;text-align:center}
-.bar-bg{background:#0a235e;height:12px;border-radius:10px;margin-top:8px} .bar{height:12px;background:linear-gradient(90deg,#00c6ff,#007bff);border-radius:10px;width:72%}
-.winners{display:flex;gap:8px;overflow-x:auto} .w{flex:0 0 130px;background:#021033;border:1px solid gold;border-radius:10px;padding:8px;text-align:center}
-.nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#021033;border-top:1px solid #0f3d9a;padding:8px 0} .nav a{flex:1;text-align:center;color:#fff;text-decoration:none;font-size:12px}
-#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);align-items:center;justify-content:center} .box{background:#031540;padding:20px;border-radius:12px;border:1px solid gold;width:90%;max-width:320px}
-</style><style>html,body{touch-action:pan-x pan-y;overscroll-behavior:none}*{ -webkit-text-size-adjust:100%; }</style><script>document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});</script>
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Raffle</title>
 <style>
-:root{ --main-blue:#00b0ff !important; }
-body{ background:#000 !important; color:#fff !important; }
-.card, .info-box, .detail-card{ background:#111 !important; border-radius:12px !important; }
-.price, .amount-blue{ color:#00b0ff !important; font-weight:700; }
-.btn-primary, .invest-btn, button[type=submit]{ background:#00b0ff !important; border:none !important; color:#fff !important; border-radius:10px !important; }
-</style>
-<style>:root{--main-blue:#00b0ff!important}body{background:#000!important}button,.btn,.btn-primary,.invest-btn,input[type=submit]{background:#00b0ff!important;border-color:#00b0ff!important;color:#fff!important}*{border-color:#00b0ff33!important}</style>
-
-<style>body{font-size:14px!important;line-height:1.4!important}h1{font-size:20px!important}h2{font-size:18px!important}h3{font-size:16px!important}p,div,span,a,button{font-size:14px!important}</style><style>
-body{background:radial-gradient(ellipse at top,#0a1e3f 0%,#050a14 60%)!important;color:#e0f0ff!important;font-family:Arial,sans-serif!important}
-.card,.container,.box{background:#111!important;border:1px solid rgba(0,229,255,0.25)!important;border-radius:12px!important;box-shadow:0 0 20px rgba(30,144,255,0.15)!important;color:#e0f0ff!important}
-h1,h2,h3{color:#00e5ff!important;text-shadow:0 0 12px rgba(0,229,255,0.6)!important}
-button,.btn{background:linear-gradient(90deg,#1e90ff,#00e5ff)!important;color:#001220!important;border:none!important;border-radius:8px!important;font-weight:800!important;box-shadow:0 0 15px rgba(0,229,255,0.4)!important}
-.num,.balance,.amount{color:#00ff88!important;text-shadow:0 0 12px rgba(0,255,136,0.6)!important}
-a{color:#00e5ff!important}
-input,select{background:#050a14!important;color:#fff!important;border:1px solid #00b0ff!important;border-radius:8px!important}
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:#020817;
+ color:white;
+ font-family:Georgia,serif;
+ min-height:100vh;
+}
+.page{
+ min-height:100vh;
+ padding:18px 20px 95px;
+ background:
+ radial-gradient(circle at 50% 35%,#08234a 0,#020817 55%,#000 100%);
+}
+.notice{
+ border:1px solid #a66b00;
+ border-radius:0 0 28px 28px;
+ background:linear-gradient(#211500,#0d0900);
+ color:#ffd84d;
+ text-align:center;
+ font-size:21px;
+ line-height:1.45;
+ padding:16px 12px 20px;
+ margin:-18px -20px 28px;
+}
+.cards{
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:20px 26px;
+ padding:16px 18px;
+ border:1px solid #126b91;
+ border-radius:22px;
+ background:rgba(1,10,25,.7);
+ box-shadow:0 0 25px rgba(0,180,255,.15);
+}
+.card{
+ aspect-ratio: .68;
+ border-radius:18px;
+ border:2px solid #4c247d;
+ background:
+ radial-gradient(circle at 50% 45%,rgba(40,100,190,.45),transparent 35%),
+ linear-gradient(145deg,#0d0a30,#111c48 50%,#18072b);
+ box-shadow:
+ 0 0 8px #182d83,
+ inset 0 0 18px rgba(170,40,255,.45);
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ position:relative;
+ overflow:hidden;
+}
+.card:before{
+ content:"";
+ position:absolute;
+ inset:7px;
+ border:1px solid #6334a0;
+ border-radius:12px;
+}
+.ai{
+ position:relative;
+ z-index:2;
+ width:62px;
+ height:62px;
+ border:2px solid #8793ad;
+ transform:rotate(45deg);
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ box-shadow:0 0 12px #526cbb;
+}
+.ai span{
+ transform:rotate(-45deg);
+ font-size:25px;
+ color:#c7d1df;
+ font-weight:bold;
+}
+.ready{
+ margin-top:28px;
+ padding:25px 10px;
+ text-align:center;
+ border:1px solid #087bb0;
+ border-radius:18px;
+ background:rgba(4,20,38,.75);
+ font-size:30px;
+ font-weight:bold;
+ box-shadow:0 0 20px rgba(0,170,255,.12);
+}
+.records{
+ margin-top:28px;
+ padding:30px 15px;
+ min-height:170px;
+ border:2px solid #00bfff;
+ border-radius:24px 24px 0 0;
+ background:rgba(4,16,31,.7);
+ text-align:center;
+ color:#00c8ff;
+ font-size:27px;
+ font-weight:bold;
+}
+.bottom{
+ position:fixed;
+ bottom:0;
+ left:0;
+ right:0;
+ height:82px;
+ background:transparent;
+ border-top:1px solid #111;
+ display:grid;
+ grid-template-columns:repeat(6,1fr);
+ z-index:10;
+}
+.bottom a{
+ text-decoration:none;
+ color:white;
+ text-align:center;
+ font-size:13px;
+ padding-top:9px;
+}
+.bottom i{
+ display:block;
+ font-style:normal;
+ font-size:32px;
+ line-height:35px;
+}
+.bottom .active{
+ color:#00c8ff;
+}
 </style>
 </head>
-<body>
-<div class="top"><div>☰</div><div class="logo">CODEX<small>INVEST • GROW • WIN</small></div><div>🔔👤</div></div>
-<div class="banner"><h1>Raffle <span>Draw</span></h1><p>Every ticket gives you a chance<br>to be a <b>winner!</b></p><button class="btn-gold" onclick="showPrizes()">🎁 VIEW PRIZES ></button><div style="text-align:right;color:gold;font-style:italic">Small Steps<br>Big Rewards!</div></div>
-<div class="card row"><div class="row"><div style="font-size:36px">🎟️</div><div><div>Your</div><div class="tickets">Tickets</div><div id="myTickets" style="color:gold">0</div></div></div><div><div>📅 Next Draw<br><b id="drawDate" style="color:#4dd2ff">29 Sept 2026</b></div><div class="timer" id="timer"><div>22d</div><div>20h</div><div>32m</div><div>21s</div></div></div><button class="btn-gold" onclick="openModal()">🛒 Buy Tickets ></button></div>
-<div class="card"><div style="text-align:center;color:gold;font-weight:900;margin-bottom:10px">— HOW IT WORKS —</div><div class="how"><div><div style="font-size:24px">①🎟️</div><b style="color:gold">Buy Tickets</b><br><small>Choose the number of tickets you want to enter.</small></div><div><div style="font-size:24px">②📅</div><b style="color:gold">Wait for Draw</b><br><small>Stay tuned and wait for the draw date.</small></div><div><div style="font-size:24px">③🎁</div><b style="color:gold">Win Prizes</b><br><small>Winners will be announced and prizes delive#00b0ff.</small></div></div></div>
-<div class="card"><div style="background:#0096ff;display:inline-block;padding:4px 12px;border-radius:0 10px 10px 0;font-weight:800;font-size:12px">UPCOMING RAFFLE</div><div class="row" style="margin-top:10px"><img src="https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-15-pro-max.jpg" style="width:90px;border-radius:10px"><div><div style="color:gold;font-weight:800;font-size:18px">iPhone 15 Pro Max (256GB)</div><div>Be the next lucky winner!</div><div class="row" style="gap:10px;margin-top:8px"><div>🎟️<br><small>Total Tickets</small><br><b style="color:#4dd2ff">10,000</b></div><div>🎟️<br><small>Ticket Price</small><br><b style="color:#4dd2ff">UGX 5,000</b></div><div>📅<br><small>Draw Date</small><br><b style="color:#4dd2ff" class="drawDate2">29 Sept 2026</b></div></div></div><div>🎁</div></div><div class="bar-bg"><div class="bar" id="barFill"></div></div><div class="row" style="margin-top:5px"><div><b id="sold" style="color:#4dd2ff">7,261</b> / 10,000 Tickets Sold</div><div id="pct" style="color:#4dd2ff;font-weight:800">72%</div></div></div>
-<div class="card"><div class="row"><div>🏆 <b style="color:gold">PREVIOUS WINNERS</b></div><a href="#" onclick="viewAll(event)" style="color:gold;text-decoration:none">View All Winners ></a></div><div class="winners" id="winRow"><div class="w">👑<br><b>Lucky256</b><br><small>iPhone 14</small><br><small>15 Aug 2026</small></div><div class="w">👑<br><b>Bright001</b><br><small>$500 Cash</small><br><small>01 Aug 2026</small></div><div class="w">👑<br><b>Faith92</b><br><small>AirPods Pro</small><br><small>18 Jul 2026</small></div><div class="w">👑<br><b>Kingston7</b><br><small>$300 Cash</small><br><small>02 Jul 2026</small></div></div></div>
-<div style="height:70px"></div><div class="nav"><a href="/home">🏠<br>Home</a><a href="/referrals">👥<br>Referrals</a><a href="/account">👤<br>Account</a></div>
-<div id="modal"><div class="box"><h3 style="color:gold">Buy Tickets</h3><p>Price: <b>UGX 5,000</b></p><input id="qty" type="number" min="1" value="1" style="width:100%;padding:10px"><p>Total: <b id="total">UGX 5,000</b></p><button class="btn-gold" onclick="buy()" style="width:100%">Confirm Purchase</button><button onclick="closeModal()" style="width:100%;margin-top:8px;background:#222;color:#fff;padding:10px;border:0;border-radius:8px">Cancel</button><p id="msg"></p></div></div>
-<div id="prizesModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);align-items:center;justify-content:center"><div class="box"><h3 style="color:gold">Prizes</h3><ul><li>🏆 Grand: iPhone 15 Pro Max</li><li>🥈 2nd: Samsung S24</li><li>🥉 3rd: UGX 500,000</li><li>🎁 4th-10th: AirPods Pro</li></ul><button onclick="this.parentElement.parentElement.style.display='none'" class="btn-gold" style="width:100%">Close</button></div></div>
+
+<style>
+.wave-bg-global{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;background:transparent000;overflow:hidden}
+.wave-bg-global canvas{display:block;width:100%;height:100%}
+</style>
+<div class="wave-bg-global"><canvas id="waveCanvasGlobal"></canvas></div>
 <script>
-let target=new Date(2026,8,29,18,0,0);
-function tick(){let d=target-new Date();if(d<0)d=0;let dd=Math.floor(d/864e5),hh=Math.floor(d%864e5/36e5),mm=Math.floor(d%36e5/6e4),ss=Math.floor(d%6e4/1e3);document.getElementById('timer').innerHTML=`<div>${dd}d</div><div>${hh}h</div><div>${mm}m</div><div>${ss}s</div>`}setInterval(tick,1000);tick();
-let sold=7261;function upd(){let p=Math.floor(sold/100);document.getElementById('sold').innerText=sold.toLocaleString();document.getElementById('pct').innerText=p+'%';document.getElementById('barFill').style.width=p+'%'}upd();setInterval(()=>{if(sold<10000){sold+=Math.floor(Math.random()*2);upd()}},4000);
-function openModal(){document.getElementById('modal').style.display='flex'}function closeModal(){document.getElementById('modal').style.display='none'}function showPrizes(){document.getElementById('prizesModal').style.display='flex'}
-document.getElementById('qty').oninput=e=>{document.getElementById('total').innerText='UGX '+(e.target.value*5000).toLocaleString()};
-async function buy(){let q=document.getElementById('qty').value;let r=await fetch('/raffle-buy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({qty:q})});let j=await r.json();document.getElementById('msg').innerText=j.msg||'Done';if(j.ok){document.getElementById('myTickets').innerText=j.total;setTimeout(closeModal,1200)}}
-async function viewAll(e){e.preventDefault();try{let r=await fetch('/raffle-winners');let j=await r.json();document.getElementById('winRow').innerHTML=j.map(w=>`<div class="w">👑<br><b>${w[0]}</b><br><small>${w[1]}</small><br><small>${w[2]}</small></div>`).join('')}catch(e){}}
-fetch('/raffle-my').then(r=>r.json()).then(j=>{if(j.total!==undefined)document.getElementById('myTickets').innerText=j.total}).catch(()=>{});
-</script></body></html>
+(function(){
+if(document.getElementById('waveCanvasGlobal').dataset.done) return;
+const cvs=document.getElementById('waveCanvasGlobal');
+cvs.dataset.done=1;
+const ctx=cvs.getContext('2d');
+let w,h,dpr;
+function resize(){
+ dpr=window.devicePixelRatio||1;
+ w=cvs.clientWidth; h=cvs.clientHeight;
+ cvs.width=w*dpr; cvs.height=h*dpr;
+ ctx.scale(dpr,dpr);
+}
+resize();
+window.addEventListener('resize',resize);
+let t=0;
+function draw(){
+ t+=0.015;
+ ctx.clearRect(0,0,w,h);
+ const cols=28, rows=22;
+ const gapX=w/cols, gapY=h/rows;
+ for(let y=0;y<rows;y++){
+  for(let x=0;x<cols;x++){
+   const px=x*gapX + gapX/2;
+   const py=y*gapY + gapY/2;
+   // wave formula like your image
+   const waveX = Math.sin(y*0.35 + t*1.2) * 25;
+   const waveY = Math.cos(x*0.3 + t*0.8) * 12;
+   const dist = Math.sqrt(Math.pow((x-cols/2)/cols,2)+Math.pow((y-rows/2)/rows,2));
+   const alpha = 0.95 - dist*0.9;
+   if(alpha<=0) continue;
+   const size = 1.8 + Math.sin(t + x*0.2)*0.8;
+   ctx.fillStyle=`rgba(120,200,255,${alpha})`;
+   ctx.shadowBlur=8;
+   ctx.shadowColor='#00c6ff';
+   ctx.beginPath();
+   ctx.arc(px+waveX, py+waveY, size, 0, Math.PI*2);
+   ctx.fill();
+   ctx.shadowBlur=0;
+  }
+ }
+ requestAnimationFrame(draw);
+}
+draw();
+})();
+</script>
+<body>
+
+<div class="page">
+
+<div class="notice">
+Raffle is available only to members with an active DS3 or DS4 machine.
+</div>
+
+<div class="cards">
+ <div class="card"><div class="ai"><span>AI</span></div></div>
+ <div class="card"><div class="ai"><span>AI</span></div></div>
+ <div class="card"><div class="ai"><span>AI</span></div></div>
+
+ <div class="card"><div class="ai"><span>AI</span></div></div>
+ <div class="card"><div class="ai"><span>AI</span></div></div>
+ <div class="card"><div class="ai"><span>AI</span></div></div>
+
+ <div class="card"><div class="ai"><span>AI</span></div></div>
+ <div class="card"><div class="ai"><span>AI</span></div></div>
+ <div class="card"><div class="ai"><span>AI</span></div></div>
+</div>
+
+<div class="ready">Ready: 0</div>
+
+<div class="records">
+My records
+</div>
+
+</div>
+
+<div class="bottom">
+<a href="/home"><i>▱</i>Home</a>
+<a href="/raffle" class="active"><i>▣</i>Raffle</a>
+<a href="/support"><i>▤</i>chats</a>
+<a href="/invest"><i>▦</i>AI</a>
+<a href="/income"><i>₿</i>Income</a>
+<a href="/my"><i>♙</i>My</a>
+</div>
+
+</body>
+</html>
