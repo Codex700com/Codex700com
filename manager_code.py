@@ -51,7 +51,7 @@ def setup(app,db,S):
             message=quote("Hello "+a["manager_name"]+", I would like to chat with you.")
 
             return S+f'''<style>
-body{{margin:0;background:#000;color:#fff;font-family:Arial,sans-serif}}
+body{{margin:0;background:#000;background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);background-size:18px 18px;background-position:0 0;color:#fff;font-family:Arial,sans-serif}}
 .mp{{min-height:100vh;padding:18px 14px 90px;box-sizing:border-box}}
 .head{{display:flex;align-items:center;gap:14px;border-bottom:1px solid #087fae;padding-bottom:18px}}
 .back{{color:#00baff;text-decoration:none;font-size:38px}}
@@ -93,7 +93,7 @@ h1{{color:#00baff;font-size:25px;margin:0}}
             </div>'''
 
         return S+f'''<style>
-body{{margin:0;background:#000;color:#fff;font-family:Arial,sans-serif}}
+body{{margin:0;background:#000;background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);background-size:18px 18px;background-position:0 0;color:#fff;font-family:Arial,sans-serif}}
 .mp{{min-height:100vh;padding:18px 12px 90px;box-sizing:border-box}}
 .head{{display:flex;align-items:center;gap:14px;border-bottom:1px solid #087fae;padding-bottom:18px}}
 .back{{color:#00baff;text-decoration:none;font-size:38px}}

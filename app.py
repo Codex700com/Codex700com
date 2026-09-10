@@ -170,7 +170,7 @@ def register():
     return S+'<div style="position:relative;z-index:2;min-height:100vh;display:flex;align-items:center;justify-content:center"><div style="background:rgba(0,0,0,0.7);border:1px solid #0a84ff;border-radius:16px;padding:30px;text-align:center"><p style="color:#4ade80">Registration Successful!</p><script>setTimeout(function(){location.href="/login"},100)</script></div></div>'
  colors=["#3b82f6","#f59e0b","#10b981","#a855f7","#ec4899"]
  col_html="".join(['<span style="color:'+random.choice(colors)+';font-weight:900;margin:1px">'+ch+'</span>' for ch in captcha])
- html='<style>.reg-wrap{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-top:10vh;padding-left:18px;padding-right:18px}.welcome{font-size:34px;font-weight:800;color:#fff;margin-bottom:22px}.pill{width:100%;max-width:360px;height:52px;background:rgba(0,0,0,0.55);border:1px solid #555;border-radius:26px;display:flex;align-items:center;padding:0 16px;margin:9px 0;position:relative}.pill input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:15px;margin-left:10px}.captcha-box{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#fff;border-radius:8px;padding:6px 14px;font-size:22px;letter-spacing:3px;font-weight:800}.reg-btn{width:100%;max-width:360px;height:50px;background:transparent;border:1.6px solid #0a84ff;border-radius:26px;color:#0a84ff;font-size:19px;font-weight:600;margin-top:18px;cursor:pointer}.err{color:#ff6b6b;font-size:13px;max-width:360px;text-align:center;margin:6px;background:rgba(255,0,0,0.08);padding:8px;border-radius:8px}html{scroll-behavior:auto!important;}body{overflow-x:hidden;touch-action:pan-y;-webkit-overflow-scrolling:touch;}</style><div class="reg-wrap"><div class="welcome">Welcome</div><div class="err">'+m+'</div><form method="POST" style="width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center"><input type="hidden" name="real_captcha" value="'+captcha+'"><div class="pill"><input name="phone" placeholder="Phone Number" required></div><div class="pill"><input name="password" type="password" placeholder="Set Password" required></div><div class="pill"><input name="confirm" type="password" placeholder="Confirm Password" required></div><div class="pill"><input name="captcha_input" placeholder="Verification Code" required><div class="captcha-box">'+col_html+'</div></div><div class="pill"><input name="invite" placeholder="Invitation Code"></div><button class="reg-btn">Register</button><div style="margin-top:14px"><a href="/login" style="color:#aaa;text-decoration:none">‹ Login</a></div></form></div>'
+ html='<style>.reg-wrap{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-top:10vh;padding-left:18px;padding-right:18px}.welcome{font-size:34px;font-weight:800;color:#fff;margin-bottom:22px}.pill{width:100%;max-width:360px;height:52px;background:rgba(0,0,0,0.55);border:1px solid #555;border-radius:26px;display:flex;align-items:center;padding:0 16px;margin:9px 0;position:relative}.pill input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:15px;margin-left:10px}.captcha-box{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#fff;border-radius:8px;padding:6px 14px;font-size:22px;letter-spacing:3px;font-weight:800}.reg-btn{width:100%;max-width:360px;height:50px;background:transparent;border:1.6px solid #0a84ff;border-radius:26px;color:#0a84ff;font-size:19px;font-weight:600;margin-top:18px;cursor:pointer}.err{color:#ff6b6b;font-size:13px;max-width:360px;text-align:center;margin:6px;background:rgba(255,0,0,0.08);padding:8px;border-radius:8px}html{scroll-behavior:auto!important;}body{overflow-x:hidden;touch-action:pan-y;-webkit-overflow-scrolling:touch;}</style><div class="reg-dots" style="position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);background-size:18px 18px;background-position:0 0;"></div><div class="reg-wrap"><div class="welcome">Welcome</div><div class="err">'+m+'</div><form method="POST" style="width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center"><input type="hidden" name="real_captcha" value="'+captcha+'"><div class="pill"><input name="phone" placeholder="Phone Number" required></div><div class="pill"><input name="password" type="password" placeholder="Set Password" required></div><div class="pill"><input name="confirm" type="password" placeholder="Confirm Password" required></div><div class="pill"><input name="captcha_input" placeholder="Verification Code" required><div class="captcha-box">'+col_html+'</div></div><div class="pill"><input name="invite" placeholder="Invitation Code"></div><button class="reg-btn">Register</button><div style="margin-top:14px"><a href="/login" style="color:#aaa;text-decoration:none">‹ Login</a></div></form></div>'
  return S+html
 
 @app.route("/login",methods=["GET","POST"])
@@ -188,7 +188,7 @@ def login():
    return S+'<div class="card"><p style="color:#4ade80">Login successful</p><script>setTimeout(function(){location.href="/home"},100)</script></div>'
   else:
    m="Wrong password. Please try again." if ex else "Phone not registered. Please register first."
- html='<style>.login-wrap{position:relative;z-index:2;min-height:100vh;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;padding:10vh 18px 30px;overflow:hidden;background:#020609}.welcome{font-family:Georgia,serif;font-size:45px;font-weight:500;color:#fff;margin-bottom:30px;}.login-wrap .err{color:#ff6b6b;font-size:13px;width:100%;max-width:370px;min-height:18px;text-align:center;margin:0 0 5px}.login-form{width:100%;max-width:370px;display:flex;flex-direction:column;align-items:center}.login-pill{width:100%;height:58px;box-sizing:border-box;background:rgba(0,0,0,.70);border:1px solid rgba(255,255,255,.28);border-radius:30px;display:flex;align-items:center;padding:0 18px;margin:9px 0;}.login-pill:focus-within{border-color:#00aaff;}.login-pill input{flex:1;width:100%;background:transparent;border:none;outline:none;color:#fff;font-size:15px;margin-left:5px}.login-pill input::placeholder{color:#929292}.eye{color:#999;font-size:17px;cursor:pointer;padding:8px}.lang{width:100%;display:flex;justify-content:flex-end;margin:3px 0 7px}.lang select{background:transparent;border:0;outline:0;color:#999;font-size:13px}.lang option{background:#050b12;color:#fff}.login-btn{width:100%;height:54px;background:transparent;border:1.6px solid #078cff;border-radius:28px;color:#078cff;font-size:18px;font-weight:600;margin-top:19px;cursor:pointer;}.login-btn:active{transform:scale(.98);background:rgba(0,140,255,.08)}.bot{width:100%;display:flex;justify-content:space-between;margin-top:18px;font-size:13px}.bot a{color:#aaa;text-decoration:none}.bot a:first-child{color:#078cff}@media(max-width:430px){.login-wrap{padding-top:9vh}.welcome{font-size:43px}}html{scroll-behavior:auto!important;}body{overflow-x:hidden;touch-action:pan-y;-webkit-overflow-scrolling:touch;}</style><div class="login-wrap"><div class="welcome">Welcome</div><div class="err">'+m+'</div><form method="POST" class="login-form"><div class="login-pill"><input name="phone" placeholder="Phone Number" required></div><div class="login-pill"><input id="loginPassword" name="password" type="password" placeholder="Login Password" required><span class="eye" onclick="togglePassword()">◉</span></div><div class="lang"><select><option>English</option></select></div><button class="login-btn" type="submit">Login</button><div class="bot"><a href="/register">‹ &nbsp;Register</a><a href="/reset">Forgot your password?</a></div></form></div><script>function togglePassword(){var p=document.getElementById("loginPassword");p.type=p.type==="password"?"text":"password";}</script>'
+ html='<style>.login-wrap{position:relative;z-index:2;min-height:100vh;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;padding:10vh 18px 30px;overflow:hidden;background:#020609}.welcome{font-family:Georgia,serif;font-size:45px;font-weight:500;color:#fff;margin-bottom:30px;}.login-wrap .err{color:#ff6b6b;font-size:13px;width:100%;max-width:370px;min-height:18px;text-align:center;margin:0 0 5px}.login-form{width:100%;max-width:370px;display:flex;flex-direction:column;align-items:center}.login-pill{width:100%;height:58px;box-sizing:border-box;background:rgba(0,0,0,.70);border:1px solid rgba(255,255,255,.28);border-radius:30px;display:flex;align-items:center;padding:0 18px;margin:9px 0;}.login-pill:focus-within{border-color:#00aaff;}.login-pill input{flex:1;width:100%;background:transparent;border:none;outline:none;color:#fff;font-size:15px;margin-left:5px}.login-pill input::placeholder{color:#929292}.eye{color:#999;font-size:17px;cursor:pointer;padding:8px}.lang{width:100%;display:flex;justify-content:flex-end;margin:3px 0 7px}.lang select{background:transparent;border:0;outline:0;color:#999;font-size:13px}.lang option{background:#050b12;color:#fff}.login-btn{width:100%;height:54px;background:transparent;border:1.6px solid #078cff;border-radius:28px;color:#078cff;font-size:18px;font-weight:600;margin-top:19px;cursor:pointer;}.login-btn:active{transform:scale(.98);background:rgba(0,140,255,.08)}.bot{width:100%;display:flex;justify-content:space-between;margin-top:18px;font-size:13px}.bot a{color:#aaa;text-decoration:none}.bot a:first-child{color:#078cff}@media(max-width:430px){.login-wrap{padding-top:9vh}.welcome{font-size:43px}}html{scroll-behavior:auto!important;}body{overflow-x:hidden;touch-action:pan-y;-webkit-overflow-scrolling:touch;}</style><div class="login-dots" style="position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);background-size:18px 18px;background-position:0 0;"></div><div class="login-wrap"><div class="welcome">Welcome</div><div class="err">'+m+'</div><form method="POST" class="login-form"><div class="login-pill"><input name="phone" placeholder="Phone Number" required></div><div class="login-pill"><input id="loginPassword" name="password" type="password" placeholder="Login Password" required><span class="eye" onclick="togglePassword()">◉</span></div><div class="lang"><select><option>English</option></select></div><button class="login-btn" type="submit">Login</button><div class="bot"><a href="/register">‹ &nbsp;Register</a><a href="/reset">Forgot your password?</a></div></form></div><script>function togglePassword(){var p=document.getElementById("loginPassword");p.type=p.type==="password"?"text":"password";}</script>'
  return S+html
 
 @app.route("/reset",methods=["GET","POST"])
@@ -457,7 +457,7 @@ def home():
 <div class="home-page">
  <div class="home-top">
   <div class="home-logo">CODEX700</div>
-  <a class="msg-link" href="/messages">
+  <a class="msg-link" href="/support">
    <span class="msg-icon">♧</span>
    Message
   </a>
@@ -563,7 +563,7 @@ def home():
 <div class="bottom-nav">
  <a class="nav-item active" href="/home"><span class="nav-icon">⌂</span>Home</a>
  <a class="nav-item" href="/raffle"><span class="nav-icon">▣</span>Raffle</a>
- <a class="nav-item" href="/messages"><span class="nav-icon">▤</span>Chats</a>
+ <a class="nav-item" href="/support"><span class="nav-icon">▤</span>Chats</a>
  <a class="nav-item" href="/invest"><span class="nav-icon">▦</span>AI</a>
  <a class="nav-item" href="/income"><span class="nav-icon">₿</span>Income</a>
  <a class="nav-item" href="/my"><span class="nav-icon">♙</span>My</a>
@@ -680,6 +680,11 @@ def home():
 })();
 </script></div>"""
 
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/login")
+
 @app.route("/my")
 def my_page():
  if "uid" not in session:
@@ -692,110 +697,325 @@ def my_page():
  phone = u["phone"] if u else ""
  balance = u["balance"] if u and "balance" in u.keys() else 0
 
- return S+"""<style>
-.my-page{min-height:100vh;background:#000;color:#fff;padding:20px 14px 105px;box-sizing:border-box;font-family:Georgia,serif}
-.my-top{display:flex;justify-content:space-between;align-items:flex-start;margin:5px 8px 28px}
-.my-welcome{color:#00baff;font-size:27px}
-.my-phone{font-size:18px;margin-top:13px}
-.vip{text-align:center}
-.vip-circle{width:72px;height:72px;border:3px solid #08baff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px}
-.vip-label{margin-top:8px;border:1px solid #08baff;border-radius:20px;padding:6px 18px;color:#00baff;font-size:13px}
+ return S+"""
+<style>
+.my-page{
+ min-height:100vh;
+ box-sizing:border-box;
+ padding:18px 12px 110px;
+ background:#000;
+ color:#fff;
+ font-family:Georgia,serif;
+ background-image:
+ radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);
+ background-size:18px 18px;
+ background-position:0 0;
+}
 
-.wallet-details{
+.my-top{
+ display:flex;
+ justify-content:space-between;
+ align-items:flex-start;
+ margin:4px 7px 22px;
+}
+
+.my-welcome{
+ color:#00baff;
+ font-size:26px;
+ line-height:1.2;
+ text-shadow:0 0 10px rgba(0,186,255,.35);
+}
+
+.my-phone{
+ margin-top:12px;
+ font-size:17px;
+}
+
+.vip{
+ text-align:center;
+}
+
+.vip-circle{
+ width:68px;
+ height:68px;
+ border:3px solid #00baff;
+ border-radius:50%;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-size:34px;
+ box-shadow:0 0 14px rgba(0,186,255,.30);
+}
+
+.vip-label{
+ margin-top:7px;
+ padding:5px 13px;
+ border:1px solid #00baff;
+ border-radius:18px;
+ color:#00baff;
+ font-size:12px;
+}
+
+.wallet{
+ background:#02090e;
+ border:1px solid #078cff;
+ border-radius:24px;
+ padding:29px 10px 18px;
  display:grid;
  grid-template-columns:1fr 1fr;
- max-height:0;
- overflow:hidden;
- opacity:0;
- transition:max-height:.4s ease,opacity:.3s ease,margin-top:.3s ease;
-}
-.wallet.open .wallet-details{
- max-height:260px;
- opacity:1;
- margin-top:24px;
-}
-.wallet-detail{
  text-align:center;
- padding:8px 4px;
+ box-shadow:0 0 12px rgba(0,145,255,.18);
 }
-.wallet-detail-title{
+
+.wallet-title{
  color:#aaa;
- font-size:17px;
- margin-bottom:10px;
-}
-.wallet-detail-value{
- color:#fff;
  font-size:20px;
+ margin-bottom:12px;
+}
+
+.wallet-value{
+ font-size:30px;
  font-weight:bold;
 }
+
+.wallet-details{
+ grid-column:1/3;
+ display:none;
+ grid-template-columns:1fr 1fr;
+ border-top:1px solid rgba(0,190,255,.3);
+ margin-top:20px;
+ padding-top:10px;
+}
+
+.wallet.open .wallet-details{
+ display:grid;
+}
+
+.wallet-detail{
+ padding:8px 3px;
+}
+
+.wallet-detail-title{
+ color:#999;
+ font-size:14px;
+}
+
+.wallet-detail-value{
+ margin-top:5px;
+ font-size:17px;
+ font-weight:bold;
+}
+
 .wallet-arrow{
  grid-column:1/3;
  color:#00baff;
- font-size:36px;
- line-height:30px;
+ font-size:35px;
+ line-height:25px;
  margin-top:14px;
  cursor:pointer;
- text-align:center;
- user-select:none;
 }
-.wallet{border:1px solid #078cff;border-radius:25px;padding:32px 12px;margin-bottom:28px;background:#02080d;display:grid;grid-template-columns:1fr 1fr;text-align:center}
-.wallet-title{color:#aaa;font-size:22px;margin-bottom:15px}
-.wallet-value{font-size:32px;font-weight:bold}
-.down{grid-column:1/3;color:#00baff;font-size:36px;margin-top:15px}
-.services{border:1px solid #078cff;border-radius:24px;padding:25px 8px;background:#02080d;display:grid;grid-template-columns:repeat(4,1fr);gap:25px 5px}
-.service{text-align:center;color:#fff;text-decoration:none;font-size:14px}
-.icon{width:56px;height:56px;margin:auto auto 8px;border-radius:17px;background:#08b9ee;display:flex;align-items:center;justify-content:center;font-size:27px}
-.bottom{position:fixed;z-index:50;left:0;right:0;bottom:0;height:76px;background:#000;border-top:1px solid #123;display:grid;grid-template-columns:repeat(6,1fr)}
-.bottom a{color:#fff;text-decoration:none;text-align:center;font-size:12px;padding-top:10px}
-.bottom i{display:block;font-style:normal;font-size:27px}
-.bottom .active{color:#00baff}
-@media(max-width:380px){.my-page{padding-left:8px;padding-right:8px}.icon{width:52px;height:52px}.service{font-size:12px}}
+
+.services{
+ margin-top:25px;
+ padding:25px 7px;
+ display:grid;
+ grid-template-columns:repeat(4,1fr);
+ gap:27px 3px;
+ background:#02090e;
+ border:1px solid #078cff;
+ border-radius:24px;
+ box-shadow:0 0 12px rgba(0,145,255,.18);
+}
+
+.service{
+ color:#fff;
+ text-decoration:none;
+ text-align:center;
+ font-size:13px;
+}
+
+.icon{
+ width:55px;
+ height:55px;
+ margin:0 auto 8px;
+ border-radius:17px;
+ background:#08b9ee;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-size:27px;
+ box-shadow:0 0 9px rgba(0,190,255,.25);
+}
+
+.section{
+ margin-top:25px;
+ padding:20px;
+ background:#02090e;
+ border:1px solid #078cff;
+ border-radius:22px;
+ box-shadow:0 0 12px rgba(0,145,255,.18);
+}
+
+.section-title{
+ color:#00baff;
+ font-size:20px;
+ font-weight:bold;
+ margin-bottom:17px;
+}
+
+.share-value{
+ font-size:34px;
+ font-weight:bold;
+}
+
+.salary{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:12px;
+ text-align:center;
+}
+
+.salary-title{
+ color:#aaa;
+ font-size:15px;
+ margin-bottom:10px;
+}
+
+.salary-value{
+ font-size:28px;
+ font-weight:bold;
+}
+
+.action{
+ width:100%;
+ margin-top:20px;
+ padding:14px;
+ border:0;
+ border-radius:16px;
+ background:#08b9ee;
+ color:#fff;
+ font-family:Georgia,serif;
+ font-size:16px;
+}
+
+.reward-table{
+ width:100%;
+ border-collapse:collapse;
+ margin-top:18px;
+}
+
+.reward-table th,
+.reward-table td{
+ padding:11px 4px;
+ border-bottom:1px solid rgba(0,190,255,.22);
+}
+
+.reward-table th{
+ color:#00baff;
+ text-align:left;
+}
+
+.reward-table th:last-child,
+.reward-table td:last-child{
+ text-align:right;
+}
+
+.signout{
+ margin-top:25px;
+ padding:16px;
+ border:1px solid rgba(255,40,70,.65);
+ border-radius:20px;
+ text-align:center;
+}
+
+.signout a{
+ color:#ff3150;
+ text-decoration:none;
+ font-size:18px;
+}
+
+.bottom{
+ position:fixed;
+ z-index:50;
+ left:0;
+ right:0;
+ bottom:0;
+ height:76px;
+ background:#000;
+ border-top:1px solid #123;
+ display:grid;
+ grid-template-columns:repeat(6,1fr);
+ padding-bottom:env(safe-area-inset-bottom);
+}
+
+.bottom a{
+ color:#fff;
+ text-decoration:none;
+ text-align:center;
+ font-size:12px;
+ padding-top:9px;
+}
+
+.bottom i{
+ display:block;
+ font-style:normal;
+ font-size:27px;
+ line-height:30px;
+}
+
+.bottom .active{
+ color:#00baff;
+}
+
+@media(max-width:380px){
+ .my-welcome{font-size:23px}
+ .icon{width:51px;height:51px}
+ .service{font-size:12px}
+ .section{padding:17px}
+}
 </style>
+
 <div class="my-page">
+
 <div class="my-top">
-<div>
-<div class="my-welcome">Welcome to CODEX700</div>
-<div class="my-phone">"""+str(phone)+"""</div>
-</div>
-<div class="vip">
-<div class="vip-circle">✦</div>
-<div class="vip-label">★ VIP 0</div>
-</div>
+ <div>
+  <div class="my-welcome">Welcome to Codex</div>
+  <div class="my-phone">"""+str(phone)+"""</div>
+ </div>
+ <div class="vip">
+  <div class="vip-circle">✦</div>
+  <div class="vip-label">★ VIP 0</div>
+ </div>
 </div>
 
 <div class="wallet" id="walletBox">
-<div><div class="wallet-title">Wallet</div><div class="wallet-value">0.00</div></div>
-<div><div class="wallet-title">Balance</div><div class="wallet-value">"""+str(balance)+"""</div></div>
+ <div>
+  <div class="wallet-title">Wallet</div>
+  <div class="wallet-value">0.00</div>
+ </div>
+ <div>
+  <div class="wallet-title">Balance</div>
+  <div class="wallet-value">"""+str(balance)+"""</div>
+ </div>
 
-<div class="wallet-details">
- <div class="wallet-detail"><div class="wallet-detail-title">Deposit</div><div class="wallet-detail-value">0.00</div></div>
- <div class="wallet-detail"><div class="wallet-detail-title">Withdraw</div><div class="wallet-detail-value">0.00</div></div>
- <div class="wallet-detail"><div class="wallet-detail-title">AI Income</div><div class="wallet-detail-value">0.00</div></div>
- <div class="wallet-detail"><div class="wallet-detail-title">Today's earnings</div><div class="wallet-detail-value">0.00</div></div>
- <div class="wallet-detail"><div class="wallet-detail-title">Invite Count</div><div class="wallet-detail-value">0</div></div>
- <div class="wallet-detail"><div class="wallet-detail-title">Team Count</div><div class="wallet-detail-value">0</div></div>
- <div class="wallet-detail"><div class="wallet-detail-title">Team income</div><div class="wallet-detail-value">0.00</div></div>
+ <div class="wallet-details">
+  <div class="wallet-detail"><div class="wallet-detail-title">Deposit</div><div class="wallet-detail-value">0.00</div></div>
+  <div class="wallet-detail"><div class="wallet-detail-title">Withdraw</div><div class="wallet-detail-value">0.00</div></div>
+  <div class="wallet-detail"><div class="wallet-detail-title">AI Income</div><div class="wallet-detail-value">0.00</div></div>
+  <div class="wallet-detail"><div class="wallet-detail-title">Today's earnings</div><div class="wallet-detail-value">0.00</div></div>
+  <div class="wallet-detail"><div class="wallet-detail-title">Invite Count</div><div class="wallet-detail-value">0</div></div>
+  <div class="wallet-detail"><div class="wallet-detail-title">Team Count</div><div class="wallet-detail-value">0</div></div>
+  <div class="wallet-detail"><div class="wallet-detail-title">Team income</div><div class="wallet-detail-value">0.00</div></div>
+ </div>
+
+ <div class="wallet-arrow" id="walletArrow">⌄</div>
 </div>
-
-<div class="wallet-arrow" id="walletArrow">⌄</div>
-</div>
-
-<script>
-(function(){
- const box=document.getElementById("walletBox");
- const arrow=document.getElementById("walletArrow");
- if(!box || !arrow) return;
- arrow.addEventListener("click",function(){
-   box.classList.toggle("open");
-   arrow.textContent=box.classList.contains("open") ? "⌃" : "⌄";
- });
-})();
-</script>
 
 <div class="services">
+
 <a class="service" href="/deposit"><div class="icon">▣</div>Deposit</a>
 <a class="service" href="/withdraw"><div class="icon">♢</div>Withdraw</a>
-<a class="service" href="/home"><div class="icon">▤</div>Card</a>
+<a class="service" href="/card"><div class="icon">▤</div>Card</a>
 <a class="service" href="/home"><div class="icon">$</div>Bill</a>
 <a class="service" href="/invite"><div class="icon">♙</div>Invite</a>
 <a class="service" href="/home"><div class="icon">♧</div>My team</a>
@@ -806,17 +1026,78 @@ def my_page():
 <a class="service" href="/home"><div class="icon">↓</div>Download App</a>
 <a class="service" href="/manager"><div class="icon">♧</div>Manager</a>
 <a class="service" href="/my"><div class="icon">⚙</div>Settings</a>
+
 </div>
+
+<div class="section">
+ <div class="section-title">Codex Cryptocurrency Purchase Share</div>
+ <div class="share-value">0.00</div>
+</div>
+
+<div class="section">
+ <div class="salary">
+  <div>
+   <div class="salary-title">Last month's salary</div>
+   <div class="salary-value">0.00</div>
+  </div>
+  <div>
+   <div class="salary-title">This month's salary</div>
+   <div class="salary-value">0.00</div>
+  </div>
+ </div>
+ <button class="action" type="button">Get last month's salary</button>
+</div>
+
+<div class="section">
+ <div class="salary">
+  <div>
+   <div class="salary-title">Invited last month</div>
+   <div class="salary-value">0</div>
+  </div>
+  <div>
+   <div class="salary-title">Invited this month</div>
+   <div class="salary-value">0</div>
+  </div>
+ </div>
+
+ <button class="action" type="button">Get last month's reward</button>
+
+ <table class="reward-table">
+  <tr><th>Invite</th><th>Reward</th></tr>
+  <tr><td>6</td><td>Z-1</td></tr>
+  <tr><td>15</td><td>Z-2</td></tr>
+  <tr><td>30</td><td>Z-3</td></tr>
+  <tr><td>60</td><td>Z-4</td></tr>
+ </table>
+</div>
+
+<div class="signout">
+ <a href="/logout">➜ &nbsp; Sign out</a>
+</div>
+
 </div>
 
 <div class="bottom">
-<a href="/home"><i>⌂</i>Home</a>
-<a href="/raffle"><i>▣</i>Raffle</a>
-<a href="/home"><i>▤</i>Chats</a>
-<a href="/home"><i>▦</i>AI</a>
-<a href="/income"><i>₿</i>Income</a>
-<a class="active" href="/my"><i>♙</i>My</a>
-</div>"""
+ <a href="/home"><i>⌂</i>Home</a>
+ <a href="/raffle"><i>▣</i>Raffle</a>
+ <a href="/home"><i>▤</i>chats</a>
+ <a href="/invest"><i>▦</i>AI</a>
+ <a href="/income"><i>₿</i>Income</a>
+ <a class="active" href="/my"><i>♙</i>My</a>
+</div>
+
+<script>
+(function(){
+ const box=document.getElementById("walletBox");
+ const arrow=document.getElementById("walletArrow");
+ if(!box || !arrow) return;
+ arrow.addEventListener("click",function(){
+  box.classList.toggle("open");
+  arrow.textContent=box.classList.contains("open") ? "⌃" : "⌄";
+ });
+})();
+</script>
+"""
 
 setup_manager(app, db, S)
 
@@ -839,7 +1120,7 @@ def income_page():
         items='<div class="empty"><div>No active machines yet.</div><small>Activate a machine on the AI tab to see it here.</small><a href="/invest">Browse AI machines</a></div>'
 
     page = S + '<style>'
-    page += 'body{margin:0;background:#000;color:#fff;font-family:Georgia,serif}'
+    page += 'body{margin:0;background:#000;background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);background-size:18px 18px;background-position:0 0;;color:#fff;font-family:Georgia,serif}'
     page += '.inc{min-height:100vh;padding:25px 14px 95px}'
     page += '.title{text-align:center;color:#00baff;font-size:30px;font-weight:bold;margin:10px 0 28px}'
     page += '.machine,.empty{background:#02090e;border:1px solid #078cff;border-radius:22px;padding:22px;margin-bottom:15px}'
@@ -856,7 +1137,11 @@ def income_page():
     page += '.active{color:#00baff!important}'
     page += '</style><div class="inc"><div class="title">Income</div>'+items+'</div>'
     page += '<div class="nav"><a href="/home"><i>⌂</i>Home</a><a href="/raffle"><i>▣</i>Raffle</a><a href="/support"><i>▤</i>Chats</a><a href="/invest"><i>▦</i>AI</a><a class="active" href="/income"><i>₿</i>Income</a><a href="/my"><i>♙</i>My</a></div>'
-    return page
+    return page.replace(
+        "<body>",
+        '<body>',
+        1
+    )
 
 
 
@@ -933,7 +1218,7 @@ def deposit():
 <title>Deposit</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:#000;color:#fff;font-family:Arial,sans-serif}
+body{margin:0;background:#000;background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);background-size:18px 18px;background-position:0 0;;color:#fff;font-family:Arial,sans-serif}
 .wrap{max-width:600px;margin:auto;padding:18px 14px 95px}
 .top{display:flex;align-items:center;gap:14px;margin-bottom:18px}
 .back{width:45px;height:45px;border:1px solid #00aaff;border-radius:14px;color:#00c8ff;text-decoration:none;font-size:30px;text-align:center;line-height:40px}
@@ -976,7 +1261,7 @@ button{width:100%;height:52px;border:0;border-radius:14px;background:#08aeea;col
 <div class="nav">
 <a href="/home"><b>⌂</b>Home</a>
 <a href="/raffle"><b>▣</b>Raffle</a>
-<a href="/messages"><b>▤</b>Chats</a>
+<a href="/support"><b>▤</b>Chats</a>
 <a href="/invest"><b>▦</b>AI</a>
 <a href="/income"><b>₿</b>Income</a>
 <a href="/my"><b>♙</b>My</a>
@@ -1076,7 +1361,7 @@ Airtel Money <span>›</span>
 <div class="nav">
 <a href="/home"><b>⌂</b>Home</a>
 <a href="/raffle"><b>▣</b>Raffle</a>
-<a href="/messages"><b>▤</b>Chats</a>
+<a href="/support"><b>▤</b>Chats</a>
 <a href="/invest"><b>▦</b>AI</a>
 <a href="/income"><b>₿</b>Income</a>
 <a href="/my"><b>♙</b>My</a>
@@ -1186,7 +1471,7 @@ placeholder="Enter amount you sent" required>
 <div class="nav">
 <a href="/home"><b>⌂</b>Home</a>
 <a href="/raffle"><b>▣</b>Raffle</a>
-<a href="/messages"><b>▤</b>Chats</a>
+<a href="/support"><b>▤</b>Chats</a>
 <a href="/invest"><b>▦</b>AI</a>
 <a href="/income"><b>₿</b>Income</a>
 <a href="/my"><b>♙</b>My</a>
@@ -1236,7 +1521,7 @@ def invest():
     -webkit-tap-highlight-color:transparent;
 }
 
-html,body{
+html,body{background:#000;background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);background-size:18px 18px;background-position:0 0;
     background:#000;
     color:#fff;
     font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
@@ -1574,7 +1859,7 @@ body{
         Raffle
     </a>
 
-    <a class="nav-item" href="/messages">
+    <a class="nav-item" href="/support">
         <span class="nav-icon">▤</span>
         Chats
     </a>
