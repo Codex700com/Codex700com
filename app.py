@@ -561,12 +561,30 @@ def home():
 </div>
 
 <div class="bottom-nav">
- <a class="nav-item active" href="/home"><span class="nav-icon">⌂</span><span>Home</span></a>
- <a class="nav-item" href="/raffle"><span class="nav-icon">▦</span><span>Raffle</span></a>
- <a class="nav-item" href="/support"><span class="nav-icon">▤</span><span>Chats</span></a>
- <a class="nav-item" href="/invest"><span class="nav-icon">▣</span><span>AI</span></a>
- <a class="nav-item" href="/income"><span class="nav-icon">₿</span><span>Income</span></a>
- <a class="nav-item" href="/my"><span class="nav-icon">♙</span><span>My</span></a>
+ <a class="nav-item active" href="/home">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><ellipse cx="20" cy="8" rx="12" ry="5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 8v21c0 3 5 6 12 6s12-3 12-6V8M8 18c0 3 5 6 12 6s12-3 12-6M8 28c0 3 5 6 12 6s12-3 12-6" fill="none" stroke="currentColor" stroke-width="3"/></svg></span>
+  <span>Home</span>
+ </a>
+ <a class="nav-item" href="/raffle">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><rect x="6" y="7" width="16" height="16" rx="2" fill="currentColor"/><rect x="18" y="17" width="16" height="16" rx="2" fill="currentColor"/><rect x="10" y="11" width="8" height="8" fill="#000"/></svg></span>
+  <span>Raffle</span>
+ </a>
+ <a class="nav-item" href="/support">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><rect x="5" y="7" width="27" height="20" rx="5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M12 27l-2 7 8-7M12 14h13M12 20h9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="31" cy="29" r="4" fill="currentColor"/></svg></span>
+  <span>chats</span>
+ </a>
+ <a class="nav-item" href="/invest">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><rect x="9" y="8" width="22" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M5 14h4M5 20h4M5 26h4M31 14h4M31 20h4M31 26h4M15 4v4M21 4v4M27 4v4M15 32v4M21 32v4M27 32v4" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><rect x="14" y="14" width="12" height="12" rx="2" fill="currentColor"/></svg></span>
+  <span>AI</span>
+ </a>
+ <a class="nav-item" href="/income">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><path d="M24 5l-3 30M29 10c-3-3-12-3-15 2-4 7 12 5 11 12-1 7-12 8-16 3M12 14h18M9 28h18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  <span>Income</span>
+ </a>
+ <a class="nav-item" href="/my">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><circle cx="20" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 35c0-8 5-12 12-12s12 4 12 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></span>
+  <span>My</span>
+ </a>
 </div>
 
 <script>
