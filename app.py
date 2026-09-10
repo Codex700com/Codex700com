@@ -855,439 +855,392 @@ def invest():
         return redirect("/login")
 
     machines = [
-        ("K1", "K Series", "AI Computing Machine"),
-        ("K2", "K Series", "AI Computing Machine"),
-        ("M1", "M Series", "AI Computing Machine"),
-        ("M2", "M Series", "AI Computing Machine"),
-        ("A1", "A Series", "AI Computing Machine"),
-        ("A2", "A Series", "AI Computing Machine"),
-        ("GS1", "GS Series", "AI Computing Machine"),
-        ("GS2", "GS Series", "AI Computing Machine"),
+        ("K1", "K Series", "AI Computing System", "ACTIVE"),
+        ("K2", "K Series", "Advanced AI System", "ACTIVE"),
+        ("M1", "M Series", "AI Processing Machine", "ACTIVE"),
+        ("M2", "M Series", "High Performance AI", "ACTIVE"),
+        ("A1", "A Series", "Advanced Computing", "ACTIVE"),
+        ("A2", "A Series", "Neural Computing System", "ACTIVE"),
+        ("GS1", "GS Series", "High Performance System", "ACTIVE"),
+        ("GS2", "GS Series", "Enterprise Computing", "ACTIVE")
     ]
 
     html = """
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
 <title>CODEX700 AI</title>
 
 <style>
 *{
+    margin:0;
+    padding:0;
     box-sizing:border-box;
     -webkit-tap-highlight-color:transparent;
 }
 
 html,body{
-    margin:0;
-    padding:0;
-    width:100%;
-    min-height:100%;
-    background:#02050a;
+    background:#000;
     color:#fff;
-    font-family:Arial,Helvetica,sans-serif;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     overflow-x:hidden;
+    touch-action:pan-y;
 }
 
 body{
-    padding-bottom:82px;
+    padding-bottom:90px;
 }
 
-.page{
+.ai-page{
     min-height:100vh;
-    background:
-      radial-gradient(circle at 50% -10%,rgba(0,170,255,.18),transparent 38%),
-      linear-gradient(180deg,#02060d 0%,#030912 45%,#010409 100%);
+    background:#000;
+    padding:18px 12px 100px;
 }
 
-/* TOP */
-.header{
-    padding:18px 15px 14px;
-    background:linear-gradient(180deg,#071522,#020811);
-    border-bottom:1px solid rgba(0,183,255,.35);
-    box-shadow:0 4px 25px rgba(0,150,255,.10);
-}
-
-.brand{
+.ai-header{
     display:flex;
     align-items:center;
     justify-content:space-between;
+    margin-bottom:18px;
 }
 
-.brand-title{
-    color:#12bfff;
-    font-size:23px;
+.ai-logo{
+    font-size:27px;
     font-weight:900;
     letter-spacing:1px;
-    text-shadow:0 0 14px rgba(0,183,255,.65);
+    color:#fff;
 }
 
-.brand-sub{
-    margin-top:4px;
-    color:#7e9ab0;
-    font-size:11px;
-    letter-spacing:.7px;
+.ai-logo span{
+    color:#00b7ff;
 }
 
-/* CATEGORY BAR */
-.categories{
+.ai-title{
+    text-align:center;
+    font-size:22px;
+    font-weight:800;
+    color:#fff;
+    margin:4px 0 5px;
+}
+
+.ai-subtitle{
+    text-align:center;
+    color:#8ea6b5;
+    font-size:12px;
+    margin-bottom:18px;
+}
+
+.series-tabs{
+    width:100%;
     display:flex;
-    gap:8px;
+    gap:7px;
     overflow-x:auto;
-    padding:13px 12px 12px;
+    padding:3px 1px 10px;
     scrollbar-width:none;
-    background:#030913;
-    border-bottom:1px solid rgba(0,183,255,.18);
 }
 
-.categories::-webkit-scrollbar{
+.series-tabs::-webkit-scrollbar{
     display:none;
 }
 
-.category{
+.series-tab{
     flex:0 0 auto;
-    border:1px solid #17415c;
-    background:#07111c;
-    color:#7895aa;
-    border-radius:10px;
-    padding:9px 14px;
+    border:1px solid rgba(0,183,255,.45);
+    background:#050b10;
+    color:#a9c0cd;
+    border-radius:20px;
+    padding:9px 16px;
     font-size:12px;
-    font-weight:800;
-    white-space:nowrap;
+    font-weight:700;
+    text-decoration:none;
 }
 
-.category.active{
-    color:#fff;
+.series-tab.active{
+    color:#00b7ff;
     border-color:#00b7ff;
-    background:linear-gradient(180deg,#07527a,#06334d);
-    box-shadow:0 0 13px rgba(0,183,255,.35);
+    box-shadow:0 0 12px rgba(0,183,255,.18);
 }
 
-/* CONTENT */
-.content{
-    padding:13px 10px 18px;
-}
-
-.section-title{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin:2px 4px 12px;
-}
-
-.section-title strong{
-    color:#fff;
-    font-size:15px;
-}
-
-.section-title span{
-    color:#4f7085;
-    font-size:11px;
-}
-
-/* GRID */
-.grid{
+.machine-grid{
     display:grid;
     grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:10px;
+    gap:12px;
+    margin-top:8px;
 }
 
-/* MACHINE CARD */
-.machine{
+.machine-card{
     position:relative;
-    overflow:hidden;
     min-width:0;
-    border-radius:15px;
+    overflow:hidden;
     background:
-      linear-gradient(180deg,rgba(7,22,36,.98),rgba(3,9,16,.98));
-    border:1px solid #124564;
-    box-shadow:
-      inset 0 0 22px rgba(0,142,255,.045),
-      0 0 14px rgba(0,145,255,.07);
+      radial-gradient(circle at 50% 20%,rgba(0,174,255,.12),transparent 45%),
+      #05090d;
+    border:1px solid rgba(0,183,255,.35);
+    border-radius:17px;
+    padding:10px;
+    box-shadow:0 0 18px rgba(0,140,255,.08);
 }
 
-.machine::before{
+.machine-card:before{
     content:"";
     position:absolute;
-    top:0;
-    left:15%;
-    right:15%;
-    height:1px;
-    background:#00b7ff;
-    box-shadow:0 0 12px #00b7ff;
+    inset:0;
+    pointer-events:none;
+    background:linear-gradient(
+      135deg,
+      rgba(0,183,255,.06),
+      transparent 45%,
+      rgba(0,183,255,.03)
+    );
 }
 
 .machine-image{
     height:125px;
-    margin:8px 8px 0;
-    border-radius:11px;
-    border:1px solid rgba(0,183,255,.35);
+    border-radius:12px;
+    border:1px solid rgba(0,183,255,.20);
     background:
-      radial-gradient(circle at 50% 45%,rgba(0,183,255,.13),transparent 48%),
-      linear-gradient(135deg,#081a29,#02070d);
+      radial-gradient(circle at center,rgba(0,183,255,.18),transparent 45%),
+      linear-gradient(135deg,#020609,#07131b);
     display:flex;
     align-items:center;
     justify-content:center;
     position:relative;
     overflow:hidden;
+    margin-bottom:10px;
 }
 
-.machine-image::after{
-    content:"MACHINE IMAGE";
-    color:#31556b;
-    font-size:9px;
-    letter-spacing:1px;
+.machine-image:after{
+    content:"";
+    position:absolute;
+    width:75%;
+    height:1px;
+    background:rgba(0,183,255,.45);
+    box-shadow:0 0 12px #00b7ff;
 }
 
-.machine-info{
-    padding:10px;
-}
-
-.machine-name{
-    font-size:16px;
+.machine-code{
+    position:relative;
+    z-index:2;
+    font-size:31px;
     font-weight:900;
-    color:#fff;
+    color:#00b7ff;
+    letter-spacing:1px;
+    text-shadow:0 0 14px rgba(0,183,255,.7);
 }
 
 .machine-series{
-    display:inline-block;
-    margin-top:5px;
-    padding:4px 7px;
-    border-radius:6px;
-    background:#06263b;
     color:#00b7ff;
-    font-size:9px;
-    font-weight:800;
-}
-
-.machine-desc{
-    color:#7591a4;
     font-size:10px;
-    margin-top:7px;
-    line-height:1.35;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.8px;
 }
 
-.activate{
-    width:100%;
-    min-height:40px;
-    margin-top:9px;
-    border:0;
-    border-radius:9px;
+.machine-name{
+    margin-top:4px;
+    min-height:34px;
+    font-size:13px;
+    font-weight:800;
     color:#fff;
-    font-size:11px;
+    line-height:1.25;
+}
+
+.machine-status{
+    margin-top:7px;
+    color:#6f8290;
+    font-size:10px;
+}
+
+.machine-status span{
+    color:#00b7ff;
+}
+
+.ai-form{
+    margin-top:10px;
+}
+
+.ai-btn{
+    width:100%;
+    height:43px;
+    border:1px solid #00aaff;
+    border-radius:22px;
+    background:#00aaff;
+    color:#000;
+    font-size:13px;
     font-weight:900;
-    background:linear-gradient(90deg,#007dff,#00bfff);
-    box-shadow:0 0 12px rgba(0,166,255,.22);
+    cursor:pointer;
+    -webkit-appearance:none;
+    appearance:none;
+    outline:none;
+    padding:0;
 }
 
-.activate:active{
-    transform:scale(.98);
+.ai-btn:active,
+.ai-btn:focus,
+.ai-btn:hover{
+    transform:none!important;
+    scale:1!important;
 }
 
-/* EMPTY */
-.empty{
-    grid-column:1/-1;
-    text-align:center;
-    padding:45px 15px;
-    color:#628094;
-}
-
-/* BOTTOM NAV */
-.bottom{
+.bottom-nav{
     position:fixed;
     z-index:100;
     left:0;
     right:0;
     bottom:0;
-    height:68px;
-    display:flex;
-    align-items:center;
-    justify-content:space-around;
-    background:rgba(2,7,13,.98);
-    border-top:1px solid #12384f;
-    box-shadow:0 -8px 25px rgba(0,0,0,.45);
+    height:76px;
+    background:#000;
+    border-top:1px solid rgba(0,174,255,.22);
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    padding-bottom:env(safe-area-inset-bottom);
 }
 
-.bottom a{
-    min-width:58px;
+.nav-item{
+    color:#fff;
     text-decoration:none;
     text-align:center;
-    color:#668397;
-    font-size:9px;
-    font-weight:700;
+    font-size:12px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:3px;
+    min-width:0;
 }
 
-.bottom a b{
-    display:block;
-    font-size:20px;
-    line-height:25px;
-    margin-bottom:2px;
+.nav-icon{
+    font-size:27px;
+    line-height:28px;
 }
 
-.bottom a.active{
-    color:#00baff;
-    text-shadow:0 0 10px rgba(0,186,255,.7);
+.nav-item.active{
+    color:#00b7ff;
 }
 
-/* PHONE */
-@media(max-width:360px){
-    .grid{
-        gap:8px;
+@media(max-width:380px){
+    .ai-page{
+        padding-left:10px;
+        padding-right:10px;
+    }
+
+    .machine-grid{
+        gap:9px;
     }
 
     .machine-image{
         height:112px;
     }
 
-    .machine-info{
-        padding:8px;
+    .machine-code{
+        font-size:27px;
+    }
+}
+
+@media(min-width:700px){
+    .machine-grid{
+        grid-template-columns:repeat(4,minmax(0,1fr));
     }
 
-    .machine-name{
-        font-size:14px;
-    }
-
-    .bottom a{
-        min-width:50px;
+    .ai-page{
+        max-width:1100px;
+        margin:auto;
     }
 }
 </style>
 </head>
 
 <body>
-<div class="page">
 
-    <div class="header">
-        <div class="brand">
-            <div>
-                <div class="brand-title">CODEX700 AI</div>
-                <div class="brand-sub">AI COMPUTING MACHINES</div>
-            </div>
-        </div>
+<div class="ai-page">
+
+    <div class="ai-header">
+        <div class="ai-logo">CODEX<span>700</span></div>
     </div>
 
-    <div class="categories" id="categories">
-        <button class="category active" data-filter="All">All</button>
-        <button class="category" data-filter="K Series">K Series</button>
-        <button class="category" data-filter="M Series">M Series</button>
-        <button class="category" data-filter="A Series">A Series</button>
-        <button class="category" data-filter="GS Series">GS Series</button>
+    <div class="ai-title">AI COMPUTING</div>
+    <div class="ai-subtitle">
+        Explore CODEX700 virtual computing systems
     </div>
 
-    <div class="content">
-        <div class="section-title">
-            <strong>AI Machines</strong>
-            <span id="count">{{ machines|length }} machines</span>
-        </div>
+    <div class="series-tabs">
+        <a class="series-tab active" href="/invest">All</a>
+        <a class="series-tab" href="/invest?series=K">K Series</a>
+        <a class="series-tab" href="/invest?series=M">M Series</a>
+        <a class="series-tab" href="/invest?series=A">A Series</a>
+        <a class="series-tab" href="/invest?series=GS">GS Series</a>
+    </div>
 
-        <div class="grid" id="machineGrid">
+    <div class="machine-grid">
+    {% for code, series, name, status in machines %}
+        <div class="machine-card">
 
-        {% for name,series,desc in machines %}
-        <div class="machine" data-series="{{ series }}">
-
-            <div class="machine-image"
-                 data-machine="{{ name }}">
+            <div class="machine-image">
+                <div class="machine-code">{{ code }}</div>
             </div>
 
-            <div class="machine-info">
-                <div class="machine-name">{{ name }}</div>
-                <span class="machine-series">{{ series }}</span>
-                <div class="machine-desc">{{ desc }}</div>
+            <div class="machine-series">{{ series }}</div>
 
-                <form method="post"
-                      action="/ai/activate/{{ ('Codex_' + name)|replace(' ','_') }}">
-                    <button class="activate" type="submit">
-                        ACTIVATE MACHINE
-                    </button>
-                </form>
+            <div class="machine-name">
+                {{ name }}
             </div>
 
-        </div>
-        {% endfor %}
+            <div class="machine-status">
+                STATUS:
+                <span>{{ status }}</span>
+            </div>
+
+            <form class="ai-form"
+                  method="POST"
+                  action="/ai/activate/Codex_{{ code }}">
+                <input
+                    class="ai-btn"
+                    type="submit"
+                    value="ACTIVATE"
+                >
+            </form>
 
         </div>
+    {% endfor %}
     </div>
 
 </div>
 
-<div class="bottom">
-    <a href="/home">
-        <b>⌂</b>
+<div class="bottom-nav">
+
+    <a class="nav-item" href="/home">
+        <span class="nav-icon">⌂</span>
         Home
     </a>
 
-    <a href="/raffle">
-        <b>▣</b>
+    <a class="nav-item" href="/raffle">
+        <span class="nav-icon">▣</span>
         Raffle
     </a>
 
-    <a href="/messages">
-        <b>▤</b>
+    <a class="nav-item" href="/messages">
+        <span class="nav-icon">▤</span>
         Chats
     </a>
 
-    <a class="active" href="/invest">
-        <b>▦</b>
+    <a class="nav-item active" href="/invest">
+        <span class="nav-icon">▦</span>
         AI
     </a>
 
-    <a href="/income">
-        <b>₿</b>
+    <a class="nav-item" href="/income">
+        <span class="nav-icon">₿</span>
         Income
     </a>
 
-    <a href="/my">
-        <b>♙</b>
+    <a class="nav-item" href="/my">
+        <span class="nav-icon">♙</span>
         My
     </a>
+
 </div>
-
-<script>
-(function(){
-
-    const buttons = document.querySelectorAll(".category");
-    const cards = document.querySelectorAll(".machine");
-    const count = document.getElementById("count");
-
-    function filterSeries(series){
-
-        let visible = 0;
-
-        cards.forEach(function(card){
-
-            const match =
-                series === "All" ||
-                card.dataset.series === series;
-
-            card.style.display = match ? "" : "none";
-
-            if(match){
-                visible++;
-            }
-        });
-
-        count.textContent =
-            visible + (visible === 1 ? " machine" : " machines");
-    }
-
-    buttons.forEach(function(button){
-
-        button.addEventListener("click",function(){
-
-            buttons.forEach(function(b){
-                b.classList.remove("active");
-            });
-
-            button.classList.add("active");
-
-            filterSeries(button.dataset.filter);
-        });
-
-    });
-
-})();
-</script>
 
 </body>
 </html>
