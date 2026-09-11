@@ -561,7 +561,7 @@ def home():
 </div>
 
 <div class="bottom-nav">
- <a class="nav-item active" href="/home">
+ <a class="nav-item" href="/home">
   <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><ellipse cx="20" cy="8" rx="12" ry="5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 8v21c0 3 5 6 12 6s12-3 12-6V8M8 18c0 3 5 6 12 6s12-3 12-6M8 28c0 3 5 6 12 6s12-3 12-6" fill="none" stroke="currentColor" stroke-width="3"/></svg></span>
   <span>Home</span>
  </a>
@@ -1252,6 +1252,55 @@ button{width:100%;height:52px;border:0;border-radius:14px;background:#08aeea;col
 .nav a{color:#fff;text-decoration:none;text-align:center;font-size:11px;padding-top:12px}
 .nav b{display:block;font-size:25px}
 </style>
+
+<style id="codex-nav-fixed-size">
+.bottom-nav{
+ position:fixed !important;
+ left:0 !important;
+ right:0 !important;
+ bottom:0 !important;
+ width:100% !important;
+ height:108px !important;
+ min-height:108px !important;
+ max-height:108px !important;
+ display:flex !important;
+ flex-direction:row !important;
+ box-sizing:border-box !important;
+ z-index:99999 !important;
+}
+.bottom-nav .nav-item{
+ flex:1 1 0 !important;
+ width:16.666666% !important;
+ min-width:0 !important;
+ max-width:none !important;
+ height:108px !important;
+ min-height:108px !important;
+ max-height:108px !important;
+ display:flex !important;
+ flex-direction:column !important;
+ align-items:center !important;
+ justify-content:center !important;
+ box-sizing:border-box !important;
+ margin:0 !important;
+ padding:8px 0 !important;
+}
+.bottom-nav .nav-icon{
+ width:32px !important;
+ height:32px !important;
+ min-width:32px !important;
+ max-width:32px !important;
+ min-height:32px !important;
+ max-height:32px !important;
+ display:flex !important;
+ align-items:center !important;
+ justify-content:center !important;
+ margin:0 0 5px 0 !important;
+}
+.bottom-nav .nav-icon svg{
+ width:30px !important;
+ height:30px !important;
+}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -1285,6 +1334,150 @@ button{width:100%;height:52px;border:0;border-radius:14px;background:#08aeea;col
 <a href="/income"><b>₿</b>Income</a>
 <a href="/my"><b>♙</b>My</a>
 </div>
+
+<script id="codex-nav-active">
+(function(){
+ const path=window.location.pathname;
+ document.querySelectorAll('.bottom-nav .nav-item').forEach(function(item){
+   const href=item.getAttribute('href');
+   item.classList.remove('active');
+
+   if(
+      (path==='/' && href==='/home') ||
+      path===href ||
+      (href!=='/home' && path.startsWith(href+'/'))
+   ){
+      item.classList.add('active');
+   }
+ });
+})();
+</script>
+
+
+<script id="codex-app-navigation">
+(function(){
+  const routes=["/home","/raffle","/support","/invest","/income","/my"];
+  const cache={};
+  const loading={};
+
+  function preload(url){
+    if(cache[url] || loading[url]) return loading[url];
+
+    loading[url]=fetch(url,{
+      credentials:"same-origin",
+      cache:"default"
+    }).then(function(r){
+      if(!r.ok) throw new Error("Navigation failed");
+      return r.text();
+    }).then(function(html){
+      cache[url]=html;
+      return html;
+    }).catch(function(){
+      return null;
+    });
+
+    return loading[url];
+  }
+
+  // Start preparing every page silently in the background.
+  routes.forEach(function(url){
+    setTimeout(function(){ preload(url); },100);
+  });
+
+  function runScripts(container){
+    container.querySelectorAll("script").forEach(function(oldScript){
+      if(oldScript.id==="codex-app-navigation") return;
+
+      const script=document.createElement("script");
+
+      Array.from(oldScript.attributes).forEach(function(attr){
+        script.setAttribute(attr.name,attr.value);
+      });
+
+      script.textContent=oldScript.textContent;
+      oldScript.replaceWith(script);
+    });
+  }
+
+  async function go(url,addHistory){
+    if(url===window.location.pathname) return;
+
+    let html=cache[url];
+
+    if(!html){
+      html=await preload(url);
+    }
+
+    if(!html){
+      window.location.href=url;
+      return;
+    }
+
+    const doc=new DOMParser().parseFromString(html,"text/html");
+
+    // Keep the current browser document alive.
+    // Replace only the displayed application content.
+    const newBody=doc.body;
+    const oldScroll=window.scrollY;
+
+    document.body.innerHTML=newBody.innerHTML;
+
+    // Copy page-specific body attributes.
+    Array.from(newBody.attributes).forEach(function(attr){
+      document.body.setAttribute(attr.name,attr.value);
+    });
+
+    // Re-run page scripts.
+    runScripts(document.body);
+
+    if(addHistory){
+      history.pushState({codexNav:true}, "", url);
+    }
+
+    window.scrollTo(0,0);
+
+    // Reconnect the navigation after the body was replaced.
+    install();
+  }
+
+  function install(){
+    document.querySelectorAll(".bottom-nav a").forEach(function(link){
+      if(link.dataset.codexNavInstalled==="1") return;
+
+      link.dataset.codexNavInstalled="1";
+
+      const url=new URL(link.href,window.location.origin).pathname;
+
+      link.addEventListener("click",function(e){
+        if(
+          url!=="/home" &&
+          url!=="/raffle" &&
+          url!=="/support" &&
+          url!=="/invest" &&
+          url!=="/income" &&
+          url!=="/my"
+        ) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Begin fetching before anything visibly changes.
+        go(url,true);
+      });
+
+      link.addEventListener("touchstart",function(){
+        preload(url);
+      },{passive:true});
+    });
+  }
+
+  window.addEventListener("popstate",function(){
+    go(window.location.pathname,false);
+  });
+
+  install();
+})();
+</script>
 </body>
 </html>
 """, errors=errors, method=method, amount=amount,
@@ -1867,37 +2060,30 @@ body{
 </div>
 
 <div class="bottom-nav">
-
-    <a class="nav-item" href="/home">
-        <span class="nav-icon">⌂</span>
-        Home
-    </a>
-
-    <a class="nav-item" href="/raffle">
-        <span class="nav-icon">▣</span>
-        Raffle
-    </a>
-
-    <a class="nav-item" href="/support">
-        <span class="nav-icon">▤</span>
-        Chats
-    </a>
-
-    <a class="nav-item active" href="/invest">
-        <span class="nav-icon">▦</span>
-        AI
-    </a>
-
-    <a class="nav-item" href="/income">
-        <span class="nav-icon">₿</span>
-        Income
-    </a>
-
-    <a class="nav-item" href="/my">
-        <span class="nav-icon">♙</span>
-        My
-    </a>
-
+ <a class="nav-item" href="/home">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><ellipse cx="20" cy="8" rx="12" ry="5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 8v21c0 3 5 6 12 6s12-3 12-6V8M8 18c0 3 5 6 12 6s12-3 12-6M8 28c0 3 5 6 12 6s12-3 12-6" fill="none" stroke="currentColor" stroke-width="3"/></svg></span>
+  <span>Home</span>
+ </a>
+ <a class="nav-item" href="/raffle">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><rect x="6" y="7" width="16" height="16" rx="2" fill="currentColor"/><rect x="18" y="17" width="16" height="16" rx="2" fill="currentColor"/><rect x="10" y="11" width="8" height="8" fill="#000"/></svg></span>
+  <span>Raffle</span>
+ </a>
+ <a class="nav-item" href="/support">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><rect x="5" y="7" width="27" height="20" rx="5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M12 27l-2 7 8-7M12 14h13M12 20h9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="31" cy="29" r="4" fill="currentColor"/></svg></span>
+  <span>chats</span>
+ </a>
+ <a class="nav-item" href="/invest">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><rect x="9" y="8" width="22" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M5 14h4M5 20h4M5 26h4M31 14h4M31 20h4M31 26h4M15 4v4M21 4v4M27 4v4M15 32v4M21 32v4M27 32v4" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><rect x="14" y="14" width="12" height="12" rx="2" fill="currentColor"/></svg></span>
+  <span>AI</span>
+ </a>
+ <a class="nav-item" href="/income">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><path d="M24 5l-3 30M29 10c-3-3-12-3-15 2-4 7 12 5 11 12-1 7-12 8-16 3M12 14h18M9 28h18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  <span>Income</span>
+ </a>
+ <a class="nav-item" href="/my">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><circle cx="20" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 35c0-8 5-12 12-12s12 4 12 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></span>
+  <span>My</span>
+ </a>
 </div>
 
 </body>
@@ -2350,37 +2536,30 @@ body{
 
 <!-- SAME SIX MAIN NAV ITEMS -->
 <div class="bottom-nav">
-
-    <a href="/home">
-        <div class="nav-icon">⌂</div>
-        <div>Home</div>
-    </a>
-
-    <a href="/raffle">
-        <div class="nav-icon">▣</div>
-        <div>Raffle</div>
-    </a>
-
-    <a href="/support">
-        <div class="nav-icon">▣</div>
-        <div>chats</div>
-    </a>
-
-    <a href="/invest">
-        <div class="nav-icon">▣</div>
-        <div>AI</div>
-    </a>
-
-    <a href="/income">
-        <div class="nav-icon">₿</div>
-        <div>Income</div>
-    </a>
-
-    <a href="/my" class="active">
-        <div class="nav-icon">♙</div>
-        <div>My</div>
-    </a>
-
+ <a class="nav-item" href="/home">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><ellipse cx="20" cy="8" rx="12" ry="5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 8v21c0 3 5 6 12 6s12-3 12-6V8M8 18c0 3 5 6 12 6s12-3 12-6M8 28c0 3 5 6 12 6s12-3 12-6" fill="none" stroke="currentColor" stroke-width="3"/></svg></span>
+  <span>Home</span>
+ </a>
+ <a class="nav-item" href="/raffle">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><rect x="6" y="7" width="16" height="16" rx="2" fill="currentColor"/><rect x="18" y="17" width="16" height="16" rx="2" fill="currentColor"/><rect x="10" y="11" width="8" height="8" fill="#000"/></svg></span>
+  <span>Raffle</span>
+ </a>
+ <a class="nav-item" href="/support">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><rect x="5" y="7" width="27" height="20" rx="5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M12 27l-2 7 8-7M12 14h13M12 20h9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="31" cy="29" r="4" fill="currentColor"/></svg></span>
+  <span>chats</span>
+ </a>
+ <a class="nav-item" href="/invest">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><rect x="9" y="8" width="22" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M5 14h4M5 20h4M5 26h4M31 14h4M31 20h4M31 26h4M15 4v4M21 4v4M27 4v4M15 32v4M21 32v4M27 32v4" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><rect x="14" y="14" width="12" height="12" rx="2" fill="currentColor"/></svg></span>
+  <span>AI</span>
+ </a>
+ <a class="nav-item" href="/income">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><path d="M24 5l-3 30M29 10c-3-3-12-3-15 2-4 7 12 5 11 12-1 7-12 8-16 3M12 14h18M9 28h18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  <span>Income</span>
+ </a>
+ <a class="nav-item" href="/my">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><circle cx="20" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 35c0-8 5-12 12-12s12 4 12 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></span>
+  <span>My</span>
+ </a>
 </div>
 
 <script>
