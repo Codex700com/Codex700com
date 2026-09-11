@@ -2613,10 +2613,730 @@ function saveQR(){
 
 @app.route("/raffle")
 def raffle_page():
-    return redirect("/home")
+    if "uid" not in session:
+        return redirect("/login")
+
+    uid=int(session["uid"])
+
+    con=sqlite3.connect(DB)
+    con.row_factory=sqlite3.Row
+
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS raffle_records(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            reward TEXT NOT NULL,
+            reward_value INTEGER DEFAULT 0,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS raffle_deposit_awards(
+            deposit_id INTEGER PRIMARY KEY,
+            source TEXT NOT NULL,
+            user_id INTEGER NOT NULL,
+            awarded_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    con.commit()
+
+    row=con.execute("""
+        SELECT COALESCE(SUM(tickets),0)
+        FROM raffle_tickets
+        WHERE CAST(user_id AS INTEGER)=?
+        AND tickets>0
+    """,(uid,)).fetchone()
+
+    chances=int(row[0] or 0)
+
+    records=con.execute("""
+        SELECT reward,reward_value,created_at
+        FROM raffle_records
+        WHERE user_id=?
+        ORDER BY id DESC
+        LIMIT 20
+    """,(uid,)).fetchall()
+
+    history=""
+
+    if records:
+        for r in records:
+            history+=(
+                '<div class="raffle-record">'
+                '<div>'
+                '<div class="raffle-record-prize">'+str(r["reward"])+'</div>'
+                '<div class="raffle-record-date">'+str(r["created_at"])+'</div>'
+                '</div>'
+                '<div class="raffle-record-win">WON</div>'
+                '</div>'
+            )
+    else:
+        history='<div class="raffle-empty">No raffle records yet.</div>'
+
+    con.close()
+
+    tiles=""
+
+    for i in range(9):
+        tiles+=(
+            '<button class="raffle-tile" type="button" '
+            'data-index="'+str(i)+'" onclick="revealRaffle(this)">'
+            '<span class="raffle-ai">'
+            '<span class="raffle-ring"></span>'
+            '<span class="raffle-ai-text">AI</span>'
+            '</span>'
+            '<span class="raffle-reward"></span>'
+            '</button>'
+        )
+
+    return S+"""
+<style>
+html,body{
+    background:#000!important;
+    color:#fff!important;
+}
+
+.raffle-page{
+    width:100%;
+    min-height:100vh;
+    box-sizing:border-box;
+    padding:0 28px 145px;
+    background:#000;
+    color:#fff;
+    position:relative;
+    overflow:hidden;
+}
+
+.raffle-page:before{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background-image:
+        radial-gradient(circle,rgba(0,190,255,.25) 1px,transparent 1.5px);
+    background-size:27px 27px;
+    opacity:.38;
+}
+
+.raffle-page:after{
+    content:"";
+    position:absolute;
+    left:0;
+    right:0;
+    top:0;
+    height:100%;
+    pointer-events:none;
+    background:
+        radial-gradient(circle at 50% 18%,rgba(0,190,255,.08),transparent 32%),
+        radial-gradient(circle at 50% 80%,rgba(0,190,255,.07),transparent 38%);
+}
+
+.raffle-header{
+    height:100px;
+    position:relative;
+    z-index:3;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.raffle-back{
+    position:absolute;
+    left:0;
+    top:27px;
+    width:45px;
+    height:42px;
+    border-radius:13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-decoration:none!important;
+    color:#fff!important;
+    font-size:28px;
+    background:#02070a;
+    border:1px solid rgba(0,207,255,.75);
+    box-shadow:
+        0 0 8px rgba(0,190,255,.28),
+        inset 0 0 8px rgba(0,190,255,.08);
+}
+
+.raffle-title{
+    font-size:27px;
+    font-weight:700;
+    color:#fff;
+    text-shadow:0 0 8px rgba(0,200,255,.3);
+}
+
+.raffle-subtitle{
+    position:relative;
+    z-index:3;
+    text-align:center;
+    margin:-6px 0 20px;
+    color:#87909a;
+    font-size:10px;
+    letter-spacing:2px;
+    font-weight:600;
+}
+
+.raffle-chance-card{
+    position:relative;
+    z-index:3;
+    padding:19px 18px 18px;
+    margin-bottom:20px;
+    border-radius:17px;
+    background:rgba(0,0,0,.72);
+    border:1px solid rgba(0,203,255,.72);
+    box-shadow:
+        0 0 10px rgba(0,185,255,.18),
+        inset 0 0 18px rgba(0,130,180,.035);
+}
+
+.raffle-chance-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.raffle-chance-label{
+    color:#c7cdd2;
+    font-size:15px;
+    font-weight:500;
+}
+
+.raffle-chance-count{
+    color:#16c9ff;
+    font-size:20px;
+    font-weight:700;
+    text-shadow:0 0 8px rgba(0,200,255,.45);
+}
+
+.raffle-chance-text{
+    margin-top:9px;
+    color:#8c959d;
+    font-size:11px;
+    line-height:1.55;
+}
+
+.raffle-grid{
+    position:relative;
+    z-index:3;
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:9px;
+    width:100%;
+    max-width:390px;
+    margin:0 auto;
+}
+
+.raffle-tile{
+    position:relative;
+    aspect-ratio:1/1;
+    padding:0;
+    border-radius:15px;
+    border:1px solid rgba(0,197,255,.65);
+    background:
+        radial-gradient(circle at 50% 50%,rgba(0,110,155,.12),transparent 48%),
+        #010507;
+    box-shadow:
+        0 0 8px rgba(0,190,255,.17),
+        inset 0 0 14px rgba(0,170,220,.04);
+    overflow:hidden;
+    cursor:pointer;
+}
+
+.raffle-tile:before{
+    content:"";
+    position:absolute;
+    inset:5px;
+    border-radius:11px;
+    border:1px solid rgba(0,143,190,.25);
+}
+
+.raffle-ai{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:61%;
+    height:61%;
+    transform:translate(-50%,-50%);
+    border-radius:50%;
+    border:1px solid rgba(0,210,255,.65);
+    box-shadow:
+        0 0 7px rgba(0,200,255,.25),
+        inset 0 0 8px rgba(0,200,255,.08);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.raffle-ai:before{
+    content:"";
+    position:absolute;
+    width:76%;
+    height:76%;
+    border-radius:50%;
+    border:1px solid rgba(0,205,255,.65);
+    border-right-color:rgba(0,120,255,.3);
+    transform:rotate(35deg);
+}
+
+.raffle-ai:after{
+    content:"";
+    position:absolute;
+    width:108%;
+    height:42%;
+    border-radius:50%;
+    border:1px solid rgba(0,184,255,.6);
+    border-top-color:rgba(0,225,255,.85);
+    transform:rotate(-34deg);
+}
+
+.raffle-ai-text{
+    position:relative;
+    z-index:3;
+    font-size:17px;
+    font-weight:800;
+    color:#e8fbff;
+    text-shadow:0 0 7px rgba(0,220,255,.75);
+}
+
+.raffle-reward{
+    position:absolute;
+    inset:0;
+    z-index:5;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:6px;
+    font-size:12px;
+    font-weight:800;
+    color:#eafcff;
+    text-shadow:0 0 8px rgba(0,220,255,.7);
+}
+
+.raffle-tile.revealed{
+    border-color:#11d3ff;
+    box-shadow:
+        0 0 14px rgba(0,205,255,.42),
+        inset 0 0 15px rgba(0,205,255,.08);
+}
+
+.raffle-tile.revealed .raffle-ai{
+    display:none;
+}
+
+.raffle-tile.revealed .raffle-reward{
+    display:flex;
+}
+
+.raffle-rewards-title,
+.raffle-record-title{
+    position:relative;
+    z-index:3;
+    margin:25px 2px 11px;
+    color:#d9dee2;
+    font-size:18px;
+    font-weight:500;
+}
+
+.raffle-rewards{
+    position:relative;
+    z-index:3;
+    padding:14px;
+    border-radius:17px;
+    background:rgba(0,0,0,.72);
+    border:1px solid rgba(0,198,255,.58);
+    box-shadow:
+        0 0 10px rgba(0,180,255,.14),
+        inset 0 0 16px rgba(0,150,210,.035);
+}
+
+.reward-list{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+}
+
+.reward-item{
+    min-height:42px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:5px;
+    box-sizing:border-box;
+    border-radius:10px;
+    color:#b9c1c7;
+    font-size:10px;
+    font-weight:500;
+    background:#020608;
+    border:1px solid rgba(0,145,190,.34);
+}
+
+.reward-item.flash{
+    color:#fff;
+    border-color:rgba(0,207,255,.72);
+    box-shadow:0 0 8px rgba(0,190,255,.18);
+}
+
+.raffle-change-note{
+    text-align:center;
+    margin:11px 0 0;
+    color:#69747d;
+    font-size:9px;
+}
+
+.raffle-big-win{
+    position:relative;
+    z-index:3;
+    margin:15px 0 0;
+    padding:14px;
+    text-align:center;
+    border-radius:16px;
+    color:#12c9ff;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.5px;
+    background:#010506;
+    border:1px solid rgba(0,190,255,.48);
+    box-shadow:0 0 10px rgba(0,180,255,.12);
+}
+
+.raffle-records{
+    position:relative;
+    z-index:3;
+    border-radius:17px;
+    padding:4px 14px;
+    background:rgba(0,0,0,.72);
+    border:1px solid rgba(0,198,255,.52);
+    box-shadow:0 0 10px rgba(0,180,255,.12);
+}
+
+.raffle-record{
+    min-height:55px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:1px solid rgba(0,150,200,.18);
+}
+
+.raffle-record:last-child{
+    border-bottom:0;
+}
+
+.raffle-record-prize{
+    color:#d8dde1;
+    font-size:13px;
+    font-weight:500;
+}
+
+.raffle-record-date{
+    color:#66727b;
+    font-size:9px;
+    margin-top:4px;
+}
+
+.raffle-record-win{
+    color:#10c8ff;
+    font-size:9px;
+    font-weight:700;
+}
+
+.raffle-empty{
+    color:#66727b;
+    font-size:12px;
+    padding:18px 0;
+    text-align:center;
+}
+
+.raffle-toast{
+    position:fixed;
+    left:50%;
+    bottom:94px;
+    transform:translateX(-50%);
+    z-index:9999;
+    min-width:230px;
+    max-width:86%;
+    padding:13px 17px;
+    border-radius:14px;
+    text-align:center;
+    background:#02090c;
+    border:1px solid #10c8ff;
+    box-shadow:0 0 16px rgba(0,190,255,.25);
+    color:#e5faff;
+    font-size:12px;
+    font-weight:600;
+    opacity:0;
+    pointer-events:none;
+    transition:.25s;
+}
+
+.raffle-toast.show{
+    opacity:1;
+}
+
+@media(max-width:390px){
+    .raffle-page{
+        padding-left:28px;
+        padding-right:28px;
+    }
+
+    .raffle-grid{
+        gap:7px;
+    }
+
+    .raffle-ai-text{
+        font-size:15px;
+    }
+
+    .reward-item{
+        font-size:9px;
+    }
+}
+</style>
+
+<div class="raffle-page">
+<div class="raffle-header">
+<a class="raffle-back" href="/home">‹</a>
+<div class="raffle-title">Raffle</div>
+</div>
+
+<div class="raffle-subtitle">SPIN • REVEAL • WIN</div>
+
+<div class="raffle-chance-card">
+<div class="raffle-chance-top">
+<div class="raffle-chance-label">Your chances</div>
+<div class="raffle-chance-count"><span id="raffleChances">""" + str(chances) + """</span> / """ + str(chances) + """</div>
+</div>
+<div class="raffle-chance-text">
+Get 1 chance for every successful deposit you make.
+</div>
+</div>
+
+<div class="raffle-grid" id="raffleGrid">
+""" + tiles + """
+</div>
+
+<div class="raffle-rewards-title">Possible Rewards</div>
+<div class="raffle-rewards">
+<div class="reward-list" id="rewardList">
+<div class="reward-item">UGX 1,000</div>
+<div class="reward-item">UGX 5,000</div>
+<div class="reward-item">UGX 10,000</div>
+<div class="reward-item">UGX 10,000</div>
+<div class="reward-item">Z1 MACHINE</div>
+<div class="reward-item">UGX 100,000</div>
+<div class="reward-item">UGX 1,000,000</div>
+<div class="reward-item">UGX 500</div>
+<div class="reward-item">UGX 2,000</div>
+</div>
+<div class="raffle-change-note">Rewards change every few seconds...</div>
+</div>
+
+<div class="raffle-big-win">
+✦ BIG WIN ✦<br>Your next reveal could be the one!
+</div>
+
+<div class="raffle-record-title">My records</div>
+<div class="raffle-records">
+""" + history + """
+</div>
+</div>
+
+<div class="raffle-toast" id="raffleToast"></div>
+
+<script>
+const rewards=[
+"UGX 1,000","UGX 5,000","UGX 10,000","UGX 10,000",
+"Z1 MACHINE","UGX 100,000","UGX 1,000,000","UGX 500","UGX 2,000"
+];
+
+let preview=rewards.slice();
+
+function shuffle(a){
+ for(let i=a.length-1;i>0;i--){
+  const j=Math.floor(Math.random()*(i+1));
+  [a[i],a[j]]=[a[j],a[i]];
+ }
+ return a;
+}
+
+function rotateRewards(){
+ preview=shuffle(preview);
+ document.querySelectorAll(".reward-item").forEach((item,i)=>{
+  item.textContent=preview[i];
+  item.classList.remove("flash");
+  void item.offsetWidth;
+  item.classList.add("flash");
+ });
+}
+
+function showToast(msg){
+ const t=document.getElementById("raffleToast");
+ t.textContent=msg;
+ t.classList.add("show");
+ setTimeout(()=>t.classList.remove("show"),2500);
+}
+
+async function revealRaffle(tile){
+ const box=document.getElementById("raffleChances");
+ const chances=parseInt(box.textContent||"0",10);
+
+ if(chances<=0){
+  showToast("No raffle chance. Make a successful deposit first.");
+  return;
+ }
+
+ document.querySelectorAll(".raffle-tile").forEach(x=>x.disabled=true);
+
+ try{
+  const r=await fetch("/raffle/reveal",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({tile:parseInt(tile.dataset.index,10)})
+  });
+
+  const d=await r.json();
+
+  if(!d.ok){
+   showToast(d.message||"Unable to reveal.");
+   document.querySelectorAll(".raffle-tile").forEach(x=>x.disabled=false);
+   return;
+  }
+
+  tile.querySelector(".raffle-reward").textContent=d.reward;
+  tile.classList.add("revealed");
+  box.textContent=d.chances;
+  showToast("Congratulations! You won "+d.reward);
+  setTimeout(()=>location.reload(),1800);
+
+ }catch(e){
+  showToast("Connection error.");
+  document.querySelectorAll(".raffle-tile").forEach(x=>x.disabled=false);
+ }
+}
+
+rotateRewards();
+setInterval(rotateRewards,1000);
+</script>
+"""
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000,debug=False)
+
+
+
+@app.route("/raffle/reveal", methods=["POST"])
+def raffle_reveal():
+    if "uid" not in session:
+        return {"ok":False,"message":"Please log in first."},401
+
+    uid=int(session["uid"])
+
+    con=sqlite3.connect(DB)
+    con.row_factory=sqlite3.Row
+
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS raffle_records(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            reward TEXT NOT NULL,
+            reward_value INTEGER DEFAULT 0,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    try:
+        con.execute("BEGIN IMMEDIATE")
+
+        ticket=con.execute("""
+            SELECT id
+            FROM raffle_tickets
+            WHERE CAST(user_id AS INTEGER)=?
+            AND tickets>0
+            ORDER BY id ASC
+            LIMIT 1
+        """,(uid,)).fetchone()
+
+        if not ticket:
+            con.rollback()
+            return {"ok":False,"message":"No raffle chance available."},400
+
+        con.execute("""
+            UPDATE raffle_tickets
+            SET tickets=tickets-1
+            WHERE id=? AND tickets>0
+        """,(ticket["id"],))
+
+        import random
+
+        rewards=[
+            ("UGX 1,000",1000,110),
+            ("UGX 500",500,30),
+            ("UGX 2,000",2000,20),
+            ("UGX 5,000",5000,16),
+            ("UGX 10,000",10000,8),
+            ("UGX 10,000",10000,6),
+            ("Z1 Machine",0,6),
+            ("UGX 100,000",100000,3),
+            ("UGX 1,000,000",1000000,1)
+        ]
+
+        reward,value,weight=random.choices(
+            rewards,
+            weights=[x[2] for x in rewards],
+            k=1
+        )[0]
+
+        if value>0:
+            con.execute(
+                "UPDATE users SET balance=COALESCE(balance,0)+? WHERE id=?",
+                (value,uid)
+            )
+
+            con.execute("""
+                INSERT INTO transactions
+                (user_id,type,amount,status,date,ref)
+                VALUES(?,?,?,'approved',datetime('now'),?)
+            """,(uid,"raffle",value,reward))
+
+        elif reward=="Z1 Machine":
+            con.execute("""
+                INSERT INTO ai_machines(uid,name,status)
+                VALUES(?,'Z1 Machine','RUNNING')
+            """,(uid,))
+
+        con.execute("""
+            INSERT INTO raffle_records(user_id,reward,reward_value)
+            VALUES(?,?,?)
+        """,(uid,reward,value))
+
+        remaining=con.execute("""
+            SELECT COALESCE(SUM(tickets),0)
+            FROM raffle_tickets
+            WHERE CAST(user_id AS INTEGER)=?
+            AND tickets>0
+        """,(uid,)).fetchone()[0] or 0
+
+        con.commit()
+
+        return {
+            "ok":True,
+            "reward":reward,
+            "value":value,
+            "chances":int(remaining)
+        }
+
+    except Exception as e:
+        con.rollback()
+        print("RAFFLE ERROR:",e)
+        return {"ok":False,"message":"Raffle error. Please try again."},500
+
+    finally:
+        con.close()
 
 @app.route("/reward", methods=["GET","POST"])
 def reward_page():
