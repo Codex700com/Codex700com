@@ -2756,51 +2756,577 @@ body{background:#000;color:#fff;font-family:Georgia,serif}
 </div>"""
 
 
-@app.route("/withdraw")
+@app.route("/withdraw", methods=["GET", "POST"])
 def withdraw_page():
     if "uid" not in session:
         return redirect("/login")
-    c=db()
-    u=c.execute("SELECT * FROM users WHERE id=?",(session["uid"],)).fetchone()
+
+    c = db()
+    u = c.execute(
+        "SELECT * FROM users WHERE id=?",
+        (session["uid"],)
+    ).fetchone()
+
+    balance = float(u["balance"] or 0) if u and "balance" in u.keys() else 0
+
+    # Check whether the user owns an active AI machine.
+    try:
+        active_machine = c.execute(
+            "SELECT COUNT(*) FROM investments WHERE user_id=? AND active=1",
+            (session["uid"],)
+        ).fetchone()[0] > 0
+    except Exception:
+        active_machine = False
+
+    # Withdrawal history.
+    try:
+        history = c.execute(
+            """SELECT * FROM transactions
+               WHERE user_id=?
+               AND LOWER(COALESCE(type,'')) IN ('withdraw','withdrawal')
+               ORDER BY id DESC LIMIT 20""",
+            (session["uid"],)
+        ).fetchall()
+    except Exception:
+        history = []
+
     c.close()
-    balance=u["balance"] if u and "balance" in u.keys() else 0
 
-    return S+"""<style>
-body{background:#000;color:#fff;font-family:Georgia,serif}
-.page{min-height:100vh;padding:20px 15px 100px;box-sizing:border-box}
-.head{display:flex;align-items:center;gap:15px;margin-bottom:25px}
-.back{color:#00baff;text-decoration:none;font-size:35px}
-.title{color:#00baff;font-size:26px;font-weight:bold}
-.card{background:#02080d;border:1px solid #078cff;border-radius:22px;padding:20px;margin-bottom:18px}
-.balance{text-align:center}
-.label{color:#aaa}
-.amount{color:#00baff;font-size:34px;font-weight:bold;margin-top:8px}
-.methods{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:12px}
-.method{padding:13px 3px;text-align:center;border:1px solid #078cff;border-radius:12px;font-size:12px}
-.method.active{background:#08b9ee}
-input{width:100%;box-sizing:border-box;padding:16px;margin-top:10px;border-radius:14px;border:1px solid #078cff;background:#050d15;color:#fff;font-size:16px}
-.note{color:#aaa;font-size:13px;line-height:1.5}
-.disabled{width:100%;padding:16px;border:0;border-radius:14px;background:#075d78;color:#aaa;font-size:17px;font-weight:bold}
+    history_html = ""
+    for x in history:
+        keys = x.keys()
+        amount = x["amount"] if "amount" in keys else 0
+        status = x["status"] if "status" in keys else "Pending"
+        date = x["date"] if "date" in keys else ""
+
+        try:
+            amount_text = "{:,.2f}".format(float(amount))
+        except Exception:
+            amount_text = str(amount)
+
+        history_html += f"""
+        <div class="history-row">
+            <div>
+                <b>Withdrawal</b>
+                <small>{date}</small>
+            </div>
+            <div class="history-right">
+                <b>UGX {amount_text}</b>
+                <span class="status">{status}</span>
+            </div>
+        </div>
+        """
+
+    if not history_html:
+        history_html = """
+        <div class="empty-history">
+            <div class="empty-icon">▣</div>
+            <div>No withdrawal history available.</div>
+            <button type="button" onclick="location.reload()">Refresh</button>
+        </div>
+        """
+
+    if not active_machine:
+        machine_html = """
+        <div class="machine-warning">
+            <h3>Active AI machine required</h3>
+            <p>You must own at least one active AI machine before you can withdraw.</p>
+            <a href="/invest">Buy an AI machine</a>
+        </div>
+        """
+        button_disabled = "disabled"
+    else:
+        machine_html = ""
+        button_disabled = ""
+
+    html = f"""
+<style>
+*{{box-sizing:border-box}}
+html,body{{margin:0;padding:0;background:#000;color:#fff}}
+body{{font-family:Georgia,serif}}
+
+.withdraw-page{{
+    min-height:100vh;
+    padding:0 14px 105px;
+    background:
+      radial-gradient(circle at 50% 25%,rgba(0,174,255,.08),transparent 35%),
+      #000;
+    color:#fff;
+    overflow-x:hidden;
+}}
+
+.withdraw-head{{
+    height:88px;
+    margin:0 -14px 28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    border-bottom:1px solid rgba(0,186,255,.45);
+    background:#000;
+}}
+
+.withdraw-title{{
+    color:#00c8ff;
+    font-size:27px;
+    font-weight:bold;
+    text-shadow:0 0 12px rgba(0,190,255,.55);
+}}
+
+.back-btn{{
+    position:absolute;
+    left:28px;
+    top:15px;
+    width:62px;
+    height:62px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid #00baff;
+    border-radius:18px;
+    color:#00baff;
+    text-decoration:none;
+    font-size:43px;
+    line-height:1;
+    box-shadow:0 0 14px rgba(0,186,255,.18);
+}}
+
+.withdraw-card{{
+    position:relative;
+    background:
+      radial-gradient(circle,rgba(0,180,255,.12) 1px,transparent 1.5px),
+      rgba(0,5,9,.92);
+    background-size:26px 26px;
+    border:1px solid rgba(0,186,255,.65);
+    border-radius:23px;
+    padding:27px;
+    margin-bottom:28px;
+    box-shadow:
+      0 0 12px rgba(0,174,255,.08),
+      inset 0 0 22px rgba(0,174,255,.025);
+}}
+
+.balance-card{{
+    text-align:center;
+    padding:30px 20px 34px;
+}}
+
+.balance-label{{
+    color:#aeb4bd;
+    font-size:24px;
+    margin-bottom:8px;
+}}
+
+.balance-value{{
+    color:#00c8ff;
+    font-size:47px;
+    font-weight:bold;
+    text-shadow:0 0 12px rgba(0,200,255,.45);
+}}
+
+.section-title{{
+    font-size:24px;
+    margin:4px 0 24px;
+}}
+
+.methods{{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:14px;
+    margin-bottom:24px;
+}}
+
+.method{{
+    min-height:60px;
+    border:1px solid #008fd0;
+    border-radius:18px;
+    background:#02070b;
+    color:#fff;
+    font-family:Georgia,serif;
+    font-size:18px;
+    cursor:pointer;
+}}
+
+.method.active{{
+    background:linear-gradient(180deg,#19c8ff,#00a9df);
+    color:#fff;
+    border-color:#19c8ff;
+    box-shadow:0 0 14px rgba(0,190,255,.3);
+}}
+
+.field-label{{
+    display:block;
+    font-size:22px;
+    margin:18px 0 10px;
+}}
+
+.input{{
+    width:100%;
+    height:78px;
+    padding:0 21px;
+    border:1px solid #087cae;
+    border-radius:18px;
+    outline:none;
+    background:#050b11;
+    color:#fff;
+    font-size:22px;
+    font-family:Georgia,serif;
+}}
+
+.input::placeholder{{color:#717780}}
+
+.hint{{
+    color:#aeb4bd;
+    font-size:17px;
+    margin-top:9px;
+}}
+
+.required{{
+    margin:25px 0;
+    padding:23px;
+    border:1px solid #8d1220;
+    border-radius:18px;
+    background:rgba(70,0,8,.34);
+}}
+
+.required h3{{
+    margin:0 0 9px;
+    font-size:22px;
+    font-weight:normal;
+}}
+
+.required p{{
+    margin:0 0 10px;
+    color:#c5c7ca;
+    font-size:17px;
+    line-height:1.5;
+}}
+
+.required a,.machine-warning a{{
+    color:#00c8ff;
+    text-decoration:none;
+    font-size:18px;
+}}
+
+.summary{{
+    margin-top:25px;
+    padding:22px;
+    border:1px solid #087cae;
+    border-radius:18px;
+}}
+
+.summary-row{{
+    display:flex;
+    justify-content:space-between;
+    gap:15px;
+    margin-bottom:14px;
+    font-size:21px;
+}}
+
+.summary-row:last-child{{margin-bottom:0}}
+
+.summary-row .value{{text-align:right}}
+.fee{{color:#ff2945}}
+.receive{{font-weight:bold;font-size:23px}}
+.receive .value{{color:#00c8ff}}
+
+.summary-note{{
+    margin-top:20px;
+    color:#b8bcc2;
+    line-height:1.55;
+    font-size:17px;
+}}
+
+.machine-warning{{
+    margin-top:22px;
+    padding:23px;
+    border:1px solid #8d1220;
+    border-radius:18px;
+    background:rgba(70,0,8,.34);
+}}
+
+.machine-warning h3{{
+    margin:0 0 8px;
+    font-size:22px;
+    font-weight:normal;
+}}
+
+.machine-warning p{{
+    color:#c5c7ca;
+    line-height:1.5;
+    font-size:17px;
+}}
+
+.request-btn{{
+    width:100%;
+    height:78px;
+    margin-top:22px;
+    border:0;
+    border-radius:18px;
+    background:linear-gradient(180deg,#11c8ff,#009bd0);
+    color:#fff;
+    font-family:Georgia,serif;
+    font-size:23px;
+    font-weight:bold;
+    box-shadow:0 0 18px rgba(0,190,255,.28);
+}}
+
+.request-btn:disabled{{
+    opacity:.58;
+    cursor:not-allowed;
+}}
+
+.history-title{{
+    font-size:27px;
+    margin:0 0 25px;
+}}
+
+.tabs{{
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+    padding-bottom:3px;
+    scrollbar-width:none;
+}}
+
+.tabs::-webkit-scrollbar{{display:none}}
+
+.tab{{
+    flex:0 0 auto;
+    padding:14px 21px;
+    border-radius:25px;
+    background:#050b12;
+    color:#bfc4ca;
+    border:0;
+    font-family:Georgia,serif;
+    font-size:17px;
+}}
+
+.tab.active{{
+    background:#0bc4f7;
+    color:#fff;
+    box-shadow:0 0 13px rgba(0,190,255,.22);
+}}
+
+.history-box{{
+    margin-top:25px;
+    padding:28px 18px;
+    min-height:380px;
+    border:1px solid rgba(0,186,255,.45);
+    border-radius:23px;
+    background:
+      radial-gradient(circle,rgba(0,180,255,.10) 1px,transparent 1.5px),
+      #000;
+    background-size:26px 26px;
+}}
+
+.history-row{{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:17px 4px;
+    border-bottom:1px solid rgba(0,186,255,.18);
+}}
+
+.history-row small{{
+    display:block;
+    color:#888;
+    margin-top:5px;
+}}
+
+.history-right{{text-align:right}}
+.history-right .status{{display:block;color:#00c8ff;margin-top:5px}}
+
+.empty-history{{
+    min-height:320px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    color:#b9bec5;
+    font-size:19px;
+}}
+
+.empty-icon{{
+    width:78px;
+    height:78px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    background:#07101a;
+    color:#d6dce2;
+    font-size:37px;
+    margin-bottom:25px;
+}}
+
+.empty-history button{{
+    margin-top:25px;
+    border:0;
+    border-radius:30px;
+    padding:15px 29px;
+    background:#08baf0;
+    color:#fff;
+    font-family:Georgia,serif;
+    font-size:18px;
+}}
+
+@media(max-width:430px){{
+    .withdraw-page{{padding-left:14px;padding-right:14px}}
+    .withdraw-card{{padding:25px 27px}}
+    .methods{{gap:10px}}
+    .method{{font-size:16px;padding:0 4px}}
+    .balance-value{{font-size:43px}}
+}}
 </style>
-<div class="page">
-<div class="head"><a class="back" href="/my">‹</a><div class="title">Withdraw</div></div>
-<div class="card balance"><div class="label">Available Balance</div><div class="amount">"""+str(balance)+"""</div></div>
-<div class="card">
-<div class="label">Payout Method</div>
-<div class="methods">
-<div class="method active">MTN UG</div>
-<div class="method">Airtel UG</div>
-<div class="method">USDT</div>
-</div>
-<div style="margin-top:20px" class="label">Amount (UGX)</div>
-<input type="number" placeholder="Enter amount">
-</div>
-<div class="card">
-<div>Amount <span style="float:right;color:#00baff">0.00</span></div>
-<div>Fee <span style="float:right;color:#00baff">0.00</span></div>
-<div style="margin-top:8px"><b>You receive</b><span style="float:right;color:#00baff">0.00</span></div>
-<p class="note">Withdrawal functionality is currently unavailable in this interface.</p>
-<button class="disabled" disabled>Request Withdrawal</button>
-</div>
-</div>"""
 
+<div class="withdraw-page">
+
+<div class="withdraw-head">
+    <a class="back-btn" href="/my">‹</a>
+    <div class="withdraw-title">Withdraw</div>
+</div>
+
+<div class="withdraw-card balance-card">
+    <div class="balance-label">Available balance</div>
+    <div class="balance-value">UGX {balance:,.2f}</div>
+</div>
+
+<div class="withdraw-card">
+
+    <div class="section-title">Payout method</div>
+
+    <div class="methods">
+        <button type="button" class="method active" onclick="setMethod(this,'MTN UG')">MTN UG</button>
+        <button type="button" class="method" onclick="setMethod(this,'Airtel UG')">Airtel UG</button>
+        <button type="button" class="method" onclick="setMethod(this,'USDT TRC20')">USDT TRC20</button>
+    </div>
+
+    <form method="POST" action="/withdraw" onsubmit="return validateWithdrawal()">
+
+        <input type="hidden" name="method" id="method" value="MTN UG">
+
+        <label class="field-label">Amount (UGX)</label>
+        <input
+            class="input"
+            type="number"
+            id="amount"
+            name="amount"
+            min="5000"
+            step="1"
+            placeholder="5000"
+            value=""
+            oninput="calculate()"
+            required
+        >
+
+        <div class="hint">Minimum withdrawal is 5,000 UGX</div>
+
+        <div class="required">
+            <h3>Withdrawal details required</h3>
+            <p>Save your phone number and the name registered on that number on your card before withdrawing.</p>
+            <a href="/account">Save my card details</a>
+        </div>
+
+        <label class="field-label">Destination phone number</label>
+        <input
+            class="input"
+            type="text"
+            value="Saved on your card"
+            readonly
+        >
+        <div class="hint">Taken from your saved card. Change it on the Card page.</div>
+
+        <div class="summary">
+            <div class="summary-row">
+                <span>Amount (UGX)</span>
+                <span class="value" id="gross">0.00</span>
+            </div>
+
+            <div class="summary-row">
+                <span>Withdrawal fee (10%)</span>
+                <span class="value fee" id="fee">-0.00</span>
+            </div>
+
+            <div class="summary-row receive">
+                <span>You receive</span>
+                <span class="value" id="receive">0.00</span>
+            </div>
+
+            <div class="summary-note">
+                The full amount is deducted from your balance as soon as you request.<br><br>
+                You must have at least one active AI machine to withdraw.
+            </div>
+        </div>
+
+        {machine_html}
+
+        <button class="request-btn" type="submit" {button_disabled}>
+            Request withdrawal
+        </button>
+
+    </form>
+</div>
+
+<div class="history-title">Transaction history</div>
+
+<div class="tabs">
+    <button class="tab">All</button>
+    <button class="tab">Deposit</button>
+    <button class="tab active">Withdraw</button>
+    <button class="tab">Earnings</button>
+    <button class="tab">Commission</button>
+</div>
+
+<div class="history-box">
+    {history_html}
+</div>
+
+</div>
+
+<script>
+function setMethod(btn,name){{
+    document.querySelectorAll('.method').forEach(function(x){{
+        x.classList.remove('active');
+    }});
+    btn.classList.add('active');
+    document.getElementById('method').value=name;
+}}
+
+function calculate(){{
+    var amount=parseFloat(document.getElementById('amount').value)||0;
+    var fee=amount*0.10;
+    var receive=amount-fee;
+
+    document.getElementById('gross').textContent=
+        amount.toLocaleString('en-US',{{minimumFractionDigits:2,maximumFractionDigits:2}});
+
+    document.getElementById('fee').textContent='-'+
+        fee.toLocaleString('en-US',{{minimumFractionDigits:2,maximumFractionDigits:2}});
+
+    document.getElementById('receive').textContent=
+        receive.toLocaleString('en-US',{{minimumFractionDigits:2,maximumFractionDigits:2}});
+}}
+
+function validateWithdrawal(){{
+    var amount=parseFloat(document.getElementById('amount').value)||0;
+
+    if(amount < 5000){{
+        alert('Minimum withdrawal is 5,000 UGX.');
+        return false;
+    }}
+
+    if(amount > {balance}){{
+        alert('Insufficient balance.');
+        return false;
+    }}
+
+    return true;
+}}
+
+calculate();
+</script>
+"""
+
+    return S + html
