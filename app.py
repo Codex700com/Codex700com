@@ -2990,6 +2990,304 @@ def reward_page():
 }
 </style>
 
+
+
+
+<style id="gift-final-match">
+
+.gift-page{
+    width:100%!important;
+    max-width:none!important;
+    min-height:100vh!important;
+    margin:0!important;
+    padding:0 28px 150px!important;
+    box-sizing:border-box!important;
+    background-color:#000!important;
+    background-image:radial-gradient(
+        circle,
+        rgba(0,120,170,.24) 1px,
+        transparent 1.6px
+    )!important;
+    background-size:34px 34px!important;
+    color:#fff!important;
+    font-family:Georgia,"Times New Roman",serif!important;
+}
+
+/* HEADER */
+
+.gift-head{
+    width:calc(100% + 56px)!important;
+    height:105px!important;
+    margin-left:-28px!important;
+    margin-right:-28px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    position:relative!important;
+    background:#000!important;
+    border-bottom:1px solid rgba(0,150,200,.55)!important;
+}
+
+.gift-back{
+    position:absolute!important;
+    left:28px!important;
+    top:20px!important;
+    width:64px!important;
+    height:64px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    box-sizing:border-box!important;
+    border:1px solid #008fc5!important;
+    border-radius:17px!important;
+    background:#01070c!important;
+    color:#00b9f3!important;
+    font-family:Arial,sans-serif!important;
+    font-size:43px!important;
+    font-weight:300!important;
+    line-height:1!important;
+    text-decoration:none!important;
+    box-shadow:0 0 8px rgba(0,174,235,.18)!important;
+}
+
+.gift-title{
+    margin:0!important;
+    padding:0!important;
+    color:#00b9f3!important;
+    font-family:Georgia,"Times New Roman",serif!important;
+    font-size:27px!important;
+    font-weight:bold!important;
+    line-height:1!important;
+}
+
+/* CARDS */
+
+.gift-card{
+    position:relative!important;
+    width:100%!important;
+    box-sizing:border-box!important;
+    background:rgba(0,3,8,.93)!important;
+    border:1px solid #008fc5!important;
+    border-radius:24px!important;
+    box-shadow:0 0 8px rgba(0,145,200,.18)!important;
+    overflow:hidden!important;
+}
+
+.gift-card:before{
+    content:""!important;
+    position:absolute!important;
+    inset:0!important;
+    pointer-events:none!important;
+    background-image:radial-gradient(
+        circle,
+        rgba(0,120,165,.25) 1px,
+        transparent 1.6px
+    )!important;
+    background-size:34px 34px!important;
+    opacity:.42!important;
+}
+
+.gift-card>*{
+    position:relative!important;
+    z-index:2!important;
+}
+
+/* FIRST CARD */
+
+.gift-progress{
+    height:216px!important;
+    margin-top:0!important;
+    padding:24px 28px 20px!important;
+}
+
+.gift-progress-top{
+    width:100%!important;
+    height:47px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+}
+
+.gift-count{
+    color:#00b9f3!important;
+    font-family:Georgia,"Times New Roman",serif!important;
+    font-size:47px!important;
+    font-weight:bold!important;
+    line-height:.9!important;
+}
+
+.gift-count-total{
+    color:#dedee3!important;
+    font-family:Georgia,"Times New Roman",serif!important;
+    font-size:21px!important;
+    font-weight:bold!important;
+}
+
+.gift-month{
+    color:#999ba2!important;
+    font-family:Georgia,"Times New Roman",serif!important;
+    font-size:17px!important;
+    line-height:1!important;
+}
+
+.gift-progress-line{
+    width:100%!important;
+    height:13px!important;
+    margin-top:15px!important;
+    border-radius:8px!important;
+    background:#07131b!important;
+    overflow:hidden!important;
+    box-shadow:inset 0 1px 5px rgba(0,0,0,.8)!important;
+}
+
+.gift-progress-fill{
+    width:0%!important;
+    height:100%!important;
+    background:#00b9f3!important;
+    border-radius:8px!important;
+}
+
+.gift-progress-text{
+    margin:19px 0 0!important;
+    padding:0!important;
+    color:#9fa0a7!important;
+    font-family:Georgia,"Times New Roman",serif!important;
+    font-size:18px!important;
+    line-height:1.62!important;
+    text-align:left!important;
+}
+
+.gift-progress-text strong{
+    color:#00b9f3!important;
+}
+
+/* SECOND CARD */
+
+.gift-redeem{
+    min-height:403px!important;
+    margin-top:27px!important;
+    padding:32px 28px 28px!important;
+}
+
+.gift-section-title{
+    width:100%!important;
+    display:flex!important;
+    align-items:center!important;
+    gap:12px!important;
+    margin:0 0 26px!important;
+    padding:0!important;
+    color:#f1f1f3!important;
+    font-family:Georgia,"Times New Roman",serif!important;
+    font-size:27px!important;
+    font-weight:bold!important;
+    line-height:1.1!important;
+}
+
+.gift-ticket{
+    color:#00b9f3!important;
+    font-family:Arial,sans-serif!important;
+    font-size:28px!important;
+    line-height:1!important;
+}
+
+.gift-input{
+    display:block!important;
+    width:100%!important;
+    height:84px!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:0 24px!important;
+    border:2px solid #eeeeee!important;
+    border-radius:28px!important;
+    outline:none!important;
+    background:#080f16!important;
+    color:#fff!important;
+    font-family:Georgia,"Times New Roman",serif!important;
+    font-size:22px!important;
+}
+
+.gift-input::placeholder{
+    color:#8f9097!important;
+    opacity:1!important;
+}
+
+.gift-claim{
+    display:block!important;
+    width:100%!important;
+    height:78px!important;
+    box-sizing:border-box!important;
+    margin:19px 0 0!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:28px!important;
+    background:#09b9ed!important;
+    color:#fff!important;
+    font-family:Georgia,"Times New Roman",serif!important;
+    font-size:26px!important;
+    font-weight:bold!important;
+    line-height:78px!important;
+    text-align:center!important;
+}
+
+.gift-description{
+    margin:19px 0 0!important;
+    padding:0!important;
+    color:#a1a2a8!important;
+    font-family:Georgia,"Times New Roman",serif!important;
+    font-size:18px!important;
+    line-height:1.66!important;
+}
+
+/* HISTORY */
+
+.gift-history{
+    min-height:151px!important;
+    margin-top:27px!important;
+    padding:34px 28px 26px!important;
+}
+
+.gift-history-title{
+    margin:0!important;
+    padding:0!important;
+    color:#f1f1f3!important;
+    font-family:Georgia,"Times New Roman",serif!important;
+    font-size:27px!important;
+    font-weight:bold!important;
+    line-height:1!important;
+}
+
+.gift-empty-history{
+    margin-top:25px!important;
+    color:#b0b0b6!important;
+    font-family:Georgia,"Times New Roman",serif!important;
+    font-size:22px!important;
+}
+
+@media(max-width:390px){
+    .gift-page{
+        padding-left:18px!important;
+        padding-right:18px!important;
+    }
+
+    .gift-head{
+        margin-left:-18px!important;
+        margin-right:-18px!important;
+    }
+
+    .gift-back{
+        left:18px!important;
+    }
+
+    .gift-progress,
+    .gift-redeem,
+    .gift-history{
+        padding-left:20px!important;
+        padding-right:20px!important;
+    }
+}
+
+</style>
+
 <div class="gift-page">
 
     <div class="gift-head">
@@ -3099,6 +3397,8 @@ async function checkGiftCode(){
     html = html.replace("__GIFT_HISTORY__", history_html)
 
     return S + html
+
+
 
 
 @app.route("/reward/redeem", methods=["POST"])
