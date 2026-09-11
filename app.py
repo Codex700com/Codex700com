@@ -1040,7 +1040,7 @@ def my_page():
 <a class="service" href="/home"><div class="icon">♧</div>My team</a>
 <a class="service" href="/home"><div class="icon">☆</div>VIP Task</a>
 <a class="service" href="/reward"><div class="icon">🎁</div>Reward</a>
-<a class="service" href="/home"><div class="icon">▱</div>Gift code</a>
+<a class="service" href="/reward"><div class="icon">▱</div>Gift code</a>
 <a class="service" href="/raffle"><div class="icon">◇</div>Raffle</a>
 <a class="service" href="/home"><div class="icon">↓</div>Download App</a>
 <a class="service" href="/manager"><div class="icon">♧</div>Manager</a>
@@ -2623,7 +2623,7 @@ def reward_page():
     if "uid" not in session:
         return redirect("/login")
 
-    con=sqlite3.connect(DB)
+    con = sqlite3.connect(DB)
     con.execute("""
         CREATE TABLE IF NOT EXISTS reward_redemptions(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -2635,51 +2635,470 @@ def reward_page():
         )
     """)
     con.commit()
+
+    try:
+        used = con.execute(
+            "SELECT code,value,redeemed_at FROM reward_redemptions WHERE uid=? ORDER BY id DESC",
+            (session["uid"],)
+        ).fetchall()
+    except Exception:
+        used = []
+
     con.close()
 
-    return S+"""<style>
-body{background:#000;color:#fff;font-family:Georgia,serif}
-.page{min-height:100vh;padding:20px 15px 100px;box-sizing:border-box}
-.head{display:flex;align-items:center;gap:15px;margin-bottom:25px}
-.back{color:#00baff;text-decoration:none;font-size:35px}
-.title{color:#00baff;font-size:26px;font-weight:bold}
-.card{background:#02080d;border:1px solid #078cff;border-radius:22px;padding:25px 18px;text-align:center}
-.icon{font-size:55px}
-h2{color:#00baff}
-p{color:#aaa;line-height:1.5}
-input{width:100%;box-sizing:border-box;padding:16px;border-radius:14px;border:1px solid #078cff;background:#050d15;color:#fff;font-size:16px}
-button{width:100%;margin-top:15px;padding:16px;border:0;border-radius:14px;background:#08b9ee;color:#fff;font-weight:bold;font-size:17px}
-.cancel{display:block;margin-top:15px;color:#00baff;text-decoration:none}
-</style>
-<div class="page">
-<div class="head"><a class="back" href="/my">‹</a><div class="title">Reward Center</div></div>
-<div class="card">
-<div class="icon">🎁</div>
-<h2>Enter Reward Code</h2>
-<p>Please enter the reward code provided by CODEX700.</p>
-<input id="code" placeholder="Enter code">
-<button onclick="checkCode()">Confirm</button>
-<a class="cancel" href="/my">Cancel</a>
-</div>
-</div>
-<script>
-async function checkCode(){
- let c=document.getElementById("code").value.trim().toUpperCase();
- if(!c){
-   alert("Please enter the reward code");
-   return;
- }
+    history_html = ""
 
- const r=await fetch("/reward/redeem",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({code:c})
- });
- const d=await r.json();
- alert(d.message);
+    for row in used:
+        code = row[0]
+        value = row[1]
+        date = row[2] or ""
+
+        try:
+            value_text = "{:,.0f}".format(float(value))
+        except Exception:
+            value_text = str(value)
+
+        history_html += """
+        <div class="gift-history-row">
+            <div>
+                <div class="gift-code-name">{}</div>
+                <div class="gift-date">{}</div>
+            </div>
+            <div class="gift-value">UGX {}</div>
+        </div>
+        """.format(code, date, value_text)
+
+    if not history_html:
+        history_html = '<div class="gift-empty-history">No gift codes yet.</div>'
+
+    html = r"""
+<style>
+.gift-page,
+.gift-page *{
+    box-sizing:border-box!important;
 }
-</script>"""
 
+.gift-page{
+    width:100%!important;
+    max-width:720px!important;
+    min-height:100vh!important;
+    margin:0 auto!important;
+    padding:0 28px 105px!important;
+    background:
+        radial-gradient(circle at 15px 15px,
+        rgba(0,190,255,.17) 1px,
+        transparent 1.8px)!important;
+    background-size:27px 27px!important;
+    background-color:#000!important;
+    color:#fff!important;
+    font-family:Georgia,"Times New Roman",serif!important;
+    font-size:16px!important;
+    line-height:1.35!important;
+    overflow-x:hidden!important;
+    -webkit-text-size-adjust:100%!important;
+}
+
+.gift-head{
+    width:calc(100% + 56px)!important;
+    height:88px!important;
+    margin:0 -28px 0!important;
+    padding:0!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    position:relative!important;
+    background:#000!important;
+    border-bottom:1px solid rgba(0,190,255,.38)!important;
+}
+
+.gift-title{
+    margin:0!important;
+    padding:0!important;
+    color:#00bfff!important;
+    font-family:Georgia,"Times New Roman",serif!important;
+    font-size:27px!important;
+    line-height:1!important;
+    font-weight:bold!important;
+    text-align:center!important;
+    text-shadow:0 0 9px rgba(0,190,255,.35)!important;
+}
+
+.gift-back{
+    position:absolute!important;
+    left:28px!important;
+    top:20px!important;
+    width:64px!important;
+    height:64px!important;
+    min-width:64px!important;
+    min-height:64px!important;
+    padding:0!important;
+    margin:0!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    border:1px solid #008fd0!important;
+    border-radius:18px!important;
+    background:#000!important;
+    color:#00bfff!important;
+    text-decoration:none!important;
+    font-family:Arial,sans-serif!important;
+    font-size:43px!important;
+    font-weight:300!important;
+    line-height:1!important;
+    box-shadow:0 0 9px rgba(0,190,255,.18)!important;
+}
+
+.gift-card{
+    width:100%!important;
+    margin:0 0 28px!important;
+    padding:27px!important;
+    border:1px solid rgba(0,180,240,.62)!important;
+    border-radius:23px!important;
+    background:
+        radial-gradient(circle,
+        rgba(0,175,240,.13) 1px,
+        transparent 1.65px)!important;
+    background-size:27px 27px!important;
+    background-color:rgba(0,4,8,.96)!important;
+    color:#fff!important;
+    box-shadow:0 0 10px rgba(0,175,240,.07)!important;
+}
+
+.gift-progress{
+    min-height:215px!important;
+    padding:25px 28px 27px!important;
+}
+
+.gift-progress-top{
+    display:flex!important;
+    align-items:flex-end!important;
+    justify-content:space-between!important;
+    margin:0 0 23px!important;
+}
+
+.gift-count{
+    color:#00bfff!important;
+    font-size:47px!important;
+    line-height:1!important;
+    font-weight:bold!important;
+    text-shadow:0 0 10px rgba(0,195,255,.42)!important;
+}
+
+.gift-count-total{
+    color:#d5d9de!important;
+    font-size:21px!important;
+    margin-left:4px!important;
+}
+
+.gift-month{
+    color:#aeb4bb!important;
+    font-size:18px!important;
+    line-height:1!important;
+}
+
+.gift-progress-line{
+    width:100%!important;
+    height:13px!important;
+    border-radius:10px!important;
+    background:#06101a!important;
+    border:1px solid rgba(0,155,210,.14)!important;
+    overflow:hidden!important;
+    margin:0 0 23px!important;
+}
+
+.gift-progress-fill{
+    width:0%!important;
+    height:100%!important;
+    background:linear-gradient(90deg,#00bfff,#08c9ff)!important;
+    border-radius:10px!important;
+}
+
+.gift-progress-text{
+    margin:0!important;
+    color:#c4c7cc!important;
+    font-size:18px!important;
+    line-height:1.55!important;
+}
+
+.gift-progress-text strong{
+    color:#00bfff!important;
+}
+
+.gift-redeem{
+    padding:27px!important;
+    min-height:405px!important;
+}
+
+.gift-section-title{
+    display:flex!important;
+    align-items:center!important;
+    gap:13px!important;
+    margin:0 0 25px!important;
+    padding:0!important;
+    color:#fff!important;
+    font-size:27px!important;
+    line-height:1.2!important;
+    font-weight:bold!important;
+}
+
+.gift-ticket{
+    color:#00bfff!important;
+    font-size:28px!important;
+    line-height:1!important;
+}
+
+.gift-input{
+    width:100%!important;
+    height:84px!important;
+    min-height:84px!important;
+    padding:0 23px!important;
+    margin:0!important;
+    border:2px solid #dfe1e5!important;
+    border-radius:22px!important;
+    outline:none!important;
+    background:#070e17!important;
+    color:#fff!important;
+    font-family:Georgia,"Times New Roman",serif!important;
+    font-size:22px!important;
+    line-height:1!important;
+}
+
+.gift-input::placeholder{
+    color:#777d85!important;
+    opacity:1!important;
+}
+
+.gift-claim{
+    width:100%!important;
+    height:78px!important;
+    min-height:78px!important;
+    padding:0!important;
+    margin:18px 0 0!important;
+    border:0!important;
+    border-radius:22px!important;
+    background:linear-gradient(
+        135deg,
+        #08b8ee,
+        #08c7f5 55%,
+        #12b9ed
+    )!important;
+    color:#fff!important;
+    font-family:Georgia,"Times New Roman",serif!important;
+    font-size:24px!important;
+    line-height:1!important;
+    font-weight:bold!important;
+    box-shadow:0 0 14px rgba(0,190,255,.20)!important;
+}
+
+.gift-description{
+    margin:20px 0 0!important;
+    padding:0!important;
+    color:#c2c5ca!important;
+    font-size:18px!important;
+    line-height:1.55!important;
+}
+
+.gift-history{
+    min-height:150px!important;
+    padding:27px!important;
+}
+
+.gift-history-title{
+    margin:0 0 23px!important;
+    padding:0!important;
+    color:#fff!important;
+    font-size:27px!important;
+    line-height:1.2!important;
+    font-weight:bold!important;
+}
+
+.gift-empty-history{
+    color:#c3c6ca!important;
+    font-size:21px!important;
+    line-height:1.4!important;
+}
+
+.gift-history-row{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:15px!important;
+    padding:15px 0!important;
+    border-bottom:1px solid rgba(0,180,240,.18)!important;
+}
+
+.gift-code-name{
+    color:#fff!important;
+    font-size:19px!important;
+    font-weight:bold!important;
+}
+
+.gift-date{
+    color:#858b92!important;
+    font-size:14px!important;
+    margin-top:4px!important;
+}
+
+.gift-value{
+    color:#00bfff!important;
+    font-size:18px!important;
+    font-weight:bold!important;
+}
+
+@media(max-width:500px){
+    .gift-page{
+        padding-left:28px!important;
+        padding-right:28px!important;
+    }
+
+    .gift-head{
+        width:calc(100% + 56px)!important;
+        margin-left:-28px!important;
+        margin-right:-28px!important;
+    }
+
+    .gift-card{
+        padding:27px!important;
+    }
+
+    .gift-progress{
+        padding:25px 28px 27px!important;
+    }
+
+    .gift-count{
+        font-size:47px!important;
+    }
+
+    .gift-title{
+        font-size:27px!important;
+    }
+
+    .gift-section-title,
+    .gift-history-title{
+        font-size:27px!important;
+    }
+
+    .gift-input{
+        height:84px!important;
+        font-size:22px!important;
+    }
+
+    .gift-claim{
+        height:78px!important;
+        font-size:24px!important;
+    }
+}
+</style>
+
+<div class="gift-page">
+
+    <div class="gift-head">
+        <a class="gift-back" href="/my">‹</a>
+        <div class="gift-title">Gift code</div>
+    </div>
+
+    <div class="gift-card gift-progress">
+
+        <div class="gift-progress-top">
+            <div>
+                <span class="gift-count">0</span>
+                <span class="gift-count-total">/ 6</span>
+            </div>
+            <div class="gift-month">2026-09</div>
+        </div>
+
+        <div class="gift-progress-line">
+            <div class="gift-progress-fill"></div>
+        </div>
+
+        <p class="gift-progress-text">
+            Invite <strong>6</strong> more members who activate a machine this month
+            to earn a gift code from the manager.
+        </p>
+
+    </div>
+
+    <div class="gift-card gift-redeem">
+
+        <div class="gift-section-title">
+            <span class="gift-ticket">🎟</span>
+            <span>Redeem a gift code</span>
+        </div>
+
+        <input
+            class="gift-input"
+            id="code"
+            type="text"
+            placeholder="Enter gift code"
+            autocomplete="off"
+        >
+
+        <button
+            class="gift-claim"
+            type="button"
+            onclick="checkGiftCode()"
+        >
+            Claim extra cash
+        </button>
+
+        <p class="gift-description">
+            Gift codes are issued by the manager once your monthly invite milestone
+            is reached. Each code can be redeemed only once and pays straight into
+            your withdrawable balance.
+        </p>
+
+    </div>
+
+    <div class="gift-card gift-history">
+
+        <div class="gift-history-title">Gift history</div>
+
+        __GIFT_HISTORY__
+
+    </div>
+
+</div>
+
+<script>
+async function checkGiftCode(){
+    const input = document.getElementById("code");
+    const code = input.value.trim().toUpperCase();
+
+    if(!code){
+        alert("Please enter the gift code");
+        input.focus();
+        return;
+    }
+
+    try{
+        const r = await fetch("/reward/redeem",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({code:code})
+        });
+
+        const d = await r.json();
+
+        alert(d.message);
+
+        if(
+            d.message &&
+            d.message.toLowerCase().includes("accepted")
+        ){
+            input.value = "";
+            location.reload();
+        }
+
+    }catch(e){
+        alert("Unable to process the gift code right now.");
+    }
+}
+</script>
+"""
+
+    html = html.replace("__GIFT_HISTORY__", history_html)
+
+    return S + html
 
 
 @app.route("/reward/redeem", methods=["POST"])
