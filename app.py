@@ -4626,9 +4626,21 @@ def account():
 
     # Add notification preference safely if it does not exist.
     cols = [r[1] for r in con.execute("PRAGMA table_info(users)").fetchall()]
-    if "notifications_enabled" not in cols:
-        con.execute("ALTER TABLE users ADD COLUMN notifications_enabled INTEGER DEFAULT 1")
-        con.commit()
+
+    # Keep Settings compatible with older Render databases.
+    required_user_columns = {
+        "notifications_enabled": "INTEGER DEFAULT 1",
+        "name": "TEXT",
+        "mtn_number": "TEXT",
+        "airtel_number": "TEXT",
+        "usdt_wallet": "TEXT"
+    }
+
+    for col, definition in required_user_columns.items():
+        if col not in cols:
+            con.execute(f"ALTER TABLE users ADD COLUMN {col} {definition}")
+
+    con.commit()
 
     user = con.execute("SELECT * FROM users WHERE id=?", (session["uid"],)).fetchone()
 
