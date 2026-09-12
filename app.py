@@ -727,17 +727,20 @@ def logout():
 
 @app.route("/my")
 def my_page():
- if "uid" not in session:
-  return redirect("/login")
+    if "uid" not in session:
+        return redirect("/login")
 
- c=db()
- u=c.execute("SELECT * FROM users WHERE id=?",(session["uid"],)).fetchone()
- c.close()
+    c = db()
+    u = c.execute(
+        "SELECT * FROM users WHERE id=?",
+        (session["uid"],)
+    ).fetchone()
+    c.close()
 
- phone = u["phone"] if u else ""
- balance = u["balance"] if u and "balance" in u.keys() else 0
+    phone = u["phone"] if u else ""
+    balance = float(u["balance"] or 0) if u and "balance" in u.keys() else 0
 
- return S+"""
+    return S + """
 <style>
 .my-page{
  min-height:100vh;
@@ -755,20 +758,20 @@ def my_page():
 .my-top{
  display:flex;
  justify-content:space-between;
- align-items:flex-start;
- margin:4px 7px 22px;
+ align-items:center;
+ margin-bottom:14px;
 }
 
 .my-welcome{
- color:#00baff;
- font-size:26px;
- line-height:1.2;
- text-shadow:0 0 10px rgba(0,186,255,.35);
+ font-size:24px;
+ font-weight:bold;
+ color:#00b9f3;
 }
 
 .my-phone{
- margin-top:12px;
- font-size:17px;
+ margin-top:4px;
+ color:#aaa;
+ font-size:14px;
 }
 
 .vip{
@@ -776,55 +779,57 @@ def my_page():
 }
 
 .vip-circle{
- width:68px;
- height:68px;
- border:3px solid #00baff;
+ width:58px;
+ height:58px;
  border-radius:50%;
+ border:2px solid #00b9f3;
  display:flex;
  align-items:center;
  justify-content:center;
- font-size:34px;
- box-shadow:0 0 14px rgba(0,186,255,.30);
+ color:#00b9f3;
+ font-size:28px;
+ box-shadow:0 0 14px rgba(0,190,255,.35);
 }
 
 .vip-label{
- margin-top:7px;
- padding:5px 13px;
- border:1px solid #00baff;
- border-radius:18px;
- color:#00baff;
- font-size:12px;
+ margin-top:5px;
+ color:#00b9f3;
+ font-weight:bold;
+ font-size:13px;
 }
 
 .wallet{
- background:#02090e;
- border:1px solid #078cff;
- border-radius:24px;
- padding:29px 10px 18px;
+ position:relative;
  display:grid;
  grid-template-columns:1fr 1fr;
- text-align:center;
- box-shadow:0 0 12px rgba(0,145,255,.18);
+ gap:10px;
+ background:#071018;
+ border:1px solid #075a78;
+ border-radius:18px;
+ padding:18px;
+ margin-bottom:14px;
+ box-shadow:0 0 12px rgba(0,180,255,.14);
 }
 
 .wallet-title{
  color:#aaa;
- font-size:20px;
- margin-bottom:12px;
+ font-size:13px;
 }
 
 .wallet-value{
- font-size:30px;
+ margin-top:5px;
+ color:#00b9f3;
+ font-size:22px;
  font-weight:bold;
 }
 
 .wallet-details{
- grid-column:1/3;
  display:none;
- grid-template-columns:1fr 1fr;
- border-top:1px solid rgba(0,190,255,.3);
- margin-top:20px;
- padding-top:10px;
+ grid-column:1/-1;
+ grid-template-columns:repeat(2,1fr);
+ gap:10px;
+ padding-top:12px;
+ border-top:1px solid #123;
 }
 
 .wallet.open .wallet-details{
@@ -832,79 +837,74 @@ def my_page():
 }
 
 .wallet-detail{
- padding:8px 3px;
+ background:#05090c;
+ border:1px solid #123;
+ border-radius:12px;
+ padding:10px;
 }
 
 .wallet-detail-title{
  color:#999;
- font-size:14px;
+ font-size:11px;
 }
 
 .wallet-detail-value{
- margin-top:5px;
+ color:#fff;
+ margin-top:4px;
+ font-size:14px;
+}
+
+.wallet-arrow{
+ position:absolute;
+ right:12px;
+ bottom:5px;
+ color:#00b9f3;
+ cursor:pointer;
+ font-size:20px;
+}
+
+.services{
+ display:grid;
+ grid-template-columns:repeat(4,1fr);
+ gap:9px;
+ margin-bottom:14px;
+}
+
+.service{
+ text-decoration:none;
+ color:#fff;
+ text-align:center;
+ background:#071018;
+ border:1px solid #123;
+ border-radius:14px;
+ padding:12px 4px;
+ font-size:11px;
+}
+
+.service .icon{
+ color:#00b9f3;
+ font-size:23px;
+ margin-bottom:5px;
+}
+
+.section{
+ background:#071018;
+ border:1px solid #123;
+ border-radius:16px;
+ padding:16px;
+ margin-bottom:14px;
+}
+
+.section-title{
+ color:#00b9f3;
  font-size:17px;
  font-weight:bold;
 }
 
-.wallet-arrow{
- grid-column:1/3;
- color:#00baff;
- font-size:35px;
- line-height:25px;
- margin-top:14px;
- cursor:pointer;
-}
-
-.services{
- margin-top:25px;
- padding:25px 7px;
- display:grid;
- grid-template-columns:repeat(4,1fr);
- gap:27px 3px;
- background:#02090e;
- border:1px solid #078cff;
- border-radius:24px;
- box-shadow:0 0 12px rgba(0,145,255,.18);
-}
-
-.service{
+.share-value,.salary-value{
+ margin-top:8px;
  color:#fff;
- text-decoration:none;
- text-align:center;
- font-size:13px;
-}
-
-.icon{
- width:55px;
- height:55px;
- margin:0 auto 8px;
- border-radius:17px;
- background:#08b9ee;
- display:flex;
- align-items:center;
- justify-content:center;
- font-size:27px;
- box-shadow:0 0 9px rgba(0,190,255,.25);
-}
-
-.section{
- margin-top:25px;
- padding:20px;
- background:#02090e;
- border:1px solid #078cff;
- border-radius:22px;
- box-shadow:0 0 12px rgba(0,145,255,.18);
-}
-
-.section-title{
- color:#00baff;
  font-size:20px;
- font-weight:bold;
- margin-bottom:17px;
-}
-
-.share-value{
- font-size:34px;
  font-weight:bold;
 }
 
@@ -912,94 +912,76 @@ def my_page():
  display:grid;
  grid-template-columns:1fr 1fr;
  gap:12px;
- text-align:center;
 }
 
 .salary-title{
  color:#aaa;
- font-size:15px;
- margin-bottom:10px;
-}
-
-.salary-value{
- font-size:28px;
- font-weight:bold;
+ font-size:12px;
 }
 
 .action{
  width:100%;
- margin-top:20px;
- padding:14px;
- border:0;
- border-radius:16px;
- background:#08b9ee;
- color:#fff;
- font-family:Georgia,serif;
- font-size:16px;
+ margin-top:14px;
+ padding:12px;
+ border:1px solid #00b9f3;
+ border-radius:12px;
+ background:#001923;
+ color:#00b9f3;
+ font-weight:bold;
 }
 
 .reward-table{
  width:100%;
+ margin-top:14px;
  border-collapse:collapse;
- margin-top:18px;
 }
 
 .reward-table th,
 .reward-table td{
- padding:11px 4px;
- border-bottom:1px solid rgba(0,190,255,.22);
-}
-
-.reward-table th{
- color:#00baff;
- text-align:left;
-}
-
-.reward-table th:last-child,
-.reward-table td:last-child{
- text-align:right;
-}
-
-.signout{
- margin-top:25px;
- padding:16px;
- border:1px solid rgba(255,40,70,.65);
- border-radius:20px;
+ border:1px solid #123;
+ padding:9px;
  text-align:center;
 }
 
+.reward-table th{
+ color:#00b9f3;
+}
+
+.signout{
+ text-align:center;
+ margin-top:20px;
+}
+
 .signout a{
- color:#ff3150;
+ color:#ff5b5b;
  text-decoration:none;
- font-size:18px;
 }
 
 .bottom{
  position:fixed;
- z-index:50;
  left:0;
  right:0;
  bottom:0;
- height:76px;
- background:#000;
- border-top:1px solid #123;
+ z-index:100;
+ height:68px;
  display:grid;
  grid-template-columns:repeat(6,1fr);
- padding-bottom:env(safe-area-inset-bottom);
+ background:#02070a;
+ border-top:1px solid #123;
 }
 
 .bottom a{
- color:#fff;
+ color:#aaa;
  text-decoration:none;
  text-align:center;
- font-size:12px;
- padding-top:9px;
+ font-size:10px;
+ padding-top:7px;
 }
 
 .bottom i{
  display:block;
  font-style:normal;
- font-size:27px;
+ font-size:24px;
  line-height:30px;
 }
 
@@ -1008,10 +990,9 @@ def my_page():
 }
 
 @media(max-width:380px){
- .my-welcome{font-size:23px}
- .icon{width:51px;height:51px}
- .service{font-size:12px}
- .section{padding:17px}
+ .services{gap:6px}
+ .service{font-size:10px}
+ .wallet{padding:15px}
 }
 </style>
 
@@ -1052,13 +1033,12 @@ def my_page():
 </div>
 
 <div class="services">
-
 <a class="service" href="/deposit"><div class="icon">▣</div>Deposit</a>
 <a class="service" href="/withdraw"><div class="icon">♢</div>Withdraw</a>
 <a class="service" href="/card"><div class="icon">▤</div>Card</a>
 <a class="service" href="/home"><div class="icon">$</div>Bill</a>
 <a class="service" href="/invite"><div class="icon">♙</div>Invite</a>
-<a class="service" href="/home"><div class="icon">♧</div>My team</a>
+<a class="service" href="/my-team"><div class="icon">♧</div>My team</a>
 <a class="service" href="/home"><div class="icon">☆</div>VIP Task</a>
 <a class="service" href="/reward"><div class="icon">🎁</div>Reward</a>
 <a class="service" href="/reward"><div class="icon">▱</div>Gift code</a>
@@ -1066,7 +1046,6 @@ def my_page():
 <a class="service" href="/home"><div class="icon">↓</div>Download App</a>
 <a class="service" href="/manager"><div class="icon">♧</div>Manager</a>
 <a class="service" href="/my"><div class="icon">⚙</div>Settings</a>
-
 </div>
 
 <div class="section">
@@ -1120,7 +1099,7 @@ def my_page():
 <div class="bottom">
  <a href="/home"><i>⌂</i>Home</a>
  <a href="/raffle"><i>▣</i>Raffle</a>
- <a href="/home"><i>▤</i>chats</a>
+ <a href="/support"><i>▤</i>chats</a>
  <a href="/invest"><i>▦</i>AI</a>
  <a href="/income"><i>₿</i>Income</a>
  <a class="active" href="/my"><i>♙</i>My</a>
@@ -1137,6 +1116,398 @@ def my_page():
  });
 })();
 </script>
+"""
+
+
+@app.route("/my-team")
+def my_team_page():
+    if "uid" not in session:
+        return redirect("/login")
+
+    return S + """
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#000;color:#fff}
+body{font-family:Georgia,"Times New Roman",serif}
+
+.team-page{
+ min-height:100vh;
+ padding:0 18px 105px;
+ background:#000;
+ background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);
+ background-size:18px 18px;
+}
+
+.team-head{
+ height:92px;
+ margin:0 -18px 24px;
+ position:relative;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ border-bottom:1px solid rgba(0,185,245,.5);
+}
+
+.team-title{
+ color:#00b9f3;
+ font-size:29px;
+ font-weight:bold;
+ text-shadow:0 0 12px rgba(0,190,255,.45);
+}
+
+.team-back{
+ position:absolute;
+ left:22px;
+ top:22px;
+ color:#00b9f3;
+ text-decoration:none;
+ font-size:40px;
+ line-height:40px;
+}
+
+.team-stats{
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:10px;
+ margin-bottom:25px;
+}
+
+.team-stat{
+ min-width:0;
+ padding:20px 7px 18px;
+ text-align:center;
+ background:#071018;
+ border:1px solid #075a78;
+ border-radius:16px;
+ box-shadow:0 0 10px rgba(0,150,210,.15);
+}
+
+.team-stat-label{
+ color:#9da3aa;
+ font-size:14px;
+ line-height:1.25;
+ min-height:36px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+}
+
+.team-stat-value{
+ margin-top:9px;
+ color:#00b9f3;
+ font-size:24px;
+ font-weight:800;
+ white-space:nowrap;
+}
+
+.team-card{
+ position:relative;
+ padding:23px 20px;
+ margin-bottom:24px;
+ background:#071018;
+ border:1px solid #075a78;
+ border-radius:18px;
+ box-shadow:0 0 11px rgba(0,150,210,.15);
+}
+
+.team-section-title{
+ margin:0 0 20px;
+ color:#fff;
+ font-size:23px;
+ font-weight:bold;
+}
+
+.benefit{
+ display:flex;
+ align-items:center;
+ gap:13px;
+ padding:14px 0;
+ border-top:1px solid #123;
+}
+
+.benefit:first-of-type{border-top:0}
+
+.benefit-icon{
+ width:38px;
+ height:38px;
+ flex:none;
+ border-radius:50%;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ color:#00b9f3;
+ border:1px solid #08769b;
+ font-size:20px;
+}
+
+.benefit-title{
+ color:#fff;
+ font-size:16px;
+ font-weight:bold;
+}
+
+.benefit-desc{
+ margin-top:4px;
+ color:#8e989f;
+ font-size:12px;
+ line-height:1.4;
+}
+
+.invite-team{
+ display:block;
+ width:100%;
+ height:62px;
+ line-height:62px;
+ margin:0 0 26px;
+ text-align:center;
+ text-decoration:none;
+ color:#000;
+ background:#00b9f3;
+ border-radius:15px;
+ font-size:18px;
+ font-weight:bold;
+ box-shadow:0 0 18px rgba(0,185,243,.35);
+}
+
+.level-card{
+ padding:20px;
+ margin-bottom:14px;
+ background:#071018;
+ border:1px solid #075a78;
+ border-radius:17px;
+ box-shadow:0 0 10px rgba(0,150,210,.12);
+}
+
+.level-top,.level-bottom{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:10px;
+}
+
+.level-name{
+ color:#00b9f3;
+ font-size:19px;
+ font-weight:bold;
+}
+
+.level-count{
+ color:#aaa;
+ font-size:13px;
+}
+
+.level-bottom{
+ margin-top:17px;
+}
+
+.level-info{
+ color:#8e989f;
+ font-size:12px;
+ line-height:1.6;
+}
+
+.commission{
+ min-width:65px;
+ padding:10px 8px;
+ text-align:center;
+ border-radius:12px;
+ background:#001923;
+ border:1px solid #00b9f3;
+ color:#00b9f3;
+ font-size:20px;
+ font-weight:bold;
+}
+
+.invite-info{
+ margin-top:24px;
+}
+
+.invite-code{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:10px;
+}
+
+.invite-code-label{
+ color:#999;
+ font-size:12px;
+}
+
+.invite-code-value{
+ margin-top:5px;
+ color:#00b9f3;
+ font-weight:bold;
+}
+
+.invite-code-button{
+ padding:10px 13px;
+ border:1px solid #00b9f3;
+ border-radius:10px;
+ color:#00b9f3;
+ text-decoration:none;
+ font-size:12px;
+}
+
+.team-bottom{
+ position:fixed;
+ z-index:100;
+ left:0;
+ right:0;
+ bottom:0;
+ height:68px;
+ display:grid;
+ grid-template-columns:repeat(6,1fr);
+ background:#02070a;
+ border-top:1px solid #123;
+}
+
+.team-bottom a{
+ color:#fff;
+ text-decoration:none;
+ text-align:center;
+ font-size:10px;
+ padding-top:8px;
+}
+
+.team-bottom i{
+ display:block;
+ font-style:normal;
+ font-size:27px;
+ line-height:30px;
+}
+
+.team-bottom .active{color:#00baff}
+
+@media(max-width:380px){
+ .team-page{padding-left:13px;padding-right:13px}
+ .team-head{margin-left:-13px;margin-right:-13px}
+ .team-back{left:17px}
+ .team-stat{padding-left:3px;padding-right:3px}
+ .team-stat-label{font-size:12px}
+ .team-stat-value{font-size:20px}
+ .team-card,.level-card{padding-left:17px;padding-right:17px}
+}
+</style>
+
+<div class="team-page">
+
+ <div class="team-head">
+  <a class="team-back" href="/my">‹</a>
+  <div class="team-title">My Team</div>
+ </div>
+
+ <div class="team-stats">
+  <div class="team-stat">
+   <div class="team-stat-label">Members</div>
+   <div class="team-stat-value">0</div>
+  </div>
+  <div class="team-stat">
+   <div class="team-stat-label">Team deposits</div>
+   <div class="team-stat-value">UGX 0</div>
+  </div>
+  <div class="team-stat">
+   <div class="team-stat-label">Earnings</div>
+   <div class="team-stat-value">UGX 0</div>
+  </div>
+ </div>
+
+ <div class="team-card">
+  <div class="team-section-title">Why build your team?</div>
+
+  <div class="benefit">
+   <div class="benefit-icon">♧</div>
+   <div class="benefit-text">
+    <div class="benefit-title">Lifetime commission</div>
+    <div class="benefit-desc">Earn from eligible deposits made by your team.</div>
+   </div>
+  </div>
+
+  <div class="benefit">
+   <div class="benefit-icon">◆</div>
+   <div class="benefit-text">
+    <div class="benefit-title">Team development fund</div>
+    <div class="benefit-desc">Build a stronger team and increase your rewards.</div>
+   </div>
+  </div>
+
+  <div class="benefit">
+   <div class="benefit-icon">↗</div>
+   <div class="benefit-text">
+    <div class="benefit-title">Passive growth</div>
+    <div class="benefit-desc">Your team can continue growing while you focus on your goals.</div>
+   </div>
+  </div>
+
+  <div class="benefit">
+   <div class="benefit-icon">★</div>
+   <div class="benefit-text">
+    <div class="benefit-title">Higher VIP rank</div>
+    <div class="benefit-desc">Grow your network to unlock higher team levels.</div>
+   </div>
+  </div>
+ </div>
+
+ <a class="invite-team" href="/invite">Invite friends</a>
+
+ <div class="team-section-title" style="margin:0 3px 15px;">
+  Team commission levels
+ </div>
+
+ <div class="level-card">
+  <div class="level-top">
+   <div class="level-name">Level 1</div>
+   <div class="level-count">0 members</div>
+  </div>
+  <div class="level-bottom">
+   <div class="level-info">Direct members<br>Earn from eligible team activity</div>
+   <div class="commission">32%</div>
+  </div>
+ </div>
+
+ <div class="level-card">
+  <div class="level-top">
+   <div class="level-name">Level 2</div>
+   <div class="level-count">0 members</div>
+  </div>
+  <div class="level-bottom">
+   <div class="level-info">Second-level members<br>Earn from eligible team activity</div>
+   <div class="commission">5%</div>
+  </div>
+ </div>
+
+ <div class="level-card">
+  <div class="level-top">
+   <div class="level-name">Level 3</div>
+   <div class="level-count">0 members</div>
+  </div>
+  <div class="level-bottom">
+   <div class="level-info">Third-level members<br>Earn from eligible team activity</div>
+   <div class="commission">1%</div>
+  </div>
+ </div>
+
+ <div class="team-card invite-info">
+  <div class="team-section-title">Your invitation</div>
+  <div class="invite-code">
+   <div>
+    <div class="invite-code-label">Invitation code</div>
+    <div class="invite-code-value">Available in Invite</div>
+   </div>
+   <a class="invite-code-button" href="/invite">Open Invite</a>
+  </div>
+ </div>
+
+</div>
+
+<div class="team-bottom">
+ <a href="/home"><i>⌂</i>Home</a>
+ <a href="/raffle"><i>▣</i>Raffle</a>
+ <a href="/support"><i>▤</i>Chats</a>
+ <a href="/invest"><i>▦</i>AI</a>
+ <a href="/income"><i>₿</i>Income</a>
+ <a class="active" href="/my"><i>♙</i>My</a>
+</div>
 """
 
 setup_manager(app, db, S)
