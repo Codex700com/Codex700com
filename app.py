@@ -143,6 +143,20 @@ button,a,input,select,textarea{
  position:relative!important;
 }
 </style><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="CODEX700">
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("/sw.js", {scope:"/"})
+      .catch(function(){});
+  });
+}
+</script>
 <style>
 html,body{
   touch-action:pan-x pan-y;
@@ -189,6 +203,17 @@ document.addEventListener('DOMContentLoaded', function(){
 '''
 
 WAVE='<div class="wave-bg" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;background:#000;pointer-events:none"><canvas id="waveCanvas" style="width:100%;height:100%;display:block"></canvas></div><script>var c=document.getElementById("waveCanvas");var x=c.getContext("2d");var W,H,d=window.devicePixelRatio||1;function R(){W=c.width=innerWidth*d;H=c.height=innerHeight*d;c.style.width=innerWidth+"px";c.style.height=innerHeight+"px"}R();addEventListener("resize",R);var t=0;function D(){t+=1.5;x.clearRect(0,0,W,H);var rows=22,cols=60,sx=W/cols,sy=H*0.7/rows,oy=H*0.5;for(var y=0;y<rows;y++){for(var X=0;X<cols;X++){var px=X*sx,py=oy+y*sy+Math.sin(X*0.18+t+y*0.25)*34+Math.cos(y*0.18+t*0.7)*18,dist=Math.abs(px-W/2)/(W/2),a=1-dist*0.6;if(a<0)a=0;var sz=(1.3+Math.sin(t*2+X*0.15)*0.3)*(1.1+a*1.6)*d;x.beginPath();x.arc(px,py,sz,0,6.283);x.fillStyle="rgba("+(90+a*40)+","+(190+a*40)+",255,"+(0.35+a*0.6)+")";x.shadowBlur=sz*2.5;x.shadowColor="#60a5fa";x.fill();x.shadowBlur=0;if(X<cols-1){var nx=(X+1)*sx,ny=oy+y*sy+Math.sin((X+1)*0.18+t+y*0.25)*34+Math.cos(y*0.18+t*0.7)*18;x.beginPath();x.moveTo(px,py);x.lineTo(nx,ny);x.strokeStyle="rgba(96,165,250,"+(a*0.18)+")";x.lineWidth=0.9*d;x.stroke()}}}requestAnimationFrame(D)}D();</script>'
+
+@app.route("/manifest.json")
+def pwa_manifest():
+    return app.send_static_file("pwa/manifest.json")
+
+@app.route("/sw.js")
+def pwa_service_worker():
+    response = app.send_static_file("pwa/sw.js")
+    response.headers["Content-Type"] = "application/javascript"
+    response.headers["Service-Worker-Allowed"] = "/"
+    return response
 
 @app.route("/")
 def index():

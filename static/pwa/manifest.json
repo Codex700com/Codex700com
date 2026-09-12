@@ -1,0 +1,11 @@
+{
+  "name": "CODEX700",
+  "short_name": "CODEX700",
+  "start_url": "/home",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "description": "CODEX700 platform",
+  "orientation": "portrait"
+}
