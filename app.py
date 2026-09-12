@@ -70,6 +70,27 @@ a,button{
 
 *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 </style>
+<style>
+#codexQuickLoader{
+ position:fixed;
+ inset:0;
+ z-index:999999;
+ display:none;
+ align-items:center;
+ justify-content:center;
+ background:#020210!important;
+}
+#codexQuickLoader .qdot{
+ width:22px;
+ height:22px;
+ border:3px solid rgba(0,185,243,.25);
+ border-top-color:#00b9f3;
+ border-radius:50%;
+ animation:qspin .45s linear infinite;
+}
+@keyframes qspin{to{transform:rotate(360deg)}}
+</style>
+
 <div class="codex-waves">
 <span></span><span></span><span></span>
 </div>
@@ -1890,7 +1911,29 @@ button{width:100%;height:52px;border:0;border-radius:14px;background:#08aeea;col
   install();
 })();
 </script>
-<script>document.addEventListener("contextmenu",e=>e.preventDefault())</script></body>
+<script>document.addEventListener("contextmenu",e=>e.preventDefault())</script>
+<div id="codexQuickLoader"><div class="qdot"></div></div>
+<script>
+(function(){
+ const loader=document.getElementById("codexQuickLoader");
+ if(!loader) return;
+
+ window.addEventListener("pageshow",function(){
+   loader.style.display="none";
+ });
+
+ document.addEventListener("click",function(e){
+   const a=e.target.closest("a[href]");
+   if(!a) return;
+   const href=a.getAttribute("href");
+   if(!href || href.startsWith("#") || href.startsWith("javascript:")) return;
+   if(a.target && a.target!=="_self") return;
+
+   loader.style.display="flex";
+ },true);
+})();
+</script>
+</body>
 </html>
 """, errors=errors, method=method, amount=amount,
 amount_sent=amount_sent, payment_number=payment_number,
