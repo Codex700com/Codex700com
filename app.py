@@ -49,7 +49,27 @@ def init_db():
  c.close()
 init_db()
 
-S='''
+S='''<style>
+html,body{
+ background:#020210!important;
+ color-scheme:dark;
+}
+html{
+ background-color:#020210!important;
+}
+body{
+ background-color:#020210!important;
+}
+*{
+ -webkit-tap-highlight-color:transparent;
+ -webkit-touch-callout:none;
+}
+a,button{
+ -webkit-tap-highlight-color:transparent!important;
+}
+
+*{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+</style>
 <div class="codex-waves">
 <span></span><span></span><span></span>
 </div>
@@ -1870,7 +1890,7 @@ button{width:100%;height:52px;border:0;border-radius:14px;background:#08aeea;col
   install();
 })();
 </script>
-</body>
+<script>document.addEventListener("contextmenu",e=>e.preventDefault())</script></body>
 </html>
 """, errors=errors, method=method, amount=amount,
 amount_sent=amount_sent, payment_number=payment_number,
