@@ -1086,7 +1086,7 @@ def my_page():
 <a class="service" href="/raffle"><div class="icon">◇</div>Raffle</a>
 <a class="service" href="/home"><div class="icon">↓</div>Download App</a>
 <a class="service" href="/manager"><div class="icon">♧</div>Manager</a>
-<a class="service" href="/my"><div class="icon">⚙</div>Settings</a>
+<a class="service" href="/account"><div class="icon">⚙</div>Settings</a>
 </div>
 
 <div class="section">
@@ -3679,11 +3679,6 @@ setInterval(rotateRewards,1000);
 </script>
 """
 
-if __name__=="__main__":
-    app.run(host="0.0.0.0",port=5000,debug=False)
-
-
-
 @app.route("/raffle/reveal", methods=["POST"])
 def raffle_reveal():
     if "uid" not in session:
@@ -4620,6 +4615,443 @@ def redeem_reward():
     con.close()
     return {"message":msg}
 
+
+
+@app.route("/account", methods=["GET", "POST"])
+def account():
+    if "uid" not in session:
+        return redirect("/login")
+
+    con = db()
+
+    # Add notification preference safely if it does not exist.
+    cols = [r[1] for r in con.execute("PRAGMA table_info(users)").fetchall()]
+    if "notifications_enabled" not in cols:
+        con.execute("ALTER TABLE users ADD COLUMN notifications_enabled INTEGER DEFAULT 1")
+        con.commit()
+
+    user = con.execute("SELECT * FROM users WHERE id=?", (session["uid"],)).fetchone()
+
+    if request.method == "POST":
+        action = request.form.get("action", "save")
+
+        if action == "password":
+            new_password = request.form.get("new_password", "").strip()
+
+            if new_password:
+                con.execute(
+                    "UPDATE users SET password=? WHERE id=?",
+                    (new_password, session["uid"])
+                )
+                con.commit()
+                con.close()
+                return redirect("/account?password=saved")
+
+            con.close()
+            return redirect("/account?password=error")
+
+        name = request.form.get("name", "").strip()
+        mtn_number = request.form.get("mtn_number", "").strip()
+        airtel_number = request.form.get("airtel_number", "").strip()
+        usdt_wallet = request.form.get("usdt_wallet", "").strip()
+        notifications = 1 if request.form.get("notifications") == "1" else 0
+
+        con.execute("""
+            UPDATE users
+            SET name=?,
+                mtn_number=?,
+                airtel_number=?,
+                usdt_wallet=?,
+                notifications_enabled=?
+            WHERE id=?
+        """, (
+            name,
+            mtn_number,
+            airtel_number,
+            usdt_wallet,
+            notifications,
+            session["uid"]
+        ))
+        con.commit()
+        con.close()
+        return redirect("/account?saved=1")
+
+    saved = request.args.get("saved") == "1"
+    password_status = request.args.get("password", "")
+
+    name = user["name"] or ""
+    phone = user["phone"] or ""
+    mtn_number = user["mtn_number"] or ""
+    airtel_number = user["airtel_number"] or ""
+    usdt_wallet = user["usdt_wallet"] or ""
+    notifications_enabled = user["notifications_enabled"] if "notifications_enabled" in user.keys() else 1
+
+    notice = ""
+    if saved:
+        notice = '<div class="notice">✓ Changes saved successfully</div>'
+    elif password_status == "saved":
+        notice = '<div class="notice">✓ Password updated successfully</div>'
+    elif password_status == "error":
+        notice = '<div class="notice error">Enter a new password</div>'
+
+    checked = "checked" if notifications_enabled else ""
+
+    html = """
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Settings</title>
+<style>
+html,body{
+ margin:0;
+ padding:0;
+ min-height:100%;
+ background:#000!important;
+ color:#fff;
+ font-family:Georgia,serif;
+}
+body{
+ background:
+ radial-gradient(circle,rgba(0,180,255,.55) 1.2px,transparent 1.8px) 0 0/32px 32px,
+ radial-gradient(circle,rgba(0,120,220,.35) 1px,transparent 1.6px) 16px 16px/32px 32px,
+ #000!important;
+}
+*{
+ box-sizing:border-box;
+ -webkit-text-size-adjust:100%;
+ -webkit-tap-highlight-color:transparent;
+}
+.page{
+ width:100%;
+ min-height:100vh;
+ max-width:none;
+ padding-bottom:118px;
+}
+.top{
+ height:104px;
+ width:100%;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ position:relative;
+ border-bottom:1px solid #07384a;
+ background:rgba(0,0,0,.88);
+}
+.back{
+ position:absolute;
+ left:4%;
+ top:14px;
+ width:74px;
+ height:74px;
+ border:1px solid #00c8ff;
+ border-radius:18px;
+ background:#02070b;
+ color:#00c8ff;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ text-decoration:none;
+ font-family:Arial,sans-serif;
+ font-size:38px;
+ line-height:1;
+ box-shadow:0 0 15px rgba(0,200,255,.28);
+}
+.title{
+ color:#00c8ff;
+ font-size:21px;
+ font-weight:bold;
+ text-shadow:0 0 8px rgba(0,200,255,.35);
+}
+.content{
+ padding:23px 4% 30px;
+}
+.card{
+ width:100%;
+ background:rgba(0,5,9,.78);
+ border:1px solid #00bfff;
+ border-radius:19px;
+ padding:12px 14px;
+ margin-bottom:10px;
+ box-shadow:
+  0 0 12px rgba(0,190,255,.18),
+  inset 0 0 22px rgba(0,60,100,.10);
+}
+.heading{
+ color:#00c8ff;
+ font-size:15px;
+ font-weight:bold;
+ margin:0 0 18px;
+ text-shadow:0 0 7px rgba(0,200,255,.25);
+}
+.field{
+ margin-bottom:10px;
+}
+.field:last-child{
+ margin-bottom:0;
+}
+label{
+ display:block;
+ color:#fff;
+ font-size:16px;
+ margin-bottom:4px;
+}
+input{
+ width:100%;
+ height:65px;
+ padding:0 12px;
+ border:1px solid #00bfff;
+ border-radius:9px;
+ background:#03111c;
+ color:#fff;
+ font-family:Georgia,serif;
+ font-size:14px;
+ outline:none;
+ box-shadow:inset 0 0 12px rgba(0,80,130,.13);
+}
+input::placeholder{
+ color:#8c9299;
+ opacity:1;
+}
+.phone{
+ color:#aeb4bc;
+ font-size:15px;
+ margin-top:18px;
+}
+.toggle-row{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+}
+.toggle-text .heading{
+ margin-bottom:8px;
+}
+.toggle-sub{
+ color:#aeb4bc;
+ font-size:15px;
+}
+.switch{
+ position:relative;
+ display:block;
+ width:88px;
+ height:50px;
+ flex:none;
+ margin:0;
+}
+.switch input{
+ display:none;
+}
+.slider{
+ position:absolute;
+ inset:0;
+ border-radius:50px;
+ background:#18242b;
+ border:1px solid #284552;
+}
+.slider:before{
+ content:"";
+ position:absolute;
+ width:42px;
+ height:42px;
+ left:3px;
+ top:3px;
+ border-radius:50%;
+ background:#000;
+}
+.switch input:checked + .slider{
+ background:#08baf0;
+ border-color:#08baf0;
+ box-shadow:0 0 10px rgba(0,190,255,.22);
+}
+.switch input:checked + .slider:before{
+ transform:translateX(38px);
+}
+.save{
+ display:block;
+ width:100%;
+ height:46px;
+ margin:0 0 20px;
+ border:0;
+ border-radius:9px;
+ background:#08baf0;
+ color:#fff;
+ font-family:Georgia,serif;
+ font-size:14px;
+ font-weight:bold;
+ box-shadow:0 0 14px rgba(0,190,255,.25);
+}
+.password-btn{
+ margin-top:17px;
+ margin-bottom:0;
+ background:transparent;
+ border:1px solid #00bfff;
+ color:#00c8ff;
+ box-shadow:none;
+}
+.signout{
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ width:100%;
+ height:65px;
+ border:1px solid #ff2452;
+ border-radius:9px;
+ background:rgba(0,0,0,.55);
+ color:#ff4168;
+ text-decoration:none;
+ font-size:14px;
+ box-shadow:0 0 9px rgba(255,30,80,.12);
+}
+.notice{
+ margin-bottom:10px;
+ padding:14px 17px;
+ border:1px solid #00bfff;
+ border-radius:14px;
+ background:#061b25;
+ color:#67dcff;
+ font-size:14px;
+}
+.error{
+ border-color:#ff3154;
+ color:#ff8ca0;
+}
+.bottom{
+ position:fixed;
+ left:0;
+ right:0;
+ bottom:0;
+ height:108px;
+ z-index:100;
+ display:flex;
+ align-items:center;
+ justify-content:space-around;
+ background:#000;
+ border-top:1px solid #083b4e;
+}
+.nav{
+ width:16.66%;
+ color:#fff;
+ text-decoration:none;
+ text-align:center;
+}
+.nav-icon{
+ height:42px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-family:Arial,sans-serif;
+ font-size:35px;
+ line-height:35px;
+}
+.nav-text{
+ font-size:14px;
+ margin-top:2px;
+}
+@media(max-width:500px){
+ .content{
+  padding:23px 4% 30px;
+ }
+ .card{
+  padding:22px 27px;
+ }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="top">
+ <a class="back" href="/my">‹</a>
+ <div class="title">Settings</div>
+</div>
+
+<div class="content">
+
+%NOTICE%
+
+<form method="POST">
+<div class="card">
+ <div class="heading">Profile</div>
+ <div class="field">
+  <label>Display name</label>
+  <input type="text" name="name" value="%NAME%" placeholder="">
+ </div>
+ <div class="phone">Phone: %PHONE%</div>
+</div>
+
+<div class="card">
+ <div class="heading">Payout details</div>
+
+ <div class="field">
+  <label>MTN Uganda number</label>
+  <input type="text" name="mtn_number" value="%MTN%" placeholder="0770000000">
+ </div>
+
+ <div class="field">
+  <label>Airtel Uganda number</label>
+  <input type="text" name="airtel_number" value="%AIRTEL%" placeholder="0750000000">
+ </div>
+
+ <div class="field">
+  <label>USDT TRC20 address</label>
+  <input type="text" name="usdt_wallet" value="%USDT%" placeholder="T...">
+ </div>
+</div>
+
+<div class="card">
+ <div class="toggle-row">
+  <div class="toggle-text">
+   <div class="heading">Notifications</div>
+   <div class="toggle-sub">Push &amp; in-app notifications</div>
+  </div>
+  <label class="switch">
+   <input type="checkbox" name="notifications" value="1" %CHECKED%>
+   <span class="slider"></span>
+  </label>
+ </div>
+</div>
+
+<input type="hidden" name="action" value="save">
+<button class="save" type="submit">Save changes</button>
+</form>
+
+<div class="card">
+ <div class="heading">Change password</div>
+ <form method="POST">
+  <input type="password" name="new_password" placeholder="New password" required>
+  <input type="hidden" name="action" value="password">
+  <button class="save password-btn" type="submit">Update password</button>
+ </form>
+</div>
+
+<a class="signout" href="/logout">↪ &nbsp; Sign out</a>
+
+</div>
+</div>
+
+<div class="bottom">
+ <a class="nav" href="/home"><div class="nav-icon">▱</div><div class="nav-text">Home</div></a>
+ <a class="nav" href="/raffle"><div class="nav-icon">◧</div><div class="nav-text">Raffle</div></a>
+ <a class="nav" href="/support"><div class="nav-icon">▣</div><div class="nav-text">chats</div></a>
+ <a class="nav" href="/invest"><div class="nav-icon">▦</div><div class="nav-text">AI</div></a>
+ <a class="nav" href="/income"><div class="nav-icon">₿</div><div class="nav-text">Income</div></a>
+ <a class="nav" href="/my"><div class="nav-icon">♙</div><div class="nav-text">My</div></a>
+</div>
+</body>
+</html>
+"""
+
+    html=html.replace("%NOTICE%",notice)
+    html=html.replace("%NAME%",str(name).replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace('"',"&quot;"))
+    html=html.replace("%PHONE%",str(phone))
+    html=html.replace("%MTN%",str(mtn_number).replace('"',"&quot;"))
+    html=html.replace("%AIRTEL%",str(airtel_number).replace('"',"&quot;"))
+    html=html.replace("%USDT%",str(usdt_wallet).replace('"',"&quot;"))
+    html=html.replace("%CHECKED%",checked)
+
+    con.close()
+    return html
+
 @app.route("/support")
 def support_page():
     if "uid" not in session:
@@ -4664,6 +5096,79 @@ def withdraw_page():
     ).fetchone()
 
     balance = float(u["balance"] or 0) if u and "balance" in u.keys() else 0
+
+    # Process withdrawal using the user's own saved payout details.
+    if request.method == "POST":
+        method = request.form.get("method", "MTN UG").strip()
+
+        try:
+            amount = float(request.form.get("amount", "0"))
+        except Exception:
+            amount = 0
+
+        if amount < 5000:
+            c.close()
+            return "<script>alert('Minimum withdrawal is 5,000 UGX.');history.back();</script>"
+
+        if amount > balance:
+            c.close()
+            return "<script>alert('Insufficient balance.');history.back();</script>"
+
+        name = (u["name"] or "").strip() if u and "name" in u.keys() else ""
+        mtn_number = (u["mtn_number"] or "").strip() if u and "mtn_number" in u.keys() else ""
+        airtel_number = (u["airtel_number"] or "").strip() if u and "airtel_number" in u.keys() else ""
+        usdt_wallet = (u["usdt_wallet"] or "").strip() if u and "usdt_wallet" in u.keys() else ""
+
+        if method == "MTN UG":
+            destination = mtn_number
+            destination_type = "MTN Uganda"
+        elif method == "Airtel UG":
+            destination = airtel_number
+            destination_type = "Airtel Uganda"
+        elif method == "USDT TRC20":
+            destination = usdt_wallet
+            destination_type = "USDT TRC20"
+        else:
+            c.close()
+            return "<script>alert('Invalid payout method.');history.back();</script>"
+
+        if not name:
+            c.close()
+            return "<script>alert('Please save your payout name in Settings before withdrawing.');location.href='/account';</script>"
+
+        if not destination:
+            c.close()
+            return "<script>alert('Please save your selected payout details in Settings before withdrawing.');location.href='/account';</script>"
+
+        fee = amount * 0.10
+        receive = amount - fee
+
+        from datetime import datetime
+        date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        ref = f"{destination_type} | Name: {name} | Destination: {destination} | Receive: {receive:.2f}"
+
+        c.execute(
+            "UPDATE users SET balance=balance-? WHERE id=? AND balance>=?",
+            (amount, session["uid"], amount)
+        )
+
+        if c.execute("SELECT changes()").fetchone()[0] != 1:
+            c.rollback()
+            c.close()
+            return "<script>alert('Unable to process withdrawal. Please try again.');history.back();</script>"
+
+        c.execute(
+            """INSERT INTO transactions
+               (user_id,type,amount,status,date,ref)
+               VALUES (?,?,?,?,?,?)""",
+            (session["uid"], "withdrawal", amount, "Pending", date_now, ref)
+        )
+
+        c.commit()
+        c.close()
+
+        return "<script>alert('Withdrawal request submitted successfully.');location.href='/withdraw';</script>"
 
     # Check whether the user owns an active AI machine.
     try:
@@ -5120,19 +5625,21 @@ body{{font-family:Georgia,serif}}
         <div class="hint">Minimum withdrawal is 5,000 UGX</div>
 
         <div class="required">
-            <h3>Withdrawal details required</h3>
-            <p>Save your phone number and the name registered on that number on your card before withdrawing.</p>
-            <a href="/account">Save my card details</a>
+            <h3>Withdrawal details</h3>
+            <p id="detailsText"></p>
+            <a href="/account">Save payout details</a>
         </div>
 
-        <label class="field-label">Destination phone number</label>
+        <label class="field-label">Destination</label>
         <input
             class="input"
             type="text"
-            value="Saved on your card"
+            id="destination"
+            value=""
             readonly
+            placeholder="No payout details saved"
         >
-        <div class="hint">Taken from your saved card. Change it on the Card page.</div>
+        <div class="hint" id="destinationHint"></div>
 
         <div class="summary">
             <div class="summary-row">
@@ -5182,12 +5689,48 @@ body{{font-family:Georgia,serif}}
 </div>
 
 <script>
+var payoutDetails = {{
+    "MTN UG": {{
+        number: {__import__('json').dumps((u["mtn_number"] or "") if u and "mtn_number" in u.keys() else "")},
+        label: "MTN Uganda"
+    }},
+    "Airtel UG": {{
+        number: {__import__('json').dumps((u["airtel_number"] or "") if u and "airtel_number" in u.keys() else "")},
+        label: "Airtel Uganda"
+    }},
+    "USDT TRC20": {{
+        number: {__import__('json').dumps((u["usdt_wallet"] or "") if u and "usdt_wallet" in u.keys() else "")},
+        label: "USDT TRC20"
+    }}
+}};
+
+function updateDestination(){{
+    var method = document.getElementById('method').value;
+    var data = payoutDetails[method] || {{}};
+    var destination = data.number || "";
+
+    document.getElementById('destination').value = destination;
+
+    if(destination){{
+        document.getElementById('detailsText').textContent =
+            "Saved payout details for " + data.label + ".";
+        document.getElementById('destinationHint').textContent =
+            "This is the payout destination saved in your Settings.";
+    }}else{{
+        document.getElementById('detailsText').textContent =
+            "No payout details have been saved for this method.";
+        document.getElementById('destinationHint').textContent =
+            "Open Settings to save your payout details before withdrawing.";
+    }}
+}}
+
 function setMethod(btn,name){{
     document.querySelectorAll('.method').forEach(function(x){{
         x.classList.remove('active');
     }});
     btn.classList.add('active');
     document.getElementById('method').value=name;
+    updateDestination();
 }}
 
 function calculate(){{
@@ -5221,8 +5764,12 @@ function validateWithdrawal(){{
     return true;
 }}
 
+updateDestination();
 calculate();
 </script>
 """
 
     return S + html
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0",port=5000,debug=False)
