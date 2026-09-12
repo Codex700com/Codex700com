@@ -156,6 +156,51 @@ if ("serviceWorker" in navigator) {
       .catch(function(){});
   });
 }
+
+/* CODEX700 instant navigation prefetch */
+(function(){
+  var codexPages = [
+    "/home",
+    "/raffle",
+    "/support",
+    "/invest",
+    "/income",
+    "/my",
+    "/account",
+    "/deposit",
+    "/withdraw",
+    "/invite",
+    "/my-team"
+  ];
+
+  function prefetch(url){
+    try{
+      fetch(url, {
+        method:"GET",
+        credentials:"same-origin",
+        cache:"force-cache"
+      }).catch(function(){});
+    }catch(e){}
+  }
+
+  function startPrefetch(){
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(function(){
+        codexPages.forEach(prefetch);
+      }, {timeout:2000});
+    } else {
+      setTimeout(function(){
+        codexPages.forEach(prefetch);
+      }, 1200);
+    }
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", startPrefetch);
+  }else{
+    startPrefetch();
+  }
+})();
 </script>
 <style>
 html,body{
@@ -5804,6 +5849,105 @@ function validateWithdrawal(){{
 updateDestination();
 calculate();
 </script>
+
+<script>
+/* CODEX700 APP-STYLE NAVIGATION V2 */
+(function(){{
+  if(window.__codexAppNavV2){{return;}}
+  window.__codexAppNavV2=true;
+
+  function ok(a){{
+    if(!a || !a.href){{return false;}}
+    if(a.target && a.target !== "_self"){{return false;}}
+    if(a.hasAttribute("download")){{return false;}}
+    if(a.protocol !== location.protocol){{return false;}}
+    if(a.origin !== location.origin){{return false;}}
+
+    var p=a.pathname;
+    var blocked=["/logout","/register","/login","/forgot","/reset","/admin"];
+
+    for(var i=0;i<blocked.length;i++){{
+      if(p===blocked[i] || p.indexOf(blocked[i]+"/")===0){{return false;}}
+    }}
+
+    return true;
+  }}
+
+  function runScripts(root){{
+    root.querySelectorAll("script").forEach(function(oldScript){{
+      var n=document.createElement("script");
+
+      for(var i=0;i<oldScript.attributes.length;i++){{
+        var at=oldScript.attributes[i];
+        n.setAttribute(at.name,at.value);
+      }}
+
+      if(oldScript.src){{
+        n.src=oldScript.src;
+      }}else{{
+        n.textContent=oldScript.textContent;
+      }}
+
+      oldScript.replaceWith(n);
+    }});
+  }}
+
+  async function go(url,push){{
+    try{{
+      var r=await fetch(url,{{
+        credentials:"same-origin",
+        headers:{{"X-CODEX-SPA":"1"}}
+      }});
+
+      if(!r.ok){{throw new Error("navigation");}}
+
+      var text=await r.text();
+      var doc=new DOMParser().parseFromString(text,"text/html");
+
+      if(!doc.body){{throw new Error("body");}}
+
+      var body=doc.body.cloneNode(true);
+
+      body.querySelectorAll("script").forEach(function(sc){{
+        var t=sc.textContent || "";
+        if(
+          t.indexOf("CODEX700 APP-STYLE NAVIGATION V2")!==-1 ||
+          t.indexOf("SUPER FAST BUTTONS")!==-1
+        ){{
+          sc.remove();
+        }}
+      }});
+
+      document.body.replaceWith(body);
+
+      if(doc.title){{document.title=doc.title;}}
+      if(push){{history.pushState({{codex:true}},"",url);}}
+
+      window.scrollTo(0,0);
+      runScripts(document.body);
+
+    }}catch(e){{
+      window.location.href=url;
+    }}
+  }}
+
+  document.addEventListener("click",function(e){{
+    var a=e.target.closest("a");
+
+    if(!ok(a)){{return;}}
+    if(e.ctrlKey || e.metaKey || e.shiftKey || e.altKey){{return;}}
+    if(a.pathname===location.pathname && a.search===location.search){{return;}}
+
+    e.preventDefault();
+    go(a.href,true);
+  }},true);
+
+  window.addEventListener("popstate",function(){{
+    go(location.href,false);
+  }});
+}})();
+</script>
+
 """
 
     return S + html
