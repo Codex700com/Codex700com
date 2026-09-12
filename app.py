@@ -24,6 +24,27 @@ def init_db():
  c=db()
  c.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, phone TEXT UNIQUE, password TEXT, invite_code TEXT, balance REAL DEFAULT 0)")
  c.execute("CREATE TABLE IF NOT EXISTS reset_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, phone TEXT, name TEXT, message TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+ c.execute("""CREATE TABLE IF NOT EXISTS raffle_tickets(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT,
+  tickets INTEGER DEFAULT 0,
+  created_at INTEGER
+ )""")
+ c.execute("""CREATE TABLE IF NOT EXISTS raffle_records(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  reward TEXT NOT NULL,
+  reward_value INTEGER DEFAULT 0,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+ )""")
+ c.execute("""CREATE TABLE IF NOT EXISTS raffle_deposit_awards(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  deposit_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  tickets_awarded INTEGER DEFAULT 1,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(deposit_id)
+ )""")
  c.commit()
  c.close()
 init_db()
