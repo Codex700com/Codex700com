@@ -1,3 +1,4 @@
+import html
 import sqlite3, pathlib, os, random
 from manager_code import setup as setup_manager
 from flask import render_template, render_template_string, Flask, request, redirect, session, g
@@ -152,7 +153,7 @@ button,a,input,select,textarea{
 .hero-slide{
  position:relative!important;
 }
-</style><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+</style><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#000000">
 <meta name="mobile-web-app-capable" content="yes">
@@ -222,7 +223,7 @@ input,select,textarea,button{
   touch-action:manipulation;
 }
 </style>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;color:#fff;font-family:system-ui,sans-serif;overflow-x:hidden}
@@ -2184,7 +2185,7 @@ def deposit():
 <!doctype html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Deposit</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -2252,6 +2253,20 @@ button{width:100%;height:52px;border:0;border-radius:14px;background:#08aeea;col
  height:30px !important;
 }
 </style>
+
+<style>
+html,body{ touch-action: pan-x pan-y; overscroll-behavior: none; }
+</style>
+<script>
+document.addEventListener('touchmove', function(e){ if(e.scale!==1 && e.scale){ e.preventDefault(); } }, {passive:false});
+document.addEventListener('gesturestart', e=>e.preventDefault());
+let lastTouch=0;
+document.addEventListener('touchend', function(e){
+  let now=Date.now();
+  if(now-lastTouch<=300){ e.preventDefault(); }
+  lastTouch=now;
+},{passive:false});
+</script>
 </head>
 <body>
 <div class="wrap">
@@ -2477,7 +2492,7 @@ transaction_id=transaction_id)
 <!doctype html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Deposit Pending</title>
 <style>
 body{margin:0;background:#000;color:#fff;font-family:Arial;text-align:center}
@@ -2507,7 +2522,7 @@ a{display:block;margin-top:25px;background:#08aeea;color:#fff;text-decoration:no
 <!doctype html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Deposit</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -2560,7 +2575,7 @@ Airtel Money <span>›</span>
 <!doctype html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Deposit</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -2732,7 +2747,7 @@ def invest():
 <html>
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>CODEX700 AI</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -2788,7 +2803,7 @@ body{
  border-radius:5px 5px 0 0;
 }
 .cards{padding:10px 12px}
-.machine{
+.machine{font-size:12px;transform:none!important;transition:none!important;
  position:relative;
  display:grid;
  grid-template-columns:36% 64%;
@@ -2821,7 +2836,6 @@ body{
  object-fit:contain;
  display:block;
 }
-.multiplier{
  position:absolute;
  top:5px;
  left:5px;
@@ -2831,7 +2845,6 @@ body{
  font-weight:bold;
  text-shadow:0 0 3px #000;
 }
-.multiplier:first-letter{color:#ffe84a}
 .info{
  position:relative;
  z-index:2;
@@ -2912,10 +2925,9 @@ body{
 
 <div class="cards">
 {% for code, ser, days, price, total, image in shown %}
-<a class="machine" href="/ai/machine/{{code|urlencode}}" style="text-decoration:none;color:inherit;display:grid;">
+<a class="machine" href="/ai/machine/{{code|urlencode}}" style="text-decoration:none;color:inherit;display:grid;transform:none!important;transition:none!important;">
 <div class="pic">
 <img src="{{image}}" alt="{{code}}">
-<div class="multiplier">◉x{{loop.index}}</div>
 </div>
 <div class="info">
 <div class="code">{{code}}</div>
@@ -2999,7 +3011,7 @@ def ai_machine_detail(machine_code):
 <html>
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>CODEX700 {{code}}</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -3122,15 +3134,23 @@ body{
 <span class="value">{{total}} UGX</span>
 </div>
 
+{% if purchase_message %}
+<div class="notice" style="color:#42e889;font-weight:bold;">
+{{purchase_message}}
+</div>
+{% else %}
 <div class="notice">
 Choose how you want to pay for this machine. Balance is your earned platform money. Wallet is your deposited money.
 </div>
+{% endif %}
 
 <div class="purchase">
 <form method="POST" action="/ai/purchase/{{code|urlencode}}">
+<input type="hidden" name="source" value="balance">
 <button class="buy" type="submit">Buy with Balance</button>
 </form>
 <form method="POST" action="/ai/purchase/{{code|urlencode}}">
+<input type="hidden" name="source" value="wallet">
 <button class="buy" type="submit">Buy with Wallet</button>
 </form>
 </div>
@@ -3150,7 +3170,8 @@ Choose how you want to pay for this machine. Balance is your earned platform mon
         price=price,
         total=total,
         image=image,
-        daily=daily
+        daily=daily,
+        purchase_message=request.args.get("purchase","")
     )
 
 
@@ -3327,7 +3348,7 @@ def invite_page():
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Invite Friends</title>
 
 <style>
@@ -5430,7 +5451,7 @@ def account():
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Settings</title>
 <style>
 html,body{
