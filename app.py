@@ -1150,7 +1150,7 @@ def my_page():
 <a class="service" href="/home"><div class="icon">$</div>Bill</a>
 <a class="service" href="/invite"><div class="icon">♙</div>Invite</a>
 <a class="service" href="/my-team"><div class="icon">♧</div>My team</a>
-<a class="service" href="/home"><div class="icon">☆</div>VIP Task</a>
+<a class="service" href="/vip-tasks"><div class="icon">☆</div>VIP Task</a>
 <a class="service" href="/reward"><div class="icon">🎁</div>Reward</a>
 <a class="service" href="/reward"><div class="icon">▱</div>Gift code</a>
 <a class="service" href="/raffle"><div class="icon">◇</div>Raffle</a>
@@ -1623,6 +1623,253 @@ body{font-family:Georgia,"Times New Roman",serif}
 
 setup_manager(app, db, S)
 
+
+
+
+@app.route("/vip-tasks")
+def vip_tasks_page():
+    if "uid" not in session:
+        return redirect("/login")
+
+    return S+"""
+<style>
+.vip-tasks-page{
+    min-height:100vh;
+    box-sizing:border-box;
+    padding:18px 14px 110px;
+    background:#000;
+    color:#fff;
+    font-family:Georgia,serif;
+    background-image:
+      radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);
+    background-size:18px 18px;
+}
+.vip-tasks-head{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    margin-bottom:18px;
+}
+.vip-tasks-back{
+    position:absolute;
+    left:0;
+    color:#00b9f3;
+    text-decoration:none;
+    font-size:34px;
+    line-height:1;
+}
+.vip-tasks-title{
+    color:#00b9f3;
+    font-size:24px;
+    font-weight:bold;
+}
+.vip-box{
+    background:#071018;
+    border:1px solid #075a78;
+    border-radius:18px;
+    padding:16px;
+    margin-bottom:14px;
+    box-shadow:0 0 12px rgba(0,180,255,.14);
+}
+.vip-box-title{
+    color:#00b9f3;
+    font-size:18px;
+    font-weight:bold;
+    margin-bottom:13px;
+}
+.vip-rank{
+    text-align:center;
+    color:#00b9f3;
+    font-size:28px;
+    font-weight:bold;
+    padding:8px 0 14px;
+}
+.vip-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:13px 0;
+    border-bottom:1px solid #123;
+    font-size:14px;
+}
+.vip-row:last-child{border-bottom:0}
+.vip-value{
+    color:#00b9f3;
+    font-weight:bold;
+    text-align:right;
+}
+.vip-task{
+    background:#02080d;
+    border:1px solid #123;
+    border-radius:14px;
+    padding:14px;
+    margin-top:10px;
+}
+.vip-task-name{
+    color:#fff;
+    font-size:15px;
+    font-weight:bold;
+}
+.vip-task-desc{
+    color:#aaa;
+    font-size:12px;
+    margin-top:5px;
+    line-height:1.5;
+}
+.vip-task-status{
+    color:#00b9f3;
+    font-size:12px;
+    font-weight:bold;
+    margin-top:8px;
+}
+.vip-action{
+    display:block;
+    width:100%;
+    box-sizing:border-box;
+    margin-top:14px;
+    padding:13px;
+    border:1px solid #00b9f3;
+    border-radius:13px;
+    background:#001923;
+    color:#00b9f3;
+    text-align:center;
+    text-decoration:none;
+    font-size:14px;
+    font-weight:bold;
+}
+.vip-bottom{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    z-index:100;
+    height:68px;
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    background:#02070a;
+    border-top:1px solid #123;
+}
+.vip-bottom a{
+    color:#aaa;
+    text-decoration:none;
+    text-align:center;
+    font-size:10px;
+    padding-top:7px;
+}
+.vip-bottom i{
+    display:block;
+    font-style:normal;
+    font-size:24px;
+    line-height:30px;
+}
+.vip-bottom .active{color:#00baff}
+</style>
+
+<div class="vip-tasks-page">
+
+  <div class="vip-tasks-head">
+    <a class="vip-tasks-back" href="/home">‹</a>
+    <div class="vip-tasks-title">VIP Tasks</div>
+  </div>
+
+  <div class="vip-box">
+    <div class="vip-rank">★ VIP 0</div>
+    <div class="vip-row">
+      <span>Active machines</span>
+      <span class="vip-value">0</span>
+    </div>
+    <div class="vip-row">
+      <span>Daily reward</span>
+      <span class="vip-value">UGX 0</span>
+    </div>
+    <div class="vip-row">
+      <span>Monthly salary</span>
+      <span class="vip-value">UGX 0</span>
+    </div>
+  </div>
+
+  <div class="vip-box">
+    <div class="vip-box-title">Team Development Fund</div>
+
+    <div class="vip-row">
+      <span>Team members</span>
+      <span class="vip-value">0</span>
+    </div>
+
+    <div class="vip-row">
+      <span>Team deposits</span>
+      <span class="vip-value">UGX 0</span>
+    </div>
+
+    <div class="vip-row">
+      <span>Team earnings</span>
+      <span class="vip-value">UGX 0</span>
+    </div>
+
+    <a class="vip-action" href="/invite">Build my team</a>
+  </div>
+
+  <div class="vip-box">
+    <div class="vip-box-title">Monthly Agent Salary</div>
+
+    <div class="vip-row">
+      <span>Last month's salary</span>
+      <span class="vip-value">UGX 0</span>
+    </div>
+
+    <div class="vip-row">
+      <span>This month's salary</span>
+      <span class="vip-value">UGX 0</span>
+    </div>
+
+    <div class="vip-row">
+      <span>Invited last month</span>
+      <span class="vip-value">0</span>
+    </div>
+
+    <div class="vip-row">
+      <span>Invited this month</span>
+      <span class="vip-value">0</span>
+    </div>
+
+    <button class="vip-action" type="button">Get last month's salary</button>
+  </div>
+
+  <div class="vip-box">
+    <div class="vip-box-title">Today's Tasks</div>
+
+    <div class="vip-task">
+      <div class="vip-task-name">Daily sign-in</div>
+      <div class="vip-task-desc">Complete your daily activity to keep your account active.</div>
+      <div class="vip-task-status">● AVAILABLE</div>
+    </div>
+
+    <div class="vip-task">
+      <div class="vip-task-name">Invite friends</div>
+      <div class="vip-task-desc">Invite new members through your personal invitation link.</div>
+      <div class="vip-task-status">● AVAILABLE</div>
+    </div>
+
+    <div class="vip-task">
+      <div class="vip-task-name">Team development</div>
+      <div class="vip-task-desc">Grow your team and unlock higher VIP opportunities.</div>
+      <div class="vip-task-status">● AVAILABLE</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="vip-bottom">
+  <a href="/home"><i>⌂</i>Home</a>
+  <a href="/raffle"><i>▣</i>Raffle</a>
+  <a href="/support"><i>▤</i>Chats</a>
+  <a href="/invest"><i>▦</i>AI</a>
+  <a href="/income"><i>₿</i>Income</a>
+  <a class="active" href="/home"><i>☆</i>VIP</a>
+</div>
+"""
 
 @app.route("/income")
 def income_page():
