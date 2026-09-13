@@ -2478,415 +2478,285 @@ def invest():
     if "uid" not in session:
         return redirect("/login")
 
+    series = request.args.get("series", "All").upper()
+
     machines = [
-        ("K1", "K Series", "AI Computing System", "ACTIVE"),
-        ("K2", "K Series", "Advanced AI System", "ACTIVE"),
-        ("M1", "M Series", "AI Processing Machine", "ACTIVE"),
-        ("M2", "M Series", "High Performance AI", "ACTIVE"),
-        ("A1", "A Series", "Advanced Computing", "ACTIVE"),
-        ("A2", "A Series", "Neural Computing System", "ACTIVE"),
-        ("GS1", "GS Series", "High Performance System", "ACTIVE"),
-        ("GS2", "GS Series", "Enterprise Computing", "ACTIVE")
+        ("S-1","S","7 Days","75,000.00","682,500.00","/static/ai/mining.jpg"),
+        ("S-2","S","7 Days","210,000.00","2,100,000.00","/static/ai/mining.jpg"),
+        ("S-3","S","7 Days","560,000.00","6,160,000.00","/static/ai/mining.jpg"),
+        ("S-4","S","7 Days","1,680,000.00","20,160,000.00","/static/ai/mining.jpg"),
+        ("S-5","S","7 Days","3,000,000.00","42,000,000.00","/static/ai/mining.jpg"),
+
+        ("H-1","H","10 Days","65,000.00","650,000.00","/static/ai/mining.jpg"),
+        ("H-2","H","10 Days","200,000.00","2,200,000.00","/static/ai/mining.jpg"),
+        ("H-3","H","10 Days","500,000.00","6,000,000.00","/static/ai/mining.jpg"),
+        ("H-4","H","10 Days","1,500,000.00","19,500,000.00","/static/ai/mining.jpg"),
+        ("H-5","H","10 Days","3,000,000.00","45,000,000.00","/static/ai/mining.jpg"),
+
+        ("U-1","U","25 Days","50,000.00","1,000,000.00","/static/ai/mining.jpg"),
+        ("U-2","U","25 Days","150,000.00","3,150,000.00","/static/ai/mining.jpg"),
+        ("U-3","U","25 Days","450,000.00","9,900,000.00","/static/ai/mining.jpg"),
+        ("U-4","U","25 Days","1,350,000.00","32,400,000.00","/static/ai/mining.jpg"),
+        ("U-5","U","25 Days","3,000,000.00","75,000,000.00","/static/ai/mining.jpg"),
+
+        ("AS-1","AS","30 Days","50,000.00","1,200,000.00","/static/ai/mining.jpg"),
+        ("AS-2","AS","30 Days","150,000.00","3,900,000.00","/static/ai/mining.jpg"),
+        ("AS-3","AS","30 Days","450,000.00","12,600,000.00","/static/ai/mining.jpg"),
+        ("AS-4","AS","30 Days","1,350,000.00","40,500,000.00","/static/ai/mining.jpg"),
+
+        ("GS-1","GS","40 Days","70,000.00","1,400,000.00","/static/ai/mining.jpg"),
+        ("GS-2","GS","40 Days","210,000.00","4,620,000.00","/static/ai/mining.jpg"),
+        ("GS-3","GS","40 Days","600,000.00","14,400,000.00","/static/ai/mining.jpg"),
+        ("GS-4","GS","40 Days","1,500,000.00","39,000,000.00","/static/ai/mining.jpg"),
+        ("GS-5","GS","40 Days","3,000,000.00","84,000,000.00","/static/ai/mining.jpg"),
+
+        ("K-1","K","35 Days","50,000.00","1,200,000.00","/static/ai/mining.jpg"),
+        ("K-2","K","35 Days","150,000.00","3,900,000.00","/static/ai/mining.jpg"),
+        ("K-3","K","35 Days","450,000.00","12,600,000.00","/static/ai/mining.jpg"),
+        ("K-4","K","35 Days","1,000,000.00","30,000,000.00","/static/ai/mining.jpg"),
+
+        ("A-1","A","16 Days","30,000.00","48,000.00","/static/ai/mining.jpg"),
+
+        ("VIP-1","VIP","20 Days","20,000.00","40,000.00","/static/ai/mining.jpg"),
+        ("VIP-1 PRO","VIP","40 Days","30,000.00","120,000.00","/static/ai/mining.jpg"),
+        ("VIP-1 MAX","VIP","120 Days","200,000.00","6,960,000.00","/static/ai/mining.jpg"),
+        ("VIP-2","VIP","20 Days","50,000.00","110,000.00","/static/ai/mining.jpg"),
+        ("VIP-2 PRO","VIP","40 Days","100,000.00","280,000.00","/static/ai/mining.jpg"),
+        ("VIP-2 MAX","VIP","120 Days","300,000.00","10,800,000.00","/static/ai/mining.jpg")
     ]
 
+    shown = machines if series == "ALL" else [m for m in machines if m[1] == series]
+
     html = """
-
-
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CODEX700 AI</title>
-
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    -webkit-tap-highlight-color:transparent;
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+ background:#000;
+ color:#fff;
+ font-family:Georgia,serif;
+ overflow-x:hidden;
 }
-
-html,body{background:#000;background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);background-size:18px 18px;background-position:0 0;
-    background:#000;
-    color:#fff;
-    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    overflow-x:hidden;
-    touch-action:pan-y;
-}
-
 body{
-    padding-bottom:90px;
+ background-image:
+ radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);
+ background-size:18px 18px;
+ padding-bottom:78px;
 }
-
-.ai-page{
-    min-height:100vh;
-    background:#000;
-    padding:18px 12px 100px;
+.ai{
+ min-height:100vh;
+ padding-bottom:90px;
+ background:rgba(0,0,0,.30);
 }
-
-.ai-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:18px;
+.tabs{
+ height:76px;
+ display:flex;
+ align-items:flex-end;
+ gap:0;
+ overflow-x:auto;
+ white-space:nowrap;
+ background:#202020;
+ border-bottom:2px solid #075a78;
+ scrollbar-width:none;
 }
-
-.ai-logo{
-    font-size:27px;
-    font-weight:900;
-    letter-spacing:1px;
-    color:#fff;
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+ min-width:118px;
+ height:74px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ color:#fff;
+ text-decoration:none;
+ font-size:21px;
+ position:relative;
 }
-
-.ai-logo span{
-    color:#00b7ff;
+.tab.active{color:#00b9f3}
+.tab.active:after{
+ content:"";
+ position:absolute;
+ left:10px;
+ right:10px;
+ bottom:0;
+ height:5px;
+ background:#00b9f3;
+ border-radius:5px 5px 0 0;
 }
-
-.ai-title{
-    text-align:center;
-    font-size:22px;
-    font-weight:800;
-    color:#fff;
-    margin:4px 0 5px;
+.cards{padding:10px 12px}
+.machine{
+ position:relative;
+ display:grid;
+ grid-template-columns:43% 57%;
+ height:275px;
+ margin-bottom:10px;
+ overflow:hidden;
+ background:#050d13;
+ border:2px solid #007fc0;
+ border-radius:12px;
+ box-shadow:0 0 9px rgba(0,183,255,.45);
 }
-
-.ai-subtitle{
-    text-align:center;
-    color:#8ea6b5;
-    font-size:12px;
-    margin-bottom:18px;
+.machine:after{
+ content:"";
+ position:absolute;
+ inset:0;
+ pointer-events:none;
+ background-image:radial-gradient(circle,rgba(0,190,255,.20) 1px,transparent 1.7px);
+ background-size:18px 18px;
+ opacity:.28;
 }
-
-.series-tabs{
-    width:100%;
-    display:flex;
-    gap:7px;
-    overflow-x:auto;
-    padding:3px 1px 10px;
-    scrollbar-width:none;
+.pic{
+ position:relative;
+ z-index:1;
+ overflow:hidden;
+ background:#111;
 }
-
-.series-tabs::-webkit-scrollbar{
-    display:none;
+.pic img{
+ width:100%;
+ height:100%;
+ object-fit:cover;
+ display:block;
 }
-
-.series-tab{
-    flex:0 0 auto;
-    border:1px solid rgba(0,183,255,.45);
-    background:#050b10;
-    color:#a9c0cd;
-    border-radius:20px;
-    padding:9px 16px;
-    font-size:12px;
-    font-weight:700;
-    text-decoration:none;
+.multiplier{
+ position:absolute;
+ top:5px;
+ left:5px;
+ z-index:3;
+ color:#ffe84a;
+ font-size:27px;
+ font-weight:bold;
+ text-shadow:0 0 3px #000;
 }
-
-.series-tab.active{
-    color:#00b7ff;
-    border-color:#00b7ff;
-    box-shadow:0 0 12px rgba(0,183,255,.18);
+.multiplier:first-letter{color:#ffe84a}
+.info{
+ position:relative;
+ z-index:2;
+ padding:12px 12px 8px;
+ background:rgba(3,12,18,.86);
 }
-
-.machine-grid{
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:12px;
-    margin-top:8px;
+.code{
+ color:#00aef5;
+ font-size:25px;
+ font-weight:bold;
+ margin-bottom:25px;
 }
-
-.machine-card{
-    position:relative;
-    min-width:0;
-    overflow:hidden;
-    background:
-      radial-gradient(circle at 50% 20%,rgba(0,174,255,.12),transparent 45%),
-      #05090d;
-    border:1px solid rgba(0,183,255,.35);
-    border-radius:17px;
-    padding:10px;
-    box-shadow:0 0 18px rgba(0,140,255,.08);
+.line{
+ font-size:20px;
+ line-height:1.35;
+ margin-bottom:25px;
+ color:#fff;
 }
-
-.machine-card:before{
-    content:"";
-    position:absolute;
-    inset:0;
-    pointer-events:none;
-    background:linear-gradient(
-      135deg,
-      rgba(0,183,255,.06),
-      transparent 45%,
-      rgba(0,183,255,.03)
-    );
+.buy{
+ width:100%;
+ border:1px solid #00b9f3;
+ background:#001923;
+ color:#00b9f3;
+ border-radius:8px;
+ padding:9px;
+ font-family:Georgia,serif;
+ font-size:16px;
+ font-weight:bold;
 }
-
-.machine-image{
-    height:125px;
-    border-radius:12px;
-    border:1px solid rgba(0,183,255,.20);
-    background:
-      radial-gradient(circle at center,rgba(0,183,255,.18),transparent 45%),
-      linear-gradient(135deg,#020609,#07131b);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    position:relative;
-    overflow:hidden;
-    margin-bottom:10px;
+.bottom{
+ position:fixed;
+ left:0;
+ right:0;
+ bottom:0;
+ height:68px;
+ z-index:20;
+ display:grid;
+ grid-template-columns:repeat(6,1fr);
+ background:#000;
+ border-top:1px solid #123;
 }
-
-.machine-image:after{
-    content:"";
-    position:absolute;
-    width:75%;
-    height:1px;
-    background:rgba(0,183,255,.45);
-    box-shadow:0 0 12px #00b7ff;
+.bottom a{
+ color:#fff;
+ text-decoration:none;
+ text-align:center;
+ font-size:11px;
+ padding-top:6px;
 }
-
-.machine-code{
-    position:relative;
-    z-index:2;
-    font-size:31px;
-    font-weight:900;
-    color:#00b7ff;
-    letter-spacing:1px;
-    text-shadow:0 0 14px rgba(0,183,255,.7);
+.bottom i{
+ display:block;
+ font-style:normal;
+ font-size:25px;
+ line-height:31px;
 }
-
-.machine-series{
-    color:#00b7ff;
-    font-size:10px;
-    font-weight:800;
-    text-transform:uppercase;
-    letter-spacing:.8px;
-}
-
-.machine-name{
-    margin-top:4px;
-    min-height:34px;
-    font-size:13px;
-    font-weight:800;
-    color:#fff;
-    line-height:1.25;
-}
-
-.machine-status{
-    margin-top:7px;
-    color:#6f8290;
-    font-size:10px;
-}
-
-.machine-status span{
-    color:#00b7ff;
-}
-
-.ai-form{
-    margin-top:10px;
-}
-
-.ai-btn{
-    width:100%;
-    height:43px;
-    border:1px solid #00aaff;
-    border-radius:22px;
-    background:#00aaff;
-    color:#000;
-    font-size:13px;
-    font-weight:900;
-    cursor:pointer;
-    -webkit-appearance:none;
-    appearance:none;
-    outline:none;
-    padding:0;
-}
-
-.ai-btn:active,
-.ai-btn:focus,
-.ai-btn:hover{
-    transform:none!important;
-    scale:1!important;
-}
-
-.bottom-nav{
-    position:fixed;
-    z-index:100;
-    left:0;
-    right:0;
-    bottom:0;
-    height:76px;
-    background:#000;
-    border-top:1px solid rgba(0,174,255,.22);
-    display:grid;
-    grid-template-columns:repeat(6,1fr);
-    padding-bottom:env(safe-area-inset-bottom);
-}
-
-.nav-item{
-    color:#fff;
-    text-decoration:none;
-    text-align:center;
-    font-size:12px;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    gap:3px;
-    min-width:0;
-}
-
-.nav-icon{
-    font-size:27px;
-    line-height:28px;
-}
-
-.nav-item.active{
-    color:#00b7ff;
-}
-
+.bottom .active{color:#00b9f3}
 @media(max-width:380px){
-    .ai-page{
-        padding-left:10px;
-        padding-right:10px;
-    }
-
-    .machine-grid{
-        gap:9px;
-    }
-
-    .machine-image{
-        height:112px;
-    }
-
-    .machine-code{
-        font-size:27px;
-    }
-}
-
-@media(min-width:700px){
-    .machine-grid{
-        grid-template-columns:repeat(4,minmax(0,1fr));
-    }
-
-    .ai-page{
-        max-width:1100px;
-        margin:auto;
-    }
+ .machine{height:245px}
+ .code{font-size:21px;margin-bottom:18px}
+ .line{font-size:17px;margin-bottom:18px}
+ .tab{min-width:105px;font-size:19px}
 }
 </style>
 </head>
-
 <body>
+<div class="ai">
 
-<div class="ai-page">
+<div class="tabs">
+ <a class="tab {{'active' if series=='ALL' else ''}}" href="/invest">All</a>
+ <a class="tab {{'active' if series=='S' else ''}}" href="/invest?series=S">S series</a>
+ <a class="tab {{'active' if series=='H' else ''}}" href="/invest?series=H">H series</a>
+ <a class="tab {{'active' if series=='U' else ''}}" href="/invest?series=U">U series</a>
+ <a class="tab {{'active' if series=='AS' else ''}}" href="/invest?series=AS">AS series</a>
+ <a class="tab {{'active' if series=='GS' else ''}}" href="/invest?series=GS">GS series</a>
+ <a class="tab {{'active' if series=='K' else ''}}" href="/invest?series=K">K series</a>
+ <a class="tab {{'active' if series=='A' else ''}}" href="/invest?series=A">A Series</a>
+ <a class="tab {{'active' if series=='VIP' else ''}}" href="/invest?series=VIP">VIP</a>
+</div>
 
-    <div class="ai-header">
-        <div class="ai-logo">CODEX<span>700</span></div>
-    </div>
-
-    <div class="ai-title">AI COMPUTING</div>
-    <div class="ai-subtitle">
-        Explore CODEX700 virtual computing systems
-    </div>
-
-    <div class="series-tabs">
-        <a class="series-tab active" href="/invest">All</a>
-        <a class="series-tab" href="/invest?series=K">K Series</a>
-        <a class="series-tab" href="/invest?series=M">M Series</a>
-        <a class="series-tab" href="/invest?series=A">A Series</a>
-        <a class="series-tab" href="/invest?series=GS">GS Series</a>
-    </div>
-
-    <div class="machine-grid">
-    {% for code, series, name, status in machines %}
-        <div class="machine-card">
-
-            <div class="machine-image">
-                <div class="machine-code">{{ code }}</div>
-            </div>
-
-            <div class="machine-series">{{ series }}</div>
-
-            <div class="machine-name">
-                {{ name }}
-            </div>
-
-            <div class="machine-status">
-                STATUS:
-                <span>{{ status }}</span>
-            </div>
-
-            <form class="ai-form"
-                  method="POST"
-                  action="/ai/activate/Codex_{{ code }}">
-                <input
-                    class="ai-btn"
-                    type="submit"
-                    value="ACTIVATE"
-                >
-            </form>
-
-        </div>
-    {% endfor %}
-    </div>
+<div class="cards">
+{% for code, ser, days, price, total, image in shown %}
+<div class="machine">
+ <div class="pic">
+  <img src="{{image}}" alt="{{code}}">
+  <div class="multiplier">◉x{{loop.index}}</div>
+ </div>
+ <div class="info">
+  <div class="code">{{code}}</div>
+  <div class="line">Lock: {{days}}</div>
+  <div class="line">Price: {{price}}</div>
+  <div class="line">Total income: {{total}}</div>
+  <form method="POST" action="/ai/activate/Codex_{{code|replace(' ','_')}}">
+   <button class="buy" type="submit">ACTIVATE</button>
+  </form>
+ </div>
+</div>
+{% endfor %}
+</div>
 
 </div>
 
-<div class="bottom-nav">
- <a class="nav-item" href="/home">
-  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><ellipse cx="20" cy="8" rx="12" ry="5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 8v21c0 3 5 6 12 6s12-3 12-6V8M8 18c0 3 5 6 12 6s12-3 12-6M8 28c0 3 5 6 12 6s12-3 12-6" fill="none" stroke="currentColor" stroke-width="3"/></svg></span>
-  <span>Home</span>
- </a>
- <a class="nav-item" href="/raffle">
-  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><rect x="6" y="7" width="16" height="16" rx="2" fill="currentColor"/><rect x="18" y="17" width="16" height="16" rx="2" fill="currentColor"/><rect x="10" y="11" width="8" height="8" fill="#000"/></svg></span>
-  <span>Raffle</span>
- </a>
- <a class="nav-item" href="/support">
-  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><rect x="5" y="7" width="27" height="20" rx="5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M12 27l-2 7 8-7M12 14h13M12 20h9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="31" cy="29" r="4" fill="currentColor"/></svg></span>
-  <span>chats</span>
- </a>
- <a class="nav-item" href="/invest">
-  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><rect x="9" y="8" width="22" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M5 14h4M5 20h4M5 26h4M31 14h4M31 20h4M31 26h4M15 4v4M21 4v4M27 4v4M15 32v4M21 32v4M27 32v4" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><rect x="14" y="14" width="12" height="12" rx="2" fill="currentColor"/></svg></span>
-  <span>AI</span>
- </a>
- <a class="nav-item" href="/income">
-  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><path d="M24 5l-3 30M29 10c-3-3-12-3-15 2-4 7 12 5 11 12-1 7-12 8-16 3M12 14h18M9 28h18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-  <span>Income</span>
- </a>
- <a class="nav-item" href="/my">
-  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><circle cx="20" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 35c0-8 5-12 12-12s12 4 12 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></span>
-  <span>My</span>
- </a>
+<div class="bottom">
+<a href="/home"><i>⌂</i>Home</a>
+<a href="/raffle"><i>🎁</i>Raffle</a>
+<a href="/support"><i>♟</i>chats</a>
+<a class="active" href="/invest"><i>▣</i>AI</a>
+<a href="/income"><i>◈</i>Income</a>
+<a href="/my"><i>●</i>My</a>
 </div>
-
 </body>
 </html>
 """
-
-    return render_template_string(html, machines=machines)
+    return render_template_string(html, shown=shown, series=series)
 
 @app.route("/ai/activate/<machine_name>", methods=["POST"])
 def activate_ai_machine(machine_name):
     if "uid" not in session:
         return redirect("/login")
 
-    allowed={
-        "Codex_M1":"Codex M1",
-        "Codex_M2":"Codex M2",
-        "Codex_M3":"Codex M3",
-        "Codex_M4":"Codex M4",
-        "Codex_M5":"Codex M5",
-        "Codex_M6":"Codex M6",
-        "Codex_M7":"Codex M7"
-    }
-
-    name=allowed.get(machine_name)
-    if not name:
+    code = machine_name.replace("Codex_", "").replace("_", " ").strip()
+    if not code:
         return redirect("/invest")
 
-    con=sqlite3.connect(DB)
+    name = "Codex " + code
+
+    con = sqlite3.connect(DB)
     con.execute("""
         CREATE TABLE IF NOT EXISTS ai_machines(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -2896,17 +2766,14 @@ def activate_ai_machine(machine_name):
             status TEXT DEFAULT 'RUNNING'
         )
     """)
-
-    # Keep this as virtual machine activation only.
     con.execute(
         "INSERT INTO ai_machines(uid,name,status) VALUES(?,?,?)",
-        (session["uid"],name,"RUNNING")
+        (session["uid"], name, "RUNNING")
     )
     con.commit()
     con.close()
 
     return redirect("/income")
-
 
 @app.route("/invite")
 def invite_page():
