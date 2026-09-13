@@ -37,6 +37,16 @@ def init_db():
   reward_value INTEGER DEFAULT 0,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
  )""")
+ c.execute("""CREATE TABLE IF NOT EXISTS ai_machines(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uid INTEGER,
+  total_income REAL DEFAULT 0,
+  daily_income REAL DEFAULT 0,
+  started_at TEXT,
+  lock_days INTEGER DEFAULT 0,
+  claimed_at TEXT,
+  price REAL DEFAULT 0
+ )""")
  c.execute("""CREATE TABLE IF NOT EXISTS raffle_deposit_awards(
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   deposit_id INTEGER NOT NULL,
@@ -253,7 +263,7 @@ WAVE='<div class="wave-bg" style="position:fixed;top:0;left:0;width:100%;height:
 def pwa_manifest():
     return app.send_static_file("pwa/manifest.json")
 
-@app.route("/sw.js.bak")
+@app.route("/sw.js")
 def pwa_service_worker():
     response = app.send_static_file("pwa/sw.js")
     response.headers["Content-Type"] = "application/javascript"
