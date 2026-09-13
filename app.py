@@ -1147,7 +1147,7 @@ def my_page():
 <a class="service" href="/deposit"><div class="icon">▣</div>Deposit</a>
 <a class="service" href="/withdraw"><div class="icon">♢</div>Withdraw</a>
 <a class="service" href="/card"><div class="icon">▤</div>Card</a>
-<a class="service" href="/home"><div class="icon">$</div>Bill</a>
+<a class="service" href="/bills"><div class="icon">$</div>Bill</a>
 <a class="service" href="/invite"><div class="icon">♙</div>Invite</a>
 <a class="service" href="/my-team"><div class="icon">♧</div>My team</a>
 <a class="service" href="/vip-tasks"><div class="icon">☆</div>VIP Task</a>
@@ -1870,6 +1870,7 @@ def vip_tasks_page():
   <a class="active" href="/home"><i>☆</i>VIP</a>
 </div>
 """
+
 
 @app.route("/income")
 def income_page():
@@ -5412,6 +5413,44 @@ body{background:#000;color:#fff;font-family:Georgia,serif}
 </div>
 </div>"""
 
+
+
+@app.route("/bills")
+def bills_page():
+    conn = db()
+    try:
+        cols = [r[1] for r in conn.execute("PRAGMA table_info(transactions)").fetchall()]
+        rows = []
+
+        if "transactions" in [r[0] for r in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        ).fetchall()]:
+
+            user_col = None
+            for c in ("user_id", "phone", "user_code", "username"):
+                if c in cols:
+                    user_col = c
+                    break
+
+            value = None
+            for key in ("user_id", "phone", "user_code", "username"):
+                if session.get(key) is not None:
+                    value = session.get(key)
+                    break
+
+            if user_col and value is not None:
+                rows = conn.execute(
+                    f"SELECT * FROM transactions WHERE {user_col}=? ORDER BY rowid DESC",
+                    (value,)
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT * FROM transactions ORDER BY rowid DESC"
+                ).fetchall()
+
+        return render_template("bills.html", rows=rows)
+    finally:
+        conn.close()
 
 @app.route("/withdraw", methods=["GET", "POST"])
 def withdraw_page():
