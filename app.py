@@ -150,9 +150,9 @@ button,a,input,select,textarea{
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="CODEX700">
 <script>
-if ("serviceWorker" in navigator) {
+if (false && "serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("/sw.js", {scope:"/"})
+    // disabled register("/sw.js", {scope:"/"})
       .catch(function(){});
   });
 }
@@ -253,7 +253,7 @@ WAVE='<div class="wave-bg" style="position:fixed;top:0;left:0;width:100%;height:
 def pwa_manifest():
     return app.send_static_file("pwa/manifest.json")
 
-@app.route("/sw.js")
+@app.route("/sw.js.bak")
 def pwa_service_worker():
     response = app.send_static_file("pwa/sw.js")
     response.headers["Content-Type"] = "application/javascript"
@@ -850,6 +850,34 @@ def my_page():
 
     phone = u["phone"] if u else ""
     balance = float(u["balance"] or 0) if u and "balance" in u.keys() else 0
+    wallet = float(u["wallet"] or 0) if u and "wallet" in u.keys() else 0
+    from datetime import datetime
+    c2 = db()
+    ai_rows = c2.execute(
+        """SELECT total_income, daily_income, started_at, lock_days, claimed_at
+           FROM ai_machines
+           WHERE uid=? AND price>0 AND lock_days>0""",
+        (session["uid"],)
+    ).fetchall()
+    c2.close()
+
+    now = datetime.utcnow()
+    ai_income = 0.0
+    today_earnings = 0.0
+
+    for m in ai_rows:
+        try:
+            daily = float(m["daily_income"] or 0)
+            total = float(m["total_income"] or 0)
+            started = datetime.fromisoformat(str(m["started_at"]))
+            elapsed_days = max(0, (now - started).days)
+            accrued = min(total, daily * elapsed_days)
+            ai_income += accrued
+
+            if m["claimed_at"] is None and elapsed_days < int(m["lock_days"] or 0):
+                today_earnings += daily
+        except Exception:
+            pass
 
     return S + """
 <style>
@@ -1123,7 +1151,7 @@ def my_page():
 <div class="wallet" id="walletBox">
  <div>
   <div class="wallet-title">Wallet</div>
-  <div class="wallet-value">0.00</div>
+  <div class="wallet-value">"""+str(wallet)+"""</div>
  </div>
  <div>
   <div class="wallet-title">Balance</div>
@@ -1133,8 +1161,8 @@ def my_page():
  <div class="wallet-details">
   <div class="wallet-detail"><div class="wallet-detail-title">Deposit</div><div class="wallet-detail-value">0.00</div></div>
   <div class="wallet-detail"><div class="wallet-detail-title">Withdraw</div><div class="wallet-detail-value">0.00</div></div>
-  <div class="wallet-detail"><div class="wallet-detail-title">AI Income</div><div class="wallet-detail-value">0.00</div></div>
-  <div class="wallet-detail"><div class="wallet-detail-title">Today's earnings</div><div class="wallet-detail-value">0.00</div></div>
+  <div class="wallet-detail"><div class="wallet-detail-title">AI Income</div><div class="wallet-detail-value">"""+str(ai_income)+"""</div></div>
+  <div class="wallet-detail"><div class="wallet-detail-title">Today's earnings</div><div class="wallet-detail-value">"""+str(today_earnings)+"""</div></div>
   <div class="wallet-detail"><div class="wallet-detail-title">Invite Count</div><div class="wallet-detail-value">0</div></div>
   <div class="wallet-detail"><div class="wallet-detail-title">Team Count</div><div class="wallet-detail-value">0</div></div>
   <div class="wallet-detail"><div class="wallet-detail-title">Team income</div><div class="wallet-detail-value">0.00</div></div>
@@ -1877,26 +1905,125 @@ def income_page():
     if "uid" not in session:
         return redirect("/login")
 
-    c=db()
-    c.execute("CREATE TABLE IF NOT EXISTS ai_machines(id INTEGER PRIMARY KEY AUTOINCREMENT,uid INTEGER NOT NULL,name TEXT NOT NULL,started_at TEXT DEFAULT CURRENT_TIMESTAMP,status TEXT DEFAULT 'RUNNING')")
-    rows=c.execute("SELECT name,started_at,status FROM ai_machines WHERE uid=? ORDER BY id DESC",(session["uid"],)).fetchall()
+    from datetime import datetime
+
+    c = db()
+    rows = c.execute(
+        """SELECT id,name,series,image,price,lock_days,total_income,daily_income,
+                  started_at,expires_at,payment_source,status,claimed_at
+           FROM ai_machines
+           WHERE uid=?
+           ORDER BY id DESC""",
+        (session["uid"],)
+    ).fetchall()
     c.close()
 
-    items=""
+    now = datetime.utcnow()
+    items = ""
+
     for r in rows:
-        items += '<div class="machine"><b>▦ '+html.escape(r["name"])+'</b><span>● '+html.escape(r["status"])+'</span><small>Started: '+html.escape(r["started_at"])+'</small></div>'
+        name = html.escape(str(r["name"] or ""))
+        status = str(r["status"] or "RUNNING")
+        price = float(r["price"] or 0)
+        total = float(r["total_income"] or 0)
+        daily = float(r["daily_income"] or 0)
+        lock_days = int(r["lock_days"] or 0)
+        started_text = str(r["started_at"] or "")
+        expires_text = str(r["expires_at"] or "")
+        source = html.escape(str(r["payment_source"] or "").title())
+        image = html.escape(str(r["image"] or ""))
+
+        if price > 0 and lock_days > 0:
+            try:
+                started = datetime.fromisoformat(started_text)
+                elapsed_days = max(0, (now - started).days)
+                accrued = min(total, daily * elapsed_days)
+
+                if r["claimed_at"]:
+                    display_status = "CLAIMED"
+                    status_html = '<span class="claimed">● CLAIMED</span>'
+                elif now >= datetime.fromisoformat(expires_text):
+                    display_status = "READY"
+                    status_html = '<span class="ready">● READY TO CLAIM</span>'
+                else:
+                    display_status = "RUNNING"
+                    status_html = '<span>● RUNNING</span>'
+
+                claim_html = ""
+                if not r["claimed_at"] and now >= datetime.fromisoformat(expires_text):
+                    claim_html = (
+                        '<form method="POST" action="/ai/claim/'+str(r["id"])+'">'
+                        '<button class="claim" type="submit">Claim Ur Income</button>'
+                        '</form>'
+                    )
+
+                items += (
+                    '<div class="machine">'
+                    '<div class="machine-head">'
+                    '<div>'
+                    '<b>▦ '+name+'</b>'
+                    '<small>'+html.escape(str(r["series"] or ""))+' Series</small>'
+                    '</div>'
+                    + status_html +
+                    '</div>'
+                    + ('<img class="machine-img" src="'+image+'" alt="'+name+'">' if image else '') +
+                    '<div class="details">'
+                    '<div><span>Price</span><strong>'+f'{price:,.2f}'+' UGX</strong></div>'
+                    '<div><span>Payment</span><strong>'+source+'</strong></div>'
+                    '<div><span>Lock duration</span><strong>'+str(lock_days)+' Days</strong></div>'
+                    '<div><span>Daily income</span><strong class="income">'+f'{daily:,.2f}'+' UGX</strong></div>'
+                    '<div><span>Total income</span><strong>'+f'{total:,.2f}'+' UGX</strong></div>'
+                    '<div><span>Accrued income</span><strong class="income">'+f'{accrued:,.2f}'+' UGX</strong></div>'
+                    '<div><span>Started</span><strong>'+html.escape(started_text)+'</strong></div>'
+                    '<div><span>Expires</span><strong>'+html.escape(expires_text)+'</strong></div>'
+                    '</div>'
+                    + claim_html +
+                    '</div>'
+                )
+            except Exception:
+                items += (
+                    '<div class="machine">'
+                    '<b>▦ '+name+'</b>'
+                    '<span>● '+html.escape(status)+'</span>'
+                    '<small>Started: '+html.escape(started_text)+'</small>'
+                    '</div>'
+                )
+        else:
+            items += (
+                '<div class="machine">'
+                '<b>▦ '+name+'</b>'
+                '<span>● '+html.escape(status)+'</span>'
+                '<small>Started: '+html.escape(started_text)+'</small>'
+                '</div>'
+            )
 
     if not items:
-        items='<div class="empty"><div>No active machines yet.</div><small>Activate a machine on the AI tab to see it here.</small><a href="/invest">Browse AI machines</a></div>'
+        items = (
+            '<div class="empty">'
+            '<div>No AI machines yet.</div>'
+            '<small>Purchase an AI machine to see it here.</small>'
+            '<a href="/invest">Browse AI machines</a>'
+            '</div>'
+        )
 
     page = S + '<style>'
-    page += 'body{margin:0;background:#000;background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);background-size:18px 18px;background-position:0 0;;color:#fff;font-family:Georgia,serif}'
+    page += 'body{margin:0;background:#000;background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);background-size:18px 18px;background-position:0 0;color:#fff;font-family:Georgia,serif}'
     page += '.inc{min-height:100vh;padding:25px 14px 95px}'
     page += '.title{text-align:center;color:#00baff;font-size:30px;font-weight:bold;margin:10px 0 28px}'
-    page += '.machine,.empty{background:#02090e;border:1px solid #078cff;border-radius:22px;padding:22px;margin-bottom:15px}'
+    page += '.machine,.empty{background:#02090e;border:1px solid #078cff;border-radius:22px;padding:18px;margin-bottom:15px}'
+    page += '.machine-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}'
     page += '.machine b{display:block;color:#00baff;font-size:21px}'
-    page += '.machine span{display:block;color:#20dc75;margin-top:8px}'
-    page += '.machine small{display:block;color:#888;margin-top:8px}'
+    page += '.machine-head span,.machine>span{display:block;color:#20dc75;margin-top:4px;font-size:13px}'
+    page += '.machine small{display:block;color:#888;margin-top:7px}'
+    page += '.machine-img{width:100%;height:150px;object-fit:contain;margin:12px 0;border-radius:14px;background:#000}'
+    page += '.details{margin-top:12px}'
+    page += '.details div{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #123;font-size:14px}'
+    page += '.details span{color:#999}'
+    page += '.details strong{text-align:right;color:#fff}'
+    page += '.income{color:#42e889!important}'
+    page += '.ready{color:#42e889!important;font-weight:bold}'
+    page += '.claimed{color:#888!important;font-weight:bold}'
+    page += '.claim{width:100%;margin-top:15px;background:#20dc75;color:#000;border:0;border-radius:12px;padding:14px;font-family:Georgia,serif;font-size:17px;font-weight:bold}'
     page += '.empty{text-align:center;padding:55px 18px}'
     page += '.empty div{font-size:22px;color:#ddd;margin-bottom:15px}'
     page += '.empty small{display:block;color:#aaa;margin-bottom:25px}'
@@ -1907,12 +2034,75 @@ def income_page():
     page += '.active{color:#00baff!important}'
     page += '</style><div class="inc"><div class="title">Income</div>'+items+'</div>'
     page += '<div class="nav"><a href="/home"><i>⌂</i>Home</a><a href="/raffle"><i>▣</i>Raffle</a><a href="/support"><i>▤</i>Chats</a><a href="/invest"><i>▦</i>AI</a><a class="active" href="/income"><i>₿</i>Income</a><a href="/my"><i>♙</i>My</a></div>'
-    return page.replace(
-        "<body>",
-        '<body>',
-        1
-    )
 
+    return page.replace("<body>", "<body>", 1)
+
+
+@app.route("/ai/claim/<int:machine_id>", methods=["POST"])
+def ai_claim_machine(machine_id):
+    if "uid" not in session:
+        return redirect("/login")
+
+    from datetime import datetime
+
+    con = sqlite3.connect(DB)
+    con.row_factory = sqlite3.Row
+
+    try:
+        con.execute("BEGIN IMMEDIATE")
+
+        machine = con.execute(
+            """SELECT id,total_income,expires_at,claimed_at,status
+               FROM ai_machines
+               WHERE id=? AND uid=? AND price>0
+               LIMIT 1""",
+            (machine_id, session["uid"])
+        ).fetchone()
+
+        if not machine:
+            con.rollback()
+            return redirect("/income")
+
+        if machine["claimed_at"]:
+            con.rollback()
+            return redirect("/income")
+
+        expires = datetime.fromisoformat(str(machine["expires_at"]))
+
+        if datetime.utcnow() < expires:
+            con.rollback()
+            return redirect("/income")
+
+        amount = float(machine["total_income"] or 0)
+
+        cur = con.execute(
+            "UPDATE users SET balance=balance+? WHERE id=?",
+            (amount, session["uid"])
+        )
+
+        if cur.rowcount != 1:
+            con.rollback()
+            return redirect("/income")
+
+        claimed_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+        con.execute(
+            """UPDATE ai_machines
+               SET status='CLAIMED', claimed_at=?
+               WHERE id=? AND uid=? AND claimed_at IS NULL""",
+            (claimed_at, machine_id, session["uid"])
+        )
+
+        con.commit()
+
+    except Exception:
+        con.rollback()
+        raise
+
+    finally:
+        con.close()
+
+    return redirect("/income")
 
 
 @app.route("/deposit", methods=["GET", "POST"])
@@ -2481,48 +2671,48 @@ def invest():
     series = request.args.get("series", "All").upper()
 
     machines = [
-        ("S-1","S","7 Days","75,000.00","682,500.00","/static/ai/mining.jpg"),
-        ("S-2","S","7 Days","210,000.00","2,100,000.00","/static/ai/mining.jpg"),
-        ("S-3","S","7 Days","560,000.00","6,160,000.00","/static/ai/mining.jpg"),
-        ("S-4","S","7 Days","1,680,000.00","20,160,000.00","/static/ai/mining.jpg"),
-        ("S-5","S","7 Days","3,000,000.00","42,000,000.00","/static/ai/mining.jpg"),
+        ("S-1","S","7 Days","75,000.00","682,500.00","/static/ai/s.jpg"),
+        ("S-2","S","7 Days","210,000.00","2,100,000.00","/static/ai/s.jpg"),
+        ("S-3","S","7 Days","560,000.00","6,160,000.00","/static/ai/s.jpg"),
+        ("S-4","S","7 Days","1,680,000.00","20,160,000.00","/static/ai/s.jpg"),
+        ("S-5","S","7 Days","3,000,000.00","42,000,000.00","/static/ai/s.jpg"),
 
-        ("H-1","H","10 Days","65,000.00","650,000.00","/static/ai/mining.jpg"),
-        ("H-2","H","10 Days","200,000.00","2,200,000.00","/static/ai/mining.jpg"),
-        ("H-3","H","10 Days","500,000.00","6,000,000.00","/static/ai/mining.jpg"),
-        ("H-4","H","10 Days","1,500,000.00","19,500,000.00","/static/ai/mining.jpg"),
-        ("H-5","H","10 Days","3,000,000.00","45,000,000.00","/static/ai/mining.jpg"),
+        ("H-1","H","10 Days","65,000.00","650,000.00","/static/ai/h.jpg"),
+        ("H-2","H","10 Days","200,000.00","2,200,000.00","/static/ai/h.jpg"),
+        ("H-3","H","10 Days","500,000.00","6,000,000.00","/static/ai/h.jpg"),
+        ("H-4","H","10 Days","1,500,000.00","19,500,000.00","/static/ai/h.jpg"),
+        ("H-5","H","10 Days","3,000,000.00","45,000,000.00","/static/ai/h.jpg"),
 
-        ("U-1","U","25 Days","50,000.00","1,000,000.00","/static/ai/mining.jpg"),
-        ("U-2","U","25 Days","150,000.00","3,150,000.00","/static/ai/mining.jpg"),
-        ("U-3","U","25 Days","450,000.00","9,900,000.00","/static/ai/mining.jpg"),
-        ("U-4","U","25 Days","1,350,000.00","32,400,000.00","/static/ai/mining.jpg"),
-        ("U-5","U","25 Days","3,000,000.00","75,000,000.00","/static/ai/mining.jpg"),
+        ("U-1","U","25 Days","50,000.00","1,000,000.00","/static/ai/u.jpg"),
+        ("U-2","U","25 Days","150,000.00","3,150,000.00","/static/ai/u.jpg"),
+        ("U-3","U","25 Days","450,000.00","9,900,000.00","/static/ai/u.jpg"),
+        ("U-4","U","25 Days","1,350,000.00","32,400,000.00","/static/ai/u.jpg"),
+        ("U-5","U","25 Days","3,000,000.00","75,000,000.00","/static/ai/u.jpg"),
 
-        ("AS-1","AS","30 Days","50,000.00","1,200,000.00","/static/ai/mining.jpg"),
-        ("AS-2","AS","30 Days","150,000.00","3,900,000.00","/static/ai/mining.jpg"),
-        ("AS-3","AS","30 Days","450,000.00","12,600,000.00","/static/ai/mining.jpg"),
-        ("AS-4","AS","30 Days","1,350,000.00","40,500,000.00","/static/ai/mining.jpg"),
+        ("AS-1","AS","30 Days","50,000.00","1,200,000.00","/static/ai/as.jpg"),
+        ("AS-2","AS","30 Days","150,000.00","3,900,000.00","/static/ai/as.jpg"),
+        ("AS-3","AS","30 Days","450,000.00","12,600,000.00","/static/ai/as.jpg"),
+        ("AS-4","AS","30 Days","1,350,000.00","40,500,000.00","/static/ai/as.jpg"),
 
-        ("GS-1","GS","40 Days","70,000.00","1,400,000.00","/static/ai/mining.jpg"),
-        ("GS-2","GS","40 Days","210,000.00","4,620,000.00","/static/ai/mining.jpg"),
-        ("GS-3","GS","40 Days","600,000.00","14,400,000.00","/static/ai/mining.jpg"),
-        ("GS-4","GS","40 Days","1,500,000.00","39,000,000.00","/static/ai/mining.jpg"),
-        ("GS-5","GS","40 Days","3,000,000.00","84,000,000.00","/static/ai/mining.jpg"),
+        ("GS-1","GS","40 Days","70,000.00","1,400,000.00","/static/ai/gs.jpg"),
+        ("GS-2","GS","40 Days","210,000.00","4,620,000.00","/static/ai/gs.jpg"),
+        ("GS-3","GS","40 Days","600,000.00","14,400,000.00","/static/ai/gs.jpg"),
+        ("GS-4","GS","40 Days","1,500,000.00","39,000,000.00","/static/ai/gs.jpg"),
+        ("GS-5","GS","40 Days","3,000,000.00","84,000,000.00","/static/ai/gs.jpg"),
 
-        ("K-1","K","35 Days","50,000.00","1,200,000.00","/static/ai/mining.jpg"),
-        ("K-2","K","35 Days","150,000.00","3,900,000.00","/static/ai/mining.jpg"),
-        ("K-3","K","35 Days","450,000.00","12,600,000.00","/static/ai/mining.jpg"),
-        ("K-4","K","35 Days","1,000,000.00","30,000,000.00","/static/ai/mining.jpg"),
+        ("K-1","K","35 Days","50,000.00","1,200,000.00","/static/ai/k.jpg"),
+        ("K-2","K","35 Days","150,000.00","3,900,000.00","/static/ai/k.jpg"),
+        ("K-3","K","35 Days","450,000.00","12,600,000.00","/static/ai/k.jpg"),
+        ("K-4","K","35 Days","1,000,000.00","30,000,000.00","/static/ai/k.jpg"),
 
-        ("A-1","A","16 Days","30,000.00","48,000.00","/static/ai/mining.jpg"),
+        ("A-1","A","16 Days","30,000.00","48,000.00","/static/ai/a.jpg"),
 
-        ("VIP-1","VIP","20 Days","20,000.00","40,000.00","/static/ai/mining.jpg"),
-        ("VIP-1 PRO","VIP","40 Days","30,000.00","120,000.00","/static/ai/mining.jpg"),
-        ("VIP-1 MAX","VIP","120 Days","200,000.00","6,960,000.00","/static/ai/mining.jpg"),
-        ("VIP-2","VIP","20 Days","50,000.00","110,000.00","/static/ai/mining.jpg"),
-        ("VIP-2 PRO","VIP","40 Days","100,000.00","280,000.00","/static/ai/mining.jpg"),
-        ("VIP-2 MAX","VIP","120 Days","300,000.00","10,800,000.00","/static/ai/mining.jpg")
+        ("VIP-1","VIP","20 Days","20,000.00","40,000.00","/static/ai/vip.jpg"),
+        ("VIP-1 PRO","VIP","40 Days","30,000.00","120,000.00","/static/ai/vip.jpg"),
+        ("VIP-1 MAX","VIP","120 Days","200,000.00","6,960,000.00","/static/ai/vip.jpg"),
+        ("VIP-2","VIP","20 Days","50,000.00","110,000.00","/static/ai/vip.jpg"),
+        ("VIP-2 PRO","VIP","40 Days","100,000.00","280,000.00","/static/ai/vip.jpg"),
+        ("VIP-2 MAX","VIP","120 Days","300,000.00","10,800,000.00","/static/ai/vip.jpg")
     ]
 
     shown = machines if series == "ALL" else [m for m in machines if m[1] == series]
@@ -2591,14 +2781,14 @@ body{
 .machine{
  position:relative;
  display:grid;
- grid-template-columns:43% 57%;
- height:275px;
+ grid-template-columns:36% 64%;
+ height:190px;
  margin-bottom:10px;
  overflow:hidden;
- background:#050d13;
- border:2px solid #007fc0;
- border-radius:12px;
- box-shadow:0 0 9px rgba(0,183,255,.45);
+ background:#071018;
+ border:1px solid #075a78;
+ border-radius:18px;
+ box-shadow:0 0 12px rgba(0,180,255,.14);
 }
 .machine:after{
  content:"";
@@ -2618,7 +2808,7 @@ body{
 .pic img{
  width:100%;
  height:100%;
- object-fit:cover;
+ object-fit:contain;
  display:block;
 }
 .multiplier{
@@ -2627,7 +2817,7 @@ body{
  left:5px;
  z-index:3;
  color:#ffe84a;
- font-size:27px;
+ font-size:16px;
  font-weight:bold;
  text-shadow:0 0 3px #000;
 }
@@ -2635,19 +2825,19 @@ body{
 .info{
  position:relative;
  z-index:2;
- padding:12px 12px 8px;
- background:rgba(3,12,18,.86);
+ padding:10px;
+ background:#071018;
 }
 .code{
  color:#00aef5;
- font-size:25px;
+ font-size:20px;
  font-weight:bold;
- margin-bottom:25px;
+ margin-bottom:10px;
 }
 .line{
- font-size:20px;
- line-height:1.35;
- margin-bottom:25px;
+ font-size:14px;
+ line-height:1.3;
+ margin-bottom:7px;
  color:#fff;
 }
 .buy{
@@ -2688,9 +2878,9 @@ body{
 }
 .bottom .active{color:#00b9f3}
 @media(max-width:380px){
- .machine{height:245px}
- .code{font-size:21px;margin-bottom:18px}
- .line{font-size:17px;margin-bottom:18px}
+ .machine{height:175px}
+ .code{font-size:18px;margin-bottom:8px}
+ .line{font-size:13px;margin-bottom:6px}
  .tab{min-width:105px;font-size:19px}
 }
 </style>
@@ -2712,21 +2902,18 @@ body{
 
 <div class="cards">
 {% for code, ser, days, price, total, image in shown %}
-<div class="machine">
- <div class="pic">
-  <img src="{{image}}" alt="{{code}}">
-  <div class="multiplier">◉x{{loop.index}}</div>
- </div>
- <div class="info">
-  <div class="code">{{code}}</div>
-  <div class="line">Lock: {{days}}</div>
-  <div class="line">Price: {{price}}</div>
-  <div class="line">Total income: {{total}}</div>
-  <form method="POST" action="/ai/activate/Codex_{{code|replace(' ','_')}}">
-   <button class="buy" type="submit">ACTIVATE</button>
-  </form>
- </div>
+<a class="machine" href="/ai/machine/{{code|urlencode}}" style="text-decoration:none;color:inherit;display:grid;">
+<div class="pic">
+<img src="{{image}}" alt="{{code}}">
+<div class="multiplier">◉x{{loop.index}}</div>
 </div>
+<div class="info">
+<div class="code">{{code}}</div>
+<div class="line">Lock: {{days}}</div>
+<div class="line">Price: {{price}}</div>
+<div class="line">Total income: {{total}}</div>
+</div>
+</a>
 {% endfor %}
 </div>
 
@@ -2744,6 +2931,342 @@ body{
 </html>
 """
     return render_template_string(html, shown=shown, series=series)
+
+
+@app.route("/ai/machine/<path:machine_code>")
+def ai_machine_detail(machine_code):
+    if "uid" not in session:
+        return redirect("/login")
+
+    machines = [
+        ("S-1","S","7 Days","75,000.00","682,500.00","/static/ai/s.jpg"),
+        ("S-2","S","7 Days","210,000.00","2,100,000.00","/static/ai/s.jpg"),
+        ("S-3","S","7 Days","560,000.00","6,160,000.00","/static/ai/s.jpg"),
+        ("S-4","S","7 Days","1,680,000.00","20,160,000.00","/static/ai/s.jpg"),
+        ("S-5","S","7 Days","3,000,000.00","42,000,000.00","/static/ai/s.jpg"),
+        ("H-1","H","10 Days","65,000.00","650,000.00","/static/ai/h.jpg"),
+        ("H-2","H","10 Days","200,000.00","2,200,000.00","/static/ai/h.jpg"),
+        ("H-3","H","10 Days","500,000.00","6,000,000.00","/static/ai/h.jpg"),
+        ("H-4","H","10 Days","1,500,000.00","19,500,000.00","/static/ai/h.jpg"),
+        ("H-5","H","10 Days","3,000,000.00","45,000,000.00","/static/ai/h.jpg"),
+        ("U-1","U","25 Days","50,000.00","1,000,000.00","/static/ai/u.jpg"),
+        ("U-2","U","25 Days","150,000.00","3,150,000.00","/static/ai/u.jpg"),
+        ("U-3","U","25 Days","450,000.00","9,900,000.00","/static/ai/u.jpg"),
+        ("U-4","U","25 Days","1,350,000.00","32,400,000.00","/static/ai/u.jpg"),
+        ("U-5","U","25 Days","3,000,000.00","75,000,000.00","/static/ai/u.jpg"),
+        ("AS-1","AS","30 Days","50,000.00","1,200,000.00","/static/ai/as.jpg"),
+        ("AS-2","AS","30 Days","150,000.00","3,900,000.00","/static/ai/as.jpg"),
+        ("AS-3","AS","30 Days","450,000.00","12,600,000.00","/static/ai/as.jpg"),
+        ("AS-4","AS","30 Days","1,350,000.00","40,500,000.00","/static/ai/as.jpg"),
+        ("GS-1","GS","40 Days","70,000.00","1,400,000.00","/static/ai/gs.jpg"),
+        ("GS-2","GS","40 Days","210,000.00","4,620,000.00","/static/ai/gs.jpg"),
+        ("GS-3","GS","40 Days","600,000.00","14,400,000.00","/static/ai/gs.jpg"),
+        ("GS-4","GS","40 Days","1,500,000.00","39,000,000.00","/static/ai/gs.jpg"),
+        ("GS-5","GS","40 Days","3,000,000.00","84,000,000.00","/static/ai/gs.jpg"),
+        ("K-1","K","35 Days","50,000.00","1,200,000.00","/static/ai/k.jpg"),
+        ("K-2","K","35 Days","150,000.00","3,900,000.00","/static/ai/k.jpg"),
+        ("K-3","K","35 Days","450,000.00","12,600,000.00","/static/ai/k.jpg"),
+        ("K-4","K","35 Days","1,000,000.00","30,000,000.00","/static/ai/k.jpg"),
+        ("A-1","A","16 Days","30,000.00","48,000.00","/static/ai/a.jpg"),
+        ("VIP-1","VIP","20 Days","20,000.00","40,000.00","/static/ai/vip.jpg"),
+        ("VIP-1 PRO","VIP","40 Days","30,000.00","120,000.00","/static/ai/vip.jpg"),
+        ("VIP-1 MAX","VIP","120 Days","200,000.00","6,960,000.00","/static/ai/vip.jpg"),
+        ("VIP-2","VIP","20 Days","50,000.00","110,000.00","/static/ai/vip.jpg"),
+        ("VIP-2 PRO","VIP","40 Days","100,000.00","280,000.00","/static/ai/vip.jpg"),
+        ("VIP-2 MAX","VIP","120 Days","300,000.00","10,800,000.00","/static/ai/vip.jpg")
+    ]
+
+    machine = next((m for m in machines if m[0] == machine_code), None)
+
+    if machine is None:
+        return redirect("/invest")
+
+    code, series, days, price, total, image = machine
+    daily = float(total.replace(",", "")) / int(days.split()[0])
+
+    html = """
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CODEX700 {{code}}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+ background:#000;
+ color:#fff;
+ font-family:Georgia,serif;
+ min-height:100vh;
+ padding-bottom:90px;
+}
+.page{
+ padding:18px 14px;
+ max-width:520px;
+ margin:auto;
+}
+.back{
+ display:inline-block;
+ color:#00b9f3;
+ text-decoration:none;
+ font-size:18px;
+ margin-bottom:15px;
+}
+.card{
+ background:#071018;
+ border:1px solid #075a78;
+ border-radius:18px;
+ overflow:hidden;
+ box-shadow:0 0 15px rgba(0,180,255,.15);
+}
+.hero{
+ width:100%;
+ height:230px;
+ background:#111;
+}
+.hero img{
+ width:100%;
+ height:100%;
+ object-fit:contain;
+ display:block;
+}
+.details{
+ padding:18px;
+}
+.title{
+ color:#00b9f3;
+ font-size:27px;
+ font-weight:bold;
+ margin-bottom:18px;
+}
+.row{
+ display:flex;
+ justify-content:space-between;
+ gap:15px;
+ padding:12px 0;
+ border-bottom:1px solid #123;
+ font-size:16px;
+}
+.row:last-child{border-bottom:0}
+.label{color:#aaa}
+.value{color:#fff;text-align:right;font-weight:bold}
+.daily{color:#42e889}
+.notice{
+ margin-top:16px;
+ padding:12px;
+ border-radius:10px;
+ background:#001923;
+ border:1px solid #075a78;
+ color:#aaa;
+ font-size:14px;
+ line-height:1.5;
+}
+.purchase{
+ margin-top:18px;
+ display:grid;
+ gap:10px;
+}
+.buy{
+ width:100%;
+ border:1px solid #00b9f3;
+ background:#001923;
+ color:#00b9f3;
+ border-radius:10px;
+ padding:13px;
+ font-family:Georgia,serif;
+ font-size:17px;
+ font-weight:bold;
+}
+</style>
+</head>
+<body>
+<div class="page">
+<a class="back" href="/invest">← Back to AI</a>
+<div class="card">
+<div class="hero"><img src="{{image}}" alt="{{code}}"></div>
+<div class="details">
+<div class="title">CODEX {{code}}</div>
+
+<div class="row">
+<span class="label">Series</span>
+<span class="value">{{series}}</span>
+</div>
+
+<div class="row">
+<span class="label">Machine price</span>
+<span class="value">{{price}} UGX</span>
+</div>
+
+<div class="row">
+<span class="label">Lock duration</span>
+<span class="value">{{days}}</span>
+</div>
+
+<div class="row">
+<span class="label">Daily income</span>
+<span class="value daily">{{"{:,.2f}".format(daily)}} UGX</span>
+</div>
+
+<div class="row">
+<span class="label">Total income</span>
+<span class="value">{{total}} UGX</span>
+</div>
+
+<div class="notice">
+Choose how you want to pay for this machine. Balance is your earned platform money. Wallet is your deposited money.
+</div>
+
+<div class="purchase">
+<form method="POST" action="/ai/purchase/{{code|urlencode}}">
+<button class="buy" type="submit">Buy with Balance</button>
+</form>
+<form method="POST" action="/ai/purchase/{{code|urlencode}}">
+<button class="buy" type="submit">Buy with Wallet</button>
+</form>
+</div>
+
+</div>
+</div>
+</div>
+</body>
+</html>
+"""
+
+    return render_template_string(
+        html,
+        code=code,
+        series=series,
+        days=days,
+        price=price,
+        total=total,
+        image=image,
+        daily=daily
+    )
+
+
+@app.route("/ai/purchase/<path:machine_code>", methods=["POST"])
+def ai_purchase_machine(machine_code):
+    if "uid" not in session:
+        return redirect("/login")
+
+    machines = [
+        ("S-1","S","7 Days","75,000.00","682,500.00","/static/ai/s.jpg"),
+        ("S-2","S","7 Days","210,000.00","2,100,000.00","/static/ai/s.jpg"),
+        ("S-3","S","7 Days","560,000.00","6,160,000.00","/static/ai/s.jpg"),
+        ("S-4","S","7 Days","1,680,000.00","20,160,000.00","/static/ai/s.jpg"),
+        ("S-5","S","7 Days","3,000,000.00","42,000,000.00","/static/ai/s.jpg"),
+        ("H-1","H","10 Days","65,000.00","650,000.00","/static/ai/h.jpg"),
+        ("H-2","H","10 Days","200,000.00","2,200,000.00","/static/ai/h.jpg"),
+        ("H-3","H","10 Days","500,000.00","6,000,000.00","/static/ai/h.jpg"),
+        ("H-4","H","10 Days","1,500,000.00","19,500,000.00","/static/ai/h.jpg"),
+        ("H-5","H","10 Days","3,000,000.00","45,000,000.00","/static/ai/h.jpg"),
+        ("U-1","U","25 Days","50,000.00","1,000,000.00","/static/ai/u.jpg"),
+        ("U-2","U","25 Days","150,000.00","3,150,000.00","/static/ai/u.jpg"),
+        ("U-3","U","25 Days","450,000.00","9,900,000.00","/static/ai/u.jpg"),
+        ("U-4","U","25 Days","1,350,000.00","32,400,000.00","/static/ai/u.jpg"),
+        ("U-5","U","25 Days","3,000,000.00","75,000,000.00","/static/ai/u.jpg"),
+        ("AS-1","AS","30 Days","50,000.00","1,200,000.00","/static/ai/as.jpg"),
+        ("AS-2","AS","30 Days","150,000.00","3,900,000.00","/static/ai/as.jpg"),
+        ("AS-3","AS","30 Days","450,000.00","12,600,000.00","/static/ai/as.jpg"),
+        ("AS-4","AS","30 Days","1,350,000.00","40,500,000.00","/static/ai/as.jpg"),
+        ("GS-1","GS","40 Days","70,000.00","1,400,000.00","/static/ai/gs.jpg"),
+        ("GS-2","GS","40 Days","210,000.00","4,620,000.00","/static/ai/gs.jpg"),
+        ("GS-3","GS","40 Days","600,000.00","14,400,000.00","/static/ai/gs.jpg"),
+        ("GS-4","GS","40 Days","1,500,000.00","39,000,000.00","/static/ai/gs.jpg"),
+        ("GS-5","GS","40 Days","3,000,000.00","84,000,000.00","/static/ai/gs.jpg"),
+        ("K-1","K","35 Days","50,000.00","1,200,000.00","/static/ai/k.jpg"),
+        ("K-2","K","35 Days","150,000.00","3,900,000.00","/static/ai/k.jpg"),
+        ("K-3","K","35 Days","450,000.00","12,600,000.00","/static/ai/k.jpg"),
+        ("K-4","K","35 Days","1,000,000.00","30,000,000.00","/static/ai/k.jpg"),
+        ("A-1","A","16 Days","30,000.00","48,000.00","/static/ai/a.jpg"),
+        ("VIP-1","VIP","20 Days","20,000.00","40,000.00","/static/ai/vip.jpg"),
+        ("VIP-1 PRO","VIP","40 Days","30,000.00","120,000.00","/static/ai/vip.jpg"),
+        ("VIP-1 MAX","VIP","120 Days","200,000.00","6,960,000.00","/static/ai/vip.jpg"),
+        ("VIP-2","VIP","20 Days","50,000.00","110,000.00","/static/ai/vip.jpg"),
+        ("VIP-2 PRO","VIP","40 Days","100,000.00","280,000.00","/static/ai/vip.jpg"),
+        ("VIP-2 MAX","VIP","120 Days","300,000.00","10,800,000.00","/static/ai/vip.jpg")
+    ]
+
+    machine = next((m for m in machines if m[0] == machine_code), None)
+    if machine is None:
+        return redirect("/invest")
+
+    source = request.form.get("source", "").lower()
+    if source not in ("balance", "wallet"):
+        return redirect(f"/ai/machine/{machine_code}?purchase=Invalid+payment+source")
+
+    code, series, days, price_text, total_text, image = machine
+
+    price = float(price_text.replace(",", ""))
+    total_income = float(total_text.replace(",", ""))
+    lock_days = int(days.split()[0])
+    daily_income = total_income / lock_days
+
+    from datetime import datetime, timedelta
+
+    started = datetime.utcnow()
+    expires = started + timedelta(days=lock_days)
+
+    started_text = started.strftime("%Y-%m-%d %H:%M:%S")
+    expires_text = expires.strftime("%Y-%m-%d %H:%M:%S")
+
+    con = sqlite3.connect(DB)
+    con.row_factory = sqlite3.Row
+
+    try:
+        con.execute("BEGIN IMMEDIATE")
+
+        existing = con.execute(
+            "SELECT id FROM ai_machines WHERE uid=? AND name=? AND price>0 LIMIT 1",
+            (session["uid"], code)
+        ).fetchone()
+
+        if existing:
+            con.rollback()
+            return redirect(f"/ai/machine/{machine_code}?purchase=Purchase+limit+reached")
+
+        column = "balance" if source == "balance" else "wallet"
+
+        cur = con.execute(
+            f"UPDATE users SET {column}={column}-? WHERE id=? AND {column}>=?",
+            (price, session["uid"], price)
+        )
+
+        if cur.rowcount != 1:
+            con.rollback()
+            return redirect(f"/ai/machine/{machine_code}?purchase=Insufficient+funds")
+
+        con.execute(
+            """INSERT INTO ai_machines
+            (uid,name,series,image,price,lock_days,total_income,daily_income,
+             expires_at,payment_source,status,started_at)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (
+                session["uid"],
+                code,
+                series,
+                image,
+                price,
+                lock_days,
+                total_income,
+                daily_income,
+                expires_text,
+                source,
+                "RUNNING",
+                started_text
+            )
+        )
+
+        con.commit()
+
+    except Exception:
+        con.rollback()
+        raise
+
+    finally:
+        con.close()
+
+    return redirect(f"/ai/machine/{machine_code}?purchase=Purchase+successful")
 
 @app.route("/ai/activate/<machine_name>", methods=["POST"])
 def activate_ai_machine(machine_name):
