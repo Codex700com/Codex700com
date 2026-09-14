@@ -56,6 +56,21 @@ def init_db():
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(deposit_id)
  )""")
+ # Safe migrations for existing databases
+ con=c
+ for table, column, definition in [
+  ("users","wallet","REAL DEFAULT 0"),
+  ("ai_machines","name","TEXT DEFAULT ''"),
+  ("ai_machines","status","TEXT DEFAULT 'RUNNING'"),
+  ("ai_machines","series","TEXT"),
+  ("ai_machines","image","TEXT"),
+  ("ai_machines","expires_at","TEXT"),
+  ("ai_machines","payment_source","TEXT")
+ ]:
+  cols=[r[1] for r in con.execute(f"PRAGMA table_info({table})").fetchall()]
+  if column not in cols:
+   con.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
+
  c.commit()
  c.close()
 init_db()
