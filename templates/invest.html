@@ -1,28 +1,32 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}body{background:#020210;color:#fff;padding-bottom:90px}
-.tabs{display:flex;gap:16px;padding:14px 16px;border-bottom:1px solid #0f1a33;overflow-x:auto}.tabs div{color:#6b7a9e;font-size:13px;font-weight:700;white-space:nowrap}.tabs div.active{color:#fff;border-bottom:2px solid #00e5ff}
-.card{margin:14px 12px;background:#131e3d;border:1px solid #00e5ff44;border-radius:20px;overflow:hidden}
-.img{height:190px;position:relative;background:#000;overflow:hidden}.img video{width:100%;height:100%;object-fit:cover}.miner{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:60%;filter:drop-shadow(0 0 15px #00d4ff);z-index:2}
-.badge-live{position:absolute;top:10px;left:10px;background:#00ff88;color:#000;font-size:10px;font-weight:900;padding:5px 10px;border-radius:20px;z-index:3}.badge-hash{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.8);color:#00d4ff;font-size:10px;border:1px solid #00d4ff;padding:5px 8px;border-radius:8px;z-index:3;font-family:monospace}
-.body{padding:12px}.row{display:flex;justify-content:space-between}.name{font-size:20px;font-weight:900}.live{color:#00ff9c;font-size:11px}.pv{font-weight:900}.stats{display:flex;justify-content:space-between;margin-top:10px;background:#0006;padding:10px;border-radius:12px}.s{text-align:center;flex:1}.sl{font-size:9px;color:#7b8ab0}.sv{font-size:12px;font-weight:800;margin-top:3px}.sv.g{color:#7affc6}
-.btn{width:100%;margin-top:12px;background:linear-gradient(90deg,#00c8ff,#0076ff);border:none;border-radius:25px;padding:13px;color:#fff;font-weight:900}
-@keyframes float{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-6px)}}
-</style></head><body>
-<div class="tabs"><div class="active">All Live Miners</div></div><div id="cards"></div>
+.card{margin:14px 12px;background:linear-gradient(180deg,#131e3d,#0a1026);border:1px solid rgba(0,229,255,0.3);border-radius:20px;overflow:hidden}
+.video-wrap{height:200px;position:relative;background:#000;overflow:hidden}.video-wrap video{width:100%;height:100%;object-fit:cover}
+.live-badge{position:absolute;top:10px;left:10px;background:#00ff88;color:#000;font-size:10px;font-weight:900;padding:5px 10px;border-radius:20px;z-index:3;animation:blink 1s infinite}
+.hash-badge{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.8);color:#00d4ff;font-size:9px;border:1px solid #00d4ff;padding:5px 8px;border-radius:8px;font-family:monospace;z-index:3}
+.block-info{position:absolute;bottom:8px;left:8px;right:8px;background:rgba(0,0,0,0.75);color:#00ff88;font-size:9px;font-family:monospace;padding:5px 8px;border-radius:6px;z-index:3;display:flex;justify-content:space-between}
+.body{padding:12px}.row{display:flex;justify-content:space-between}.name{font-size:20px;font-weight:900;color:#d6f3ff}.live{color:#00ff9c;font-size:11px}.pv{font-weight:900;font-size:15px}.stats{display:flex;justify-content:space-between;margin-top:10px;background:rgba(0,0,0,0.4);padding:10px;border-radius:12px}.s{flex:1;text-align:center}.sl{font-size:9px;color:#7b8ab0}.sv{font-size:12px;font-weight:800;margin-top:3px}.sv.g{color:#7affc6}
+.btn{width:100%;margin-top:12px;background:linear-gradient(90deg,#00c8ff,#0076ff);border:none;border-radius:28px;padding:13px;color:#fff;font-weight:900}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+</style></head><body><div id="cards"></div>
 <script>
 const miners=[
-{n:"CODEX-A1",price:250000,daily:8000,total:800000,img:"/static/ai/codex_a1.png",robots:7,power:"3.2kW",vid:"https://cdn.pixabay.com/video/2022/08/03/126502-734027891_large.mp4"},
-{n:"CODEX-A2",price:500000,daily:18000,total:1800000,img:"/static/ai/codex_a2.png",robots:12,power:"5.8kW",vid:"https://cdn.pixabay.com/video/2020/08/12/46497-447809677_large.mp4"},
-{n:"CODEX-A3",price:1000000,daily:40000,total:4000000,img:"/static/ai/codex_a3.png",robots:20,power:"9.4kW",vid:"https://cdn.pixabay.com/video/2020/12/14/59681-490824882_large.mp4"},
-{n:"CODEX-A4",price:2000000,daily:90000,total:9000000,img:"/static/ai/codex_a4.png",robots:35,power:"15.2kW",vid:"https://cdn.pixabay.com/video/2022/08/03/126502-734027891_large.mp4"}
+{n:"CODEX-A1",price:250000,daily:8000,total:800000,robots:7,power:"3.2kW"},
+{n:"CODEX-A2",price:500000,daily:18000,total:1800000,robots:12,power:"5.8kW"},
+{n:"CODEX-A3",price:1000000,daily:40000,total:4000000,robots:20,power:"9.4kW"},
+{n:"CODEX-A4",price:2000000,daily:90000,total:9000000,robots:35,power:"15.2kW"},
+{n:"CODEX-A5",price:3500000,daily:160000,total:16000000,robots:52,power:"22kW"},
+{n:"CODEX-A6",price:5000000,daily:250000,total:25000000,robots:80,power:"35kW"}
 ];
 let h="";
 miners.forEach(m=>{
-h+=`<div class="card"><div class="img"><video autoplay muted loop playsinline><source src="${m.vid}"></video><img class="miner" src="${m.img}" style="animation:float 2.5s infinite"><div class="badge-live">● LIVE • ${m.robots} ROBOTS MINING</div><div class="badge-hash">HASH <span class="hv">${(2+Math.random()).toFixed(2)} PH/s</span></div></div>
-<div class="body"><div class="row"><div><div class="name">${m.n}</div><div class="live">🤖 BLOCK #<span class="bv">892347</span> • ${m.power}</div></div><div style="text-align:right"><div style="font-size:9px;color:#7a8aaa">PRICE</div><div class="pv">UGX ${m.price.toLocaleString()}</div></div></div>
+h+=`<div class="card"><div class="video-wrap"><video autoplay muted loop playsinline><source src="/static/ai/live_miner.mp4" type="video/mp4"></video><div class="live-badge">● LIVE • ${m.robots} ROBOTS MINING</div><div class="hash-badge">HASH <span class="hv">${(2+Math.random()).toFixed(2)} PH/s</span></div><div class="block-info"><span>BLOCK #<span class="bv">892347</span></span><span>${m.power} • 41°C</span></div></div>
+<div class="body"><div class="row"><div><div class="name">${m.n}</div><div class="live">🤖 ${m.robots} AI ROBOTS ACTIVE</div></div><div style="text-align:right"><div style="font-size:9px;color:#7a8aaa">PRICE</div><div class="pv">UGX ${m.price.toLocaleString()}</div></div></div>
 <div class="stats"><div class="s"><div class="sl">DAILY</div><div class="sv g">UGX ${m.daily.toLocaleString()}</div></div><div class="s"><div class="sl">DURATION</div><div class="sv">100 Days</div></div><div class="s"><div class="sl">TOTAL</div><div class="sv">UGX ${m.total.toLocaleString()}</div></div></div>
-<div style="margin-top:8px;font-size:11px;color:#8ea0c0;text-align:center">Live robots mining 24/7 — earns daily for 100 Days</div>
 <button class="btn" onclick="location.href='/product?p=${m.n}'">Buy Live Miner</button></div></div>`;
 });
 document.getElementById('cards').innerHTML=h;
-setInterval(()=>{document.querySelectorAll('.hv').forEach(e=>e.innerText=(1.5+Math.random()*3).toFixed(2)+' PH/s');document.querySelectorAll('.bv').forEach(e=>e.innerText=892300+Math.floor(Math.random()*600))},900);
+setInterval(()=>{
+  document.querySelectorAll('.hv').forEach(e=>e.innerText=(1.8+Math.random()*3).toFixed(2)+' PH/s');
+  document.querySelectorAll('.bv').forEach(e=>e.innerText=892300+Math.floor(Math.random()*800));
+}, 800);
 </script></body></html>

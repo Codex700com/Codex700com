@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bills</title>
+<style>
+*{box-sizing:border-box}
+html,body{
+ margin:0;
+ min-height:100%;
+ background:#000;
+ color:#fff;
+ font-family:Georgia,serif;
+}
+body{
+ background-color:#000;
+ background-image:radial-gradient(circle,rgba(0,190,255,.38) 1px,transparent 1.7px);
+ background-size:18px 18px;
+}
+.page{
+ min-height:100vh;
+ padding-bottom:72px;
+}
+.top{
+ height:68px;
+ border-bottom:1px solid #064b61;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ position:relative;
+ background:#000;
+}
+.title{
+ font-size:19px;
+ font-weight:bold;
+ color:#00b9f3;
+}
+.back{
+ position:absolute;
+ left:12px;
+ top:12px;
+ width:42px;
+ height:42px;
+ border:1px solid #00b9f3;
+ border-radius:11px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ color:#00b9f3;
+ font-size:27px;
+ text-decoration:none;
+}
+.tabs{
+ display:flex;
+ gap:7px;
+ overflow-x:auto;
+ padding:12px 12px 8px;
+ scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+ flex:0 0 auto;
+ border:1px solid #12303b;
+ background:#070d13;
+ color:#aaa;
+ border-radius:18px;
+ padding:7px 13px;
+ font-size:11px;
+ text-decoration:none;
+ white-space:nowrap;
+}
+.tab.active{
+ background:#00b9f3;
+ color:#001018;
+ border-color:#00b9f3;
+}
+.content{
+ padding:7px 12px;
+}
+.empty{
+ min-height:58px;
+ border:1px solid #075a78;
+ border-radius:12px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ color:#888;
+ font-size:12px;
+ background:#071018;
+}
+.bill{
+ border:1px solid #075a78;
+ border-radius:12px;
+ background:#071018;
+ padding:11px 12px;
+ margin-bottom:8px;
+}
+.bill-top{
+ display:flex;
+ justify-content:space-between;
+ gap:8px;
+}
+.bill-type{
+ color:#00b9f3;
+ font-size:13px;
+ font-weight:bold;
+}
+.bill-amount{
+ color:#fff;
+ font-size:13px;
+ font-weight:bold;
+}
+.bill-info{
+ color:#777;
+ font-size:10px;
+ margin-top:5px;
+ line-height:15px;
+ word-break:break-word;
+}
+.status{
+ margin-top:4px;
+ color:#aaa;
+ font-size:10px;
+}
+.bottom{
+ position:fixed;
+ left:0;
+ right:0;
+ bottom:0;
+ height:68px;
+ z-index:100;
+ display:grid;
+ grid-template-columns:repeat(6,1fr);
+ background:#020507;
+ border-top:1px solid #123;
+}
+.bottom a{
+ color:#888;
+ text-decoration:none;
+ text-align:center;
+ font-size:9px;
+ padding-top:5px;
+}
+.bottom i{
+ display:block;
+ font-style:normal;
+ font-size:21px;
+ line-height:27px;
+}
+.bottom .active{
+ color:#00baff;
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+
+<div class="top">
+<a class="back" href="/home">‹</a>
+<div class="title">Bills</div>
+</div>
+
+<div class="tabs">
+<a class="tab active" href="/bills">All</a>
+<a class="tab" href="/bills?type=deposit">Deposit</a>
+<a class="tab" href="/bills?type=withdraw">Withdraw</a>
+<a class="tab" href="/bills?type=earning">Earning</a>
+<a class="tab" href="/bills?type=commission">Commission</a>
+<a class="tab" href="/bills?type=salary">Salary</a>
+<a class="tab" href="/bills?type=raffle">Raffle Purchase</a>
+</div>
+
+<div class="content">
+{% set wanted = request.args.get('type','all')|lower %}
+{% set ns = namespace(found=false) %}
+
+{% for r in rows %}
+{% set rt = (r['type']|string|lower) if 'type' in r.keys() else '' %}
+{% set show = wanted == 'all' or rt == wanted or (wanted == 'raffle' and rt in ['raffle','raffle_purchase']) %}
+
+{% if show %}
+{% set ns.found = true %}
+<div class="bill">
+<div class="bill-top">
+<div class="bill-type">{{r['type'] if 'type' in r.keys() else 'Transaction'}}</div>
+<div class="bill-amount">{{r['amount'] if 'amount' in r.keys() else '0'}}</div>
+</div>
+
+{% if 'status' in r.keys() %}
+<div class="status">{{r['status']}}</div>
+{% endif %}
+
+{% if 'ref' in r.keys() %}
+<div class="bill-info">Reference: {{r['ref']}}</div>
+{% endif %}
+</div>
+{% endif %}
+{% endfor %}
+
+{% if not ns.found %}
+<div class="empty">No transactions yet.</div>
+{% endif %}
+</div>
+
+</div>
+
+<div class="bottom">
+<a href="/home"><i>▱</i>Home</a>
+<a href="/raffle"><i>▣</i>Raffle</a>
+<a href="/support"><i>▤</i>chats</a>
+<a href="/invest"><i>▦</i>AI</a>
+<a href="/income"><i>₿</i>Income</a>
+<a href="/my"><i>♙</i>My</a>
+</div>
+
+</body>
+</html>
