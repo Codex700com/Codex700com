@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{background:#020210;color:#fff;font-family:Arial;padding:20px}
+.box{border:2px solid #00d4ff;border-radius:16px;overflow:hidden;position:relative;background:#000;height:220px}
+.box video{width:100%;height:100%;object-fit:cover}
+.miner{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:60%;filter:drop-shadow(0 0 20px #00d4ff)}
+.live{position:absolute;top:12px;left:12px;background:#00ff88;color:#000;font-weight:900;padding:5px 12px;border-radius:20px;font-size:12px}
+.hash{position:absolute;top:12px;right:12px;background:#000;color:#00d4ff;border:1px solid #00d4ff;padding:5px 10px;border-radius:8px;font-family:monospace;font-size:11px}
+</style></head>
+<body>
+<h2>🤖 LIVE CODEX-A1 ROBOT MINER TEST</h2>
+
+<div class="box">
+<video autoplay muted loop playsinline>
+<source src="https://cdn.pixabay.com/video/2022/08/03/126502-734027891_large.mp4">
+</video>
+<div class="live">● LIVE • 7 ROBOTS MINING</div>
+<div class="hash" id="hash">HASH: 2.34 PH/s</div>
+<img class="miner" src="/static/ai/codex_a1.png">
+</div>
+
+<p id="block" style="margin-top:10px;font-family:monospace;color:#00ff88">BLOCK #892347 • TEMP 41°C • 98.7% VALIDATING...</p>
+
+<script>
+setInterval(()=>{
+  document.getElementById('hash').innerText='HASH: '+(2+Math.random()*2).toFixed(2)+' PH/s';
+  document.getElementById('block').innerText='BLOCK #'+(892300+Math.floor(Math.random()*500))+' • TEMP '+ (38+Math.floor(Math.random()*5))+'°C • '+(95+Math.random()*4).toFixed(1)+'% VALIDATING...';
+}, 800);
+</script>
+</body></html>

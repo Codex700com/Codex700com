@@ -6671,3 +6671,7 @@ calculate();
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0",port=5000,debug=False)
+@app.route('/live_test')
+def live_test():
+    return render_template('live_test.html')
+
