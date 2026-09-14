@@ -322,13 +322,18 @@ def register():
      my_refcode="".join(secrets.choice(chars) for _ in range(8))
      if not c.execute("SELECT id FROM users WHERE refcode=?",(my_refcode,)).fetchone():
       break
-    c.execute("INSERT INTO users (phone,password,refcode) VALUES (?,?,?)",(phone,pw,my_refcode))
+    from datetime import datetime
+    inviter = c.execute("SELECT id FROM users WHERE refcode=?", (invite.strip(),)).fetchone() if invite.strip() else None
+    c.execute(
+        "INSERT INTO users (phone,password,refcode,invite,invited_by,registered_at) VALUES (?,?,?,?,?,?)",
+        (phone,pw,my_refcode,invite.strip(),inviter["id"] if inviter else None,datetime.utcnow().isoformat())
+    )
     c.commit()
     c.close()
     return S+'<div style="position:relative;z-index:2;min-height:100vh;display:flex;align-items:center;justify-content:center"><div style="background:rgba(0,0,0,0.7);border:1px solid #0a84ff;border-radius:16px;padding:30px;text-align:center"><p style="color:#4ade80">Registration Successful!</p><script>setTimeout(function(){location.href="/login"},100)</script></div></div>'
  colors=["#3b82f6","#f59e0b","#10b981","#a855f7","#ec4899"]
  col_html="".join(['<span style="color:'+random.choice(colors)+';font-weight:900;margin:1px">'+ch+'</span>' for ch in captcha])
- html='<style>.reg-wrap{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-top:10vh;padding-left:18px;padding-right:18px}.welcome{font-size:34px;font-weight:800;color:#fff;margin-bottom:22px}.pill{width:100%;max-width:360px;height:52px;background:rgba(0,0,0,0.55);border:1px solid #555;border-radius:26px;display:flex;align-items:center;padding:0 16px;margin:9px 0;position:relative}.pill input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:15px;margin-left:10px}.captcha-box{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#fff;border-radius:8px;padding:6px 14px;font-size:22px;letter-spacing:3px;font-weight:800}.reg-btn{width:100%;max-width:360px;height:50px;background:transparent;border:1.6px solid #0a84ff;border-radius:26px;color:#0a84ff;font-size:19px;font-weight:600;margin-top:18px;cursor:pointer}.err{color:#ff6b6b;font-size:13px;max-width:360px;text-align:center;margin:6px;background:rgba(255,0,0,0.08);padding:8px;border-radius:8px}html{scroll-behavior:auto!important;}body{overflow-x:hidden;touch-action:pan-y;-webkit-overflow-scrolling:touch;}</style><div class="reg-dots" style="position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);background-size:18px 18px;background-position:0 0;"></div><div class="reg-wrap"><div class="welcome">Welcome</div><div class="err">'+m+'</div><form method="POST" style="width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center"><input type="hidden" name="real_captcha" value="'+captcha+'"><div class="pill"><input name="phone" placeholder="Phone Number" required></div><div class="pill"><input name="password" type="password" placeholder="Set Password" required></div><div class="pill"><input name="confirm" type="password" placeholder="Confirm Password" required></div><div class="pill"><input name="captcha_input" placeholder="Verification Code" required><div class="captcha-box">'+col_html+'</div></div><div class="pill"><input name="invite" placeholder="Invitation Code"></div><button class="reg-btn">Register</button><div style="margin-top:14px"><a href="/login" style="color:#aaa;text-decoration:none">‹ Login</a></div></form></div>'
+ html='<style>.reg-wrap{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-top:10vh;padding-left:18px;padding-right:18px}.welcome{font-size:34px;font-weight:800;color:#fff;margin-bottom:22px}.pill{width:100%;max-width:360px;height:52px;background:rgba(0,0,0,0.55);border:1px solid #555;border-radius:26px;display:flex;align-items:center;padding:0 16px;margin:9px 0;position:relative}.pill input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:15px;margin-left:10px}.captcha-box{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#fff;border-radius:8px;padding:6px 14px;font-size:22px;letter-spacing:3px;font-weight:800}.reg-btn{width:100%;max-width:360px;height:50px;background:transparent;border:1.6px solid #0a84ff;border-radius:26px;color:#0a84ff;font-size:19px;font-weight:600;margin-top:18px;cursor:pointer}.err{color:#ff6b6b;font-size:13px;max-width:360px;text-align:center;margin:6px;background:rgba(255,0,0,0.08);padding:8px;border-radius:8px}html{scroll-behavior:auto!important;}body{overflow-x:hidden;touch-action:pan-y;-webkit-overflow-scrolling:touch;}</style><div class="reg-dots" style="position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);background-size:18px 18px;background-position:0 0;"></div><div class="reg-wrap"><div class="welcome">Welcome</div><div class="err">'+m+'</div><form method="POST" style="width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center"><input type="hidden" name="real_captcha" value="'+captcha+'"><div class="pill"><input name="phone" placeholder="Phone Number" required></div><div class="pill"><input name="password" type="password" placeholder="Set Password" required></div><div class="pill"><input name="confirm" type="password" placeholder="Confirm Password" required></div><div class="pill"><input name="captcha_input" placeholder="Verification Code" required><div class="captcha-box">'+col_html+'</div></div><div class="pill"><input name="invite" placeholder="Invitation Code" value="'+request.args.get("ref","")+'"></div><button class="reg-btn">Register</button><div style="margin-top:14px"><a href="/login" style="color:#aaa;text-decoration:none">‹ Login</a></div></form></div>'
  return S+html
 
 @app.route("/login",methods=["GET","POST"])
@@ -888,6 +893,34 @@ def my_page():
     c2.close()
 
     now = datetime.utcnow()
+
+    first_this = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    if first_this.month == 1:
+        first_last = first_this.replace(year=first_this.year-1, month=12)
+    else:
+        first_last = first_this.replace(month=first_this.month-1)
+
+    c3 = db()
+    invited_last_month = c3.execute(
+        """SELECT COUNT(*) AS n FROM users
+           WHERE invited_by=?
+             AND registered_at>=?
+             AND registered_at<?""",
+        (session["uid"], first_last.isoformat(), first_this.isoformat())
+    ).fetchone()["n"]
+
+    invited_this_month = c3.execute(
+        """SELECT COUNT(*) AS n FROM users
+           WHERE invited_by=?
+             AND registered_at>=?
+             AND registered_at<?""",
+        (session["uid"], first_this.isoformat(), now.isoformat())
+    ).fetchone()["n"]
+    c3.close()
+
+    last_month_salary = invited_last_month * 3000
+    this_month_salary = invited_this_month * 3000
+
     ai_income = 0.0
     today_earnings = 0.0
 
@@ -910,254 +943,235 @@ def my_page():
 .my-page{
  min-height:100vh;
  box-sizing:border-box;
- padding:18px 12px 110px;
+ padding:28px 20px 105px;
  background:#000;
  color:#fff;
  font-family:Georgia,serif;
- background-image:
- radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);
+ background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);
  background-size:18px 18px;
- background-position:0 0;
+ overflow-x:hidden;
 }
-
 .my-top{
  display:flex;
  justify-content:space-between;
  align-items:center;
- margin-bottom:14px;
+ margin-bottom:28px;
 }
-
 .my-welcome{
- font-size:24px;
- font-weight:bold;
- color:#00b9f3;
+ font-size:25px;
+ font-weight:normal;
+ color:#00baff;
 }
-
 .my-phone{
- margin-top:4px;
- color:#aaa;
- font-size:14px;
+ margin-top:12px;
+ color:#fff;
+ font-size:18px;
 }
-
 .vip{
  text-align:center;
 }
-
 .vip-circle{
- width:58px;
- height:58px;
+ width:72px;
+ height:72px;
  border-radius:50%;
- border:2px solid #00b9f3;
+ border:2px solid #00baff;
  display:flex;
  align-items:center;
  justify-content:center;
- color:#00b9f3;
- font-size:28px;
- box-shadow:0 0 14px rgba(0,190,255,.35);
+ color:#fff;
+ font-size:34px;
+ box-shadow:0 0 16px rgba(0,190,255,.35);
 }
-
 .vip-label{
- margin-top:5px;
- color:#00b9f3;
+ margin-top:7px;
+ color:#00baff;
  font-weight:bold;
- font-size:13px;
+ font-size:15px;
 }
-
 .wallet{
  position:relative;
  display:grid;
  grid-template-columns:1fr 1fr;
  gap:10px;
- background:#071018;
- border:1px solid #075a78;
- border-radius:18px;
- padding:18px;
- margin-bottom:14px;
- box-shadow:0 0 12px rgba(0,180,255,.14);
+ background:rgba(0,0,0,.45);
+ border:1px solid #00aeea;
+ border-radius:20px;
+ padding:40px 24px 54px;
+ margin-bottom:28px;
+ box-shadow:0 0 14px rgba(0,180,255,.15);
+ text-align:center;
 }
-
 .wallet-title{
  color:#aaa;
- font-size:13px;
+ font-size:18px;
 }
-
 .wallet-value{
- margin-top:5px;
- color:#00b9f3;
- font-size:22px;
+ margin-top:16px;
+ color:#fff;
+ font-size:27px;
  font-weight:bold;
 }
-
 .wallet-details{
  display:none;
  grid-column:1/-1;
  grid-template-columns:repeat(2,1fr);
  gap:10px;
- padding-top:12px;
+ padding-top:15px;
  border-top:1px solid #123;
 }
-
 .wallet.open .wallet-details{
  display:grid;
 }
-
 .wallet-detail{
- background:#05090c;
+ background:#02070a;
  border:1px solid #123;
  border-radius:12px;
  padding:10px;
 }
-
 .wallet-detail-title{
  color:#999;
  font-size:11px;
 }
-
 .wallet-detail-value{
  color:#fff;
  margin-top:4px;
  font-size:14px;
 }
-
 .wallet-arrow{
  position:absolute;
- right:12px;
- bottom:5px;
- color:#00b9f3;
+ right:50%;
+ transform:translateX(50%);
+ bottom:8px;
+ color:#00baff;
  cursor:pointer;
- font-size:20px;
+ font-size:30px;
 }
-
 .services{
  display:grid;
  grid-template-columns:repeat(4,1fr);
- gap:9px;
- margin-bottom:14px;
+ gap:22px 14px;
+ background:rgba(0,0,0,.42);
+ border:1px solid #00aeea;
+ border-radius:20px;
+ padding:30px 18px;
+ margin-bottom:28px;
 }
-
 .service{
  text-decoration:none;
  color:#fff;
  text-align:center;
- background:#071018;
- border:1px solid #123;
- border-radius:14px;
- padding:12px 4px;
- font-size:11px;
+ background:transparent;
+ border:0;
+ border-radius:0;
+ padding:0;
+ font-size:14px;
 }
-
 .service .icon{
- color:#00b9f3;
- font-size:23px;
- margin-bottom:5px;
-}
-
-.section{
- background:#071018;
- border:1px solid #123;
- border-radius:16px;
- padding:16px;
- margin-bottom:14px;
-}
-
-.section-title{
- color:#00b9f3;
- font-size:17px;
- font-weight:bold;
-}
-
-.share-value,.salary-value{
- margin-top:8px;
+ width:58px;
+ height:58px;
+ margin:0 auto 9px;
+ border-radius:13px;
+ background:#09bfe9;
  color:#fff;
- font-size:20px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-size:31px;
+ box-shadow:0 0 12px rgba(0,190,255,.18);
+}
+.section{
+ background:rgba(0,0,0,.45);
+ border:1px solid #00aeea;
+ border-radius:20px;
+ padding:25px;
+ margin-bottom:22px;
+}
+.section-title{
+ color:#fff;
+ font-size:19px;
+ font-weight:normal;
+}
+.share-value,.salary-value{
+ margin-top:14px;
+ color:#fff;
+ font-size:25px;
  font-weight:bold;
 }
-
 .salary{
  display:grid;
  grid-template-columns:1fr 1fr;
- gap:12px;
+ gap:20px;
 }
-
 .salary-title{
  color:#aaa;
- font-size:12px;
+ font-size:14px;
 }
-
 .action{
  width:100%;
- margin-top:14px;
- padding:12px;
- border:1px solid #00b9f3;
+ margin-top:18px;
+ padding:14px;
+ border:1px solid #00baff;
  border-radius:12px;
  background:#001923;
- color:#00b9f3;
+ color:#00baff;
  font-weight:bold;
 }
-
 .reward-table{
  width:100%;
- margin-top:14px;
+ margin-top:18px;
  border-collapse:collapse;
 }
-
 .reward-table th,
 .reward-table td{
  border:1px solid #123;
- padding:9px;
+ padding:10px;
  text-align:center;
 }
-
 .reward-table th{
- color:#00b9f3;
+ color:#00baff;
 }
-
 .signout{
  text-align:center;
- margin-top:20px;
+ margin-top:25px;
 }
-
 .signout a{
  color:#ff5b5b;
  text-decoration:none;
 }
-
 .bottom{
  position:fixed;
  left:0;
  right:0;
  bottom:0;
  z-index:100;
- height:68px;
+ height:82px;
  display:grid;
  grid-template-columns:repeat(6,1fr);
- background:#02070a;
+ background:#000;
  border-top:1px solid #123;
 }
-
 .bottom a{
  color:#aaa;
  text-decoration:none;
  text-align:center;
- font-size:10px;
- padding-top:7px;
+ font-size:12px;
+ padding-top:8px;
 }
-
 .bottom i{
  display:block;
  font-style:normal;
- font-size:24px;
- line-height:30px;
+ font-size:27px;
+ line-height:34px;
 }
-
 .bottom .active{
  color:#00baff;
 }
-
 @media(max-width:380px){
- .services{gap:6px}
- .service{font-size:10px}
- .wallet{padding:15px}
+ .my-page{padding-left:14px;padding-right:14px}
+ .services{gap:18px 8px;padding:25px 10px}
+ .service{font-size:12px}
+ .service .icon{width:52px;height:52px;font-size:28px}
+ .wallet{padding-left:12px;padding-right:12px}
 }
 </style>
 
@@ -1165,7 +1179,7 @@ def my_page():
 
 <div class="my-top">
  <div>
-  <div class="my-welcome">Welcome to Codex</div>
+  <div class="my-welcome">WELCOME TO CODEX AI</div>
   <div class="my-phone">"""+str(phone)+"""</div>
  </div>
  <div class="vip">
@@ -1214,7 +1228,7 @@ def my_page():
 </div>
 
 <div class="section">
- <div class="section-title">Codex Cryptocurrency Purchase Share</div>
+ <div class="section-title">Codex A1 Cryptocurrency Purchase Share</div>
  <div class="share-value">0.00</div>
 </div>
 
@@ -1222,29 +1236,33 @@ def my_page():
  <div class="salary">
   <div>
    <div class="salary-title">Last month's salary</div>
-   <div class="salary-value">0.00</div>
+   <div class="salary-value">UGX {{ "{:,.0f}".format(last_month_salary) }}</div>
   </div>
   <div>
    <div class="salary-title">This month's salary</div>
-   <div class="salary-value">0.00</div>
+   <div class="salary-value">UGX {{ "{:,.0f}".format(this_month_salary) }}</div>
   </div>
  </div>
- <button class="action" type="button">Get last month's salary</button>
+ <form method="POST" action="/my/claim-salary">
+ <button class="action" type="submit">Get last month's salary</button>
+</form>
 </div>
 
 <div class="section">
  <div class="salary">
   <div>
    <div class="salary-title">Invited last month</div>
-   <div class="salary-value">0</div>
+   <div class="salary-value">{{ invited_last_month }}</div>
   </div>
   <div>
    <div class="salary-title">Invited this month</div>
-   <div class="salary-value">0</div>
+   <div class="salary-value">{{ invited_this_month }}</div>
   </div>
  </div>
 
- <button class="action" type="button">Get last month's reward</button>
+ <form method="POST" action="/my/claim-reward">
+ <button class="action" type="submit">Get last month's reward</button>
+</form>
 
  <table class="reward-table">
   <tr><th>Invite</th><th>Reward</th></tr>
@@ -1261,6 +1279,18 @@ def my_page():
 
 </div>
 
+<script>
+(function(){
+    const reward = new URLSearchParams(window.location.search).get("reward");
+    if (reward === "not_enough") {
+        alert("The number of invite last month was not enough");
+        history.replaceState({}, document.title, "/my");
+    } else if (reward === "success") {
+        alert("Last month's reward has been added to your balance");
+        history.replaceState({}, document.title, "/my");
+    }
+})();
+</script>
 <div class="bottom">
  <a href="/home"><i>⌂</i>Home</a>
  <a href="/raffle"><i>▣</i>Raffle</a>
@@ -1282,6 +1312,124 @@ def my_page():
 })();
 </script>
 """
+
+
+@app.route("/my/claim-salary", methods=["POST"])
+def claim_last_month_salary():
+    if "uid" not in session:
+        return redirect("/login")
+
+    from datetime import datetime
+
+    now = datetime.utcnow()
+    first_this = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    if first_this.month == 1:
+        first_last = first_this.replace(year=first_this.year-1, month=12)
+    else:
+        first_last = first_this.replace(month=first_this.month-1)
+
+    last_month = first_last.strftime("%Y-%m")
+
+    c = db()
+
+    u = c.execute(
+        "SELECT salary_claimed_month FROM users WHERE id=?",
+        (session["uid"],)
+    ).fetchone()
+
+    if u and u["salary_claimed_month"] == last_month:
+        c.close()
+        return redirect("/my")
+
+    count = c.execute(
+        """SELECT COUNT(*) AS n
+           FROM users
+           WHERE invited_by=?
+             AND registered_at>=?
+             AND registered_at<?""",
+        (
+            session["uid"],
+            first_last.isoformat(),
+            first_this.isoformat()
+        )
+    ).fetchone()["n"]
+
+    amount = count * 3000
+
+    if amount > 0:
+        c.execute(
+            "UPDATE users SET balance=COALESCE(balance,0)+?, salary_claimed_month=? WHERE id=?",
+            (amount, last_month, session["uid"])
+        )
+        c.commit()
+
+    c.close()
+    return redirect("/my")
+
+
+@app.route("/my/claim-reward", methods=["POST"])
+def claim_last_month_reward():
+    if "uid" not in session:
+        return redirect("/login")
+
+    from datetime import datetime
+
+    now = datetime.utcnow()
+    first_this = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    if first_this.month == 1:
+        first_last = first_this.replace(year=first_this.year-1, month=12)
+    else:
+        first_last = first_this.replace(month=first_this.month-1)
+
+    last_month = first_last.strftime("%Y-%m")
+
+    c = db()
+
+    u = c.execute(
+        "SELECT reward_claimed_month FROM users WHERE id=?",
+        (session["uid"],)
+    ).fetchone()
+
+    if u and u["reward_claimed_month"] == last_month:
+        c.close()
+        return redirect("/my")
+
+    count = c.execute(
+        """SELECT COUNT(*) AS n FROM users
+           WHERE invited_by=?
+             AND registered_at>=?
+             AND registered_at<?""",
+        (session["uid"], first_last.isoformat(), first_this.isoformat())
+    ).fetchone()["n"]
+
+    rewards = [
+        (120, 750000),
+        (100, 50000),
+        (60, 275000),
+        (30, 150000),
+        (15, 98000),
+        (6, 45000)
+    ]
+
+    reward = 0
+    for required, amount in rewards:
+        if count >= required:
+            reward = amount
+            break
+
+    if reward > 0:
+        c.execute(
+            "UPDATE users SET balance=COALESCE(balance,0)+?, reward_claimed_month=? WHERE id=?",
+            (reward, last_month, session["uid"])
+        )
+        c.commit()
+        c.close()
+        return redirect("/my?reward=success")
+
+    c.close()
+    return redirect("/my?reward=not_enough")
 
 
 @app.route("/my-team")
