@@ -2711,9 +2711,10 @@ def invest():
     series = request.args.get("series", "All").upper()
 
     machines = [
-        ("S-1","S","7 Days","75,000.00","682,500.00","/static/ai/s.jpg"),
-        ("S-2","S","7 Days","210,000.00","2,100,000.00","/static/ai/s.jpg"),
-        ("S-3","S","7 Days","560,000.00","6,160,000.00","/static/ai/s.jpg"),
+        ("CODEX A1","A","120 Days","50,000.00","2,880,000.00","/static/ai/codex_a1.png"),
+        ("CODEX A2","A","120 Days","240,000.00","6,000,000.00","/static/ai/codex_a2.png"),
+        ("CODEX A3","A","120 Days","520,000.00","24,000,000.00","/static/ai/codex_a3.png"),
+        ("CODEX A4","A","120 Days","1,050,000.00","60,000,000.00","/static/ai/codex_a4.png"),
         ("S-4","S","7 Days","1,680,000.00","20,160,000.00","/static/ai/s.jpg"),
         ("S-5","S","7 Days","3,000,000.00","42,000,000.00","/static/ai/s.jpg"),
 
@@ -2976,9 +2977,10 @@ def ai_machine_detail(machine_code):
         return redirect("/login")
 
     machines = [
-        ("S-1","S","7 Days","75,000.00","682,500.00","/static/ai/s.jpg"),
-        ("S-2","S","7 Days","210,000.00","2,100,000.00","/static/ai/s.jpg"),
-        ("S-3","S","7 Days","560,000.00","6,160,000.00","/static/ai/s.jpg"),
+        ("CODEX A1","A","120 Days","50,000.00","2,880,000.00","/static/ai/codex_a1.png"),
+        ("CODEX A2","A","120 Days","240,000.00","6,000,000.00","/static/ai/codex_a2.png"),
+        ("CODEX A3","A","120 Days","520,000.00","24,000,000.00","/static/ai/codex_a3.png"),
+        ("CODEX A4","A","120 Days","1,050,000.00","60,000,000.00","/static/ai/codex_a4.png"),
         ("S-4","S","7 Days","1,680,000.00","20,160,000.00","/static/ai/s.jpg"),
         ("S-5","S","7 Days","3,000,000.00","42,000,000.00","/static/ai/s.jpg"),
         ("H-1","H","10 Days","65,000.00","650,000.00","/static/ai/h.jpg"),
@@ -3196,9 +3198,10 @@ def ai_purchase_machine(machine_code):
         return redirect("/login")
 
     machines = [
-        ("S-1","S","7 Days","75,000.00","682,500.00","/static/ai/s.jpg"),
-        ("S-2","S","7 Days","210,000.00","2,100,000.00","/static/ai/s.jpg"),
-        ("S-3","S","7 Days","560,000.00","6,160,000.00","/static/ai/s.jpg"),
+        ("CODEX A1","A","120 Days","50,000.00","2,880,000.00","/static/ai/codex_a1.png"),
+        ("CODEX A2","A","120 Days","240,000.00","6,000,000.00","/static/ai/codex_a2.png"),
+        ("CODEX A3","A","120 Days","520,000.00","24,000,000.00","/static/ai/codex_a3.png"),
+        ("CODEX A4","A","120 Days","1,050,000.00","60,000,000.00","/static/ai/codex_a4.png"),
         ("S-4","S","7 Days","1,680,000.00","20,160,000.00","/static/ai/s.jpg"),
         ("S-5","S","7 Days","3,000,000.00","42,000,000.00","/static/ai/s.jpg"),
         ("H-1","H","10 Days","65,000.00","650,000.00","/static/ai/h.jpg"),
@@ -6313,7 +6316,6 @@ body{{font-family:Georgia,serif}}
     box-shadow:0 0 13px rgba(0,190,255,.22);
 }}
 
-.history-box{{
     margin-top:25px;
     padding:28px 18px;
     min-height:380px;
