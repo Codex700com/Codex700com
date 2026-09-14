@@ -15,7 +15,16 @@ def db():
   cols=[r[1] for r in conn.execute("PRAGMA table_info(users)").fetchall()]
   if "refcode" not in cols:
    conn.execute("ALTER TABLE users ADD COLUMN refcode TEXT")
-   conn.commit()
+  for col, definition in [
+   ("invite", "TEXT"),
+   ("invited_by", "INTEGER"),
+   ("registered_at", "TEXT"),
+   ("salary_claimed_month", "TEXT"),
+   ("reward_claimed_month", "TEXT")
+  ]:
+   if col not in cols:
+    conn.execute(f"ALTER TABLE users ADD COLUMN {col} {definition}")
+  conn.commit()
  except Exception:
   pass
  return conn
