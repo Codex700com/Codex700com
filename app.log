@@ -1,59 +1,43 @@
 nohup: ignoring input
-admin wired
-chats cols: ['id', 'user_id', 'who', 'msg', 'date', 'sender', 'uid', 'created']
  * Serving Flask app 'app'
- * Debug mode: on
+ * Debug mode: off
 [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:5000
- * Running on http://10.48.132.30:5000
+ * Running on http://10.185.241.37:5000
 [33mPress CTRL+C to quit[0m
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 259-128-092
- * Detected change in '/data/data/com.termux/files/home/codex700/app.py', reloading
-admin wired
-chats cols: ['id', 'user_id', 'who', 'msg', 'date', 'sender', 'uid', 'created']
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 860-000-210
- * Detected change in '/data/data/com.termux/files/home/codex700/app.py', reloading
-admin wired
-chats cols: ['id', 'user_id', 'who', 'msg', 'date', 'sender', 'uid', 'created']
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 439-306-797
- * Detected change in '/data/data/com.termux/files/home/codex700/app.py', reloading
-admin wired
-chats cols: ['id', 'user_id', 'who', 'msg', 'date', 'sender', 'uid', 'created']
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 139-428-337
- * Detected change in '/data/data/com.termux/files/home/codex700/app.py', reloading
-admin wired
-chats cols: ['id', 'user_id', 'who', 'msg', 'date', 'sender', 'uid', 'created']
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 424-158-300
- * Detected change in '/data/data/com.termux/files/home/codex700/app.py', reloading
-admin wired
-chats cols: ['id', 'user_id', 'who', 'msg', 'date', 'sender', 'uid', 'created']
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 595-558-718
- * Detected change in '/data/data/com.termux/files/home/codex700/app.py', reloading
-admin wired
-chats cols: ['id', 'user_id', 'who', 'msg', 'date', 'sender', 'uid', 'created']
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 912-662-385
- * Detected change in '/data/data/com.termux/files/home/codex700/app.py', reloading
-admin wired
-chats cols: ['id', 'user_id', 'who', 'msg', 'date', 'sender', 'uid', 'created']
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 904-809-640
- * Detected change in '/data/data/com.termux/files/home/codex700/app.py', reloading
-admin wired
-chats cols: ['id', 'user_id', 'who', 'msg', 'date', 'sender', 'uid', 'created']
- * Restarting with stat
+127.0.0.1 - - [14/Sep/2026 00:15:48] "GET /invest HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 00:15:48] "[36mGET /static/ai/h.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:15:48] "[36mGET /static/ai/s.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:15:48] "[36mGET /static/ai/as.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:15:48] "[36mGET /static/ai/u.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:15:48] "[36mGET /static/ai/gs.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:15:48] "[36mGET /static/ai/a.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:15:48] "[36mGET /static/ai/k.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:15:48] "[36mGET /static/ai/vip.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:15:50] "[36mGET /sw.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:16:06] "GET /invest?series=S HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 00:16:06] "[36mGET /static/ai/s.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:16:07] "[36mGET /sw.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:16:09] "GET /invest?series=H HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 00:16:09] "[36mGET /static/ai/h.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:16:10] "GET /ai/machine/H-1 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 00:16:10] "[36mGET /static/ai/h.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:16:10] "[36mGET /sw.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:16:12] "[36mGET /sw.js HTTP/1.1[0m" 304 -
+/data/data/com.termux/files/home/codex700/app.py:3238: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  started = datetime.utcnow()
+127.0.0.1 - - [14/Sep/2026 00:16:14] "[32mPOST /ai/purchase/H-1 HTTP/1.1[0m" 302 -
+127.0.0.1 - - [14/Sep/2026 00:16:14] "GET /ai/machine/H-1?purchase=Insufficient+funds HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 00:16:14] "[36mGET /static/ai/h.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:16:16] "[36mGET /sw.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:16:17] "GET /invest HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 00:16:17] "[36mGET /static/ai/s.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:16:17] "[36mGET /static/ai/h.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:16:17] "[36mGET /static/ai/as.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:16:17] "[36mGET /static/ai/u.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:16:17] "[36mGET /static/ai/k.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:16:17] "[36mGET /static/ai/a.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:16:17] "[36mGET /static/ai/gs.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:16:17] "[36mGET /static/ai/vip.jpg HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Sep/2026 00:16:19] "[36mGET /sw.js HTTP/1.1[0m" 304 -
