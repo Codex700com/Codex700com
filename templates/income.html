@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block content %}<div class="title">Income</div><div class="section"><table class="table"><tr><th>Type</th><th>Amount</th><th>Status</th></tr>{% for t in tx %}<tr><td>{{t.kind}}</td><td>UGX {{'{:,.0f}'.format(t.amount)}}</td><td>{{t.status}}</td></tr>{% else %}<tr><td colspan="3">No transactions yet.</td></tr>{% endfor %}</table></div>{% endblock %}

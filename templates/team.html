@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block content %}<div class="title">My team</div><div class="section">{% for r in rows %}<div class="row"><span>{{r.phone}}</span><span>{{r.created_at[:10]}}</span></div>{% else %}<p class="muted">No direct invites yet.</p>{% endfor %}</div>{% endblock %}
