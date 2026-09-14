@@ -2715,8 +2715,6 @@ def invest():
         ("CODEX A2","A","120 Days","240,000.00","6,000,000.00","/static/ai/codex_a2.png"),
         ("CODEX A3","A","120 Days","520,000.00","24,000,000.00","/static/ai/codex_a3.png"),
         ("CODEX A4","A","120 Days","1,050,000.00","60,000,000.00","/static/ai/codex_a4.png"),
-        ("S-4","S","7 Days","1,680,000.00","20,160,000.00","/static/ai/s.jpg"),
-        ("S-5","S","7 Days","3,000,000.00","42,000,000.00","/static/ai/s.jpg"),
 
         ("H-1","H","10 Days","65,000.00","650,000.00","/static/ai/h.jpg"),
         ("H-2","H","10 Days","200,000.00","2,200,000.00","/static/ai/h.jpg"),
@@ -2929,7 +2927,7 @@ body{
 
 <div class="tabs">
  <a class="tab {{'active' if series=='ALL' else ''}}" href="/invest">All</a>
- <a class="tab {{'active' if series=='S' else ''}}" href="/invest?series=S">S series</a>
+ 
  <a class="tab {{'active' if series=='H' else ''}}" href="/invest?series=H">H series</a>
  <a class="tab {{'active' if series=='U' else ''}}" href="/invest?series=U">U series</a>
  <a class="tab {{'active' if series=='AS' else ''}}" href="/invest?series=AS">AS series</a>
@@ -2981,8 +2979,6 @@ def ai_machine_detail(machine_code):
         ("CODEX A2","A","120 Days","240,000.00","6,000,000.00","/static/ai/codex_a2.png"),
         ("CODEX A3","A","120 Days","520,000.00","24,000,000.00","/static/ai/codex_a3.png"),
         ("CODEX A4","A","120 Days","1,050,000.00","60,000,000.00","/static/ai/codex_a4.png"),
-        ("S-4","S","7 Days","1,680,000.00","20,160,000.00","/static/ai/s.jpg"),
-        ("S-5","S","7 Days","3,000,000.00","42,000,000.00","/static/ai/s.jpg"),
         ("H-1","H","10 Days","65,000.00","650,000.00","/static/ai/h.jpg"),
         ("H-2","H","10 Days","200,000.00","2,200,000.00","/static/ai/h.jpg"),
         ("H-3","H","10 Days","500,000.00","6,000,000.00","/static/ai/h.jpg"),
@@ -3202,8 +3198,6 @@ def ai_purchase_machine(machine_code):
         ("CODEX A2","A","120 Days","240,000.00","6,000,000.00","/static/ai/codex_a2.png"),
         ("CODEX A3","A","120 Days","520,000.00","24,000,000.00","/static/ai/codex_a3.png"),
         ("CODEX A4","A","120 Days","1,050,000.00","60,000,000.00","/static/ai/codex_a4.png"),
-        ("S-4","S","7 Days","1,680,000.00","20,160,000.00","/static/ai/s.jpg"),
-        ("S-5","S","7 Days","3,000,000.00","42,000,000.00","/static/ai/s.jpg"),
         ("H-1","H","10 Days","65,000.00","650,000.00","/static/ai/h.jpg"),
         ("H-2","H","10 Days","200,000.00","2,200,000.00","/static/ai/h.jpg"),
         ("H-3","H","10 Days","500,000.00","6,000,000.00","/static/ai/h.jpg"),
@@ -5340,7 +5334,6 @@ def redeem_reward():
         "HFCS":40000,
         "CODEX20":20000,
         "WELCOME10":10000,
-        "BONUS5":5000,
         "VIP50":50000
     }
 
