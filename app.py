@@ -2136,6 +2136,19 @@ def deposit():
     if "uid" not in session:
         return redirect("/login")
 
+    # ROTATION TIMER - changes every 30 mins
+    import time as _rt
+    ROTATE_NUMBERS = [
+        ("0757837051", "Mary Namara"),
+        ("0758878297", "Shakira Nantongo"),
+        ("0731199883", "Collins Monday"),
+    ]
+    _slot = 30*60
+    _idx = int(_rt.time() // _slot) % len(ROTATE_NUMBERS)
+    cur_num, cur_name = ROTATE_NUMBERS[_idx]
+    remain = _slot - int(_rt.time() % _slot)
+
+
     con = sqlite3.connect(DB)
 
     con.execute("""
@@ -2484,7 +2497,7 @@ document.addEventListener('touchend', function(e){
 </body>
 </html>
 """, errors=errors, method=method, amount=amount,
-amount_sent=amount_sent, payment_number=payment_number,
+amount_sent=amount_sent, payment_number=cur_num, cur_num=cur_num, cur_name=cur_name, remain=remain,
 transaction_id=transaction_id)
 
         con.execute("""
@@ -2634,17 +2647,35 @@ button.continue{width:100%;height:52px;border:0;border-radius:14px;background:#0
 <div class="amount">Enter the amount you want to request</div>
 
 <div class="paybox">
-<div class="paytitle">Send to number</div>
-
+<div class="paytitle">Send to number - <b style="color:#fff">{{ cur_name }}</b></div>
 <div class="numberbox">
-<span class="empty"></span>
-<button class="copy" type="button" onclick="copyEmpty()">▣ Copy</button>
+<span style="font-size:22px;font-weight:900;color:#00ff88" id="paynum">{{ cur_num }}</span>
+<button class="copy" type="button" onclick="copyNum()">▣ Copy</button>
+</div>
+
+<div style="margin-top:12px;background:#001a0f;border:1px solid #00d084;border-radius:12px;padding:10px;text-align:center">
+<div style="color:#8fffc8;font-size:13px">Number auto-changes in</div>
+<div style="color:#00ff88;font-size:24px;font-weight:900" id="countdown">{{ remain//60 }}:{{ "%02d" % (remain%60) }}</div>
+<div style="color:#88aabb;font-size:11px">server time: every 30 min rotates between 3 numbers</div>
 </div>
 
 <div class="info" style="margin-top:14px">
-<strong>Payment details</strong><br>
-The recipient number is intentionally not displayed here.
+<strong>Current receiver:</strong> {{ cur_name }} - {{ cur_num }}<br>
+This number is valid for this 30-min slot only.
 </div>
+<script>
+let remain={{ remain }};
+function fmt(s){let m=Math.floor(s/60);let sc=s%60;return m+":"+String(sc).padStart(2,"0");}
+function tick(){
+ let el=document.getElementById("countdown");
+ if(el) el.innerText=fmt(remain);
+ if(remain<=0){ location.reload(); return; }
+ remain--;
+ setTimeout(tick,1000);
+}
+tick();
+</script>
+
 
 <div class="info" style="margin-top:12px">
 <strong>How to complete your request</strong><br>
@@ -2693,14 +2724,14 @@ placeholder="Enter amount you sent" required>
 </div>
 
 <script>
-function copyEmpty(){
+function copyNum(){ navigator.clipboard.writeText("{{ cur_num }}"); alert("Copied: {{ cur_num }} - {{ cur_name }}"); } function copyEmpty(){
     navigator.clipboard.writeText("").catch(function(){});
 }
 </script>
 
 </body>
 </html>
-""", method=method)
+""", method=method, cur_num=cur_num, cur_name=cur_name, remain=remain, payment_number=cur_num)
 
 
 @app.route("/invest", methods=["GET"])
