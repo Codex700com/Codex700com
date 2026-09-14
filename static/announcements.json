@@ -1,0 +1,12 @@
+[
+  {"id":1,"type":"withdrawal","title":"💸 How to Withdraw","msg":"Go to My > Withdraw > Enter amount (min UGX 30,000) > Select Mobile Money > Confirm. Withdrawals processed in 5-30 mins, 8am-8pm daily. 10% fee applies.","time":"2026-09-14 12:00"},
+  {"id":2,"type":"deposit","title":"💰 How to Deposit","msg":"Go to My > Recharge > Enter amount > Copy Till Number > Pay via MTN/Airtel. Upload screenshot. Balance updates in 2-5 mins. Contact support if delay.","time":"2026-09-14 11:30"},
+  {"id":3,"type":"ai","title":"🤖 How AI Income Works","msg":"AI Income is daily profit from your active miners. CODEX-A1 earns 8k/day, A2 18k/day, A3 40k/day, A4 90k/day. Income auto-credited at 00:00 EAT daily for 100 Days.","time":"2026-09-14 10:00"},
+  {"id":4,"type":"team","title":"👥 Team Income Explained","msg":"Invite friends with your link: Level 1 = 15%, Level 2 = 5%, Level 3 = 2% of their daily income. Team Count shows total active invites. Team Income updates instantly.","time":"2026-09-14 09:00"},
+  {"id":5,"type":"invite","title":"📨 How to Invite & Earn","msg":"Go to My > Invite > Copy link > Share on WhatsApp/Facebook. When friend buys miner, you get bonus. Invite Count shows total users joined via your link.","time":"2026-09-14 08:30"},
+  {"id":6,"type":"live","title":"🤖 LIVE Robots Update","msg":"All A-series miners now use real AI robots! 7-80 robots per miner working 24/7 in our data center. Watch LIVE video on AI page. HASH rate updates in real-time.","time":"2026-09-14 08:00"},
+  {"id":7,"type":"update","title":"📅 Lock Period Changed to 100 Days","msg":"All miners lock changed from 120 to 100 Days for faster ROI. Your current miners will also finish in 100 Days. Total income unchanged.","time":"2026-09-13 20:00"},
+  {"id":8,"type":"security","title":"🔒 Security Notice","msg":"Never share password or OTP. CODEX700 staff will NEVER ask for your password. Enable 2FA in My > Settings. Contact official support only via Chats tab.","time":"2026-09-13 18:00"},
+  {"id":9,"type":"new","title":"🆕 New Miners A5 & A6 Launched","msg":"CODEX-A5 (UGX 3.5M) 160k/day and A6 (UGX 5M) 250k/day now available. 52-80 robots, 22-35kW power. Limited stock!","time":"2026-09-13 15:00"},
+  {"id":10,"type":"raffle","title":"🎁 Daily Raffle Guide","msg":"Go to Raffle tab > Buy ticket UGX 5k > Win up to UGX 500k daily. Draw at 8pm EAT. Winners auto-credited. Check results in Raffle > My Tickets.","time":"2026-09-13 12:00"}
+]

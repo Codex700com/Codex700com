@@ -1,0 +1,410 @@
+@app.route("/invest", methods=["GET"])
+def invest():
+    if "uid" not in session:
+        return redirect("/login")
+
+    series = request.args.get("series", "All").upper()
+
+    machines = [
+        ("S-1","S","7 Days","75,000.00","682,500.00","/static/ai/s.jpg"),
+        ("S-2","S","7 Days","210,000.00","2,100,000.00","/static/ai/s.jpg"),
+        ("S-3","S","7 Days","560,000.00","6,160,000.00","/static/ai/s.jpg"),
+        ("S-4","S","7 Days","1,680,000.00","20,160,000.00","/static/ai/s.jpg"),
+        ("S-5","S","7 Days","3,000,000.00","42,000,000.00","/static/ai/s.jpg"),
+
+        ("H-1","H","10 Days","65,000.00","650,000.00","/static/ai/h.jpg"),
+        ("H-2","H","10 Days","200,000.00","2,200,000.00","/static/ai/h.jpg"),
+        ("H-3","H","10 Days","500,000.00","6,000,000.00","/static/ai/h.jpg"),
+        ("H-4","H","10 Days","1,500,000.00","19,500,000.00","/static/ai/h.jpg"),
+        ("H-5","H","10 Days","3,000,000.00","45,000,000.00","/static/ai/h.jpg"),
+
+        ("U-1","U","25 Days","50,000.00","1,000,000.00","/static/ai/u.jpg"),
+        ("U-2","U","25 Days","150,000.00","3,150,000.00","/static/ai/u.jpg"),
+        ("U-3","U","25 Days","450,000.00","9,900,000.00","/static/ai/u.jpg"),
+        ("U-4","U","25 Days","1,350,000.00","32,400,000.00","/static/ai/u.jpg"),
+        ("U-5","U","25 Days","3,000,000.00","75,000,000.00","/static/ai/u.jpg"),
+
+        ("AS-1","AS","30 Days","50,000.00","1,200,000.00","/static/ai/as.jpg"),
+        ("AS-2","AS","30 Days","150,000.00","3,900,000.00","/static/ai/as.jpg"),
+        ("AS-3","AS","30 Days","450,000.00","12,600,000.00","/static/ai/as.jpg"),
+        ("AS-4","AS","30 Days","1,350,000.00","40,500,000.00","/static/ai/as.jpg"),
+
+        ("GS-1","GS","40 Days","70,000.00","1,400,000.00","/static/ai/gs.jpg"),
+        ("GS-2","GS","40 Days","210,000.00","4,620,000.00","/static/ai/gs.jpg"),
+        ("GS-3","GS","40 Days","600,000.00","14,400,000.00","/static/ai/gs.jpg"),
+        ("GS-4","GS","40 Days","1,500,000.00","39,000,000.00","/static/ai/gs.jpg"),
+        ("GS-5","GS","40 Days","3,000,000.00","84,000,000.00","/static/ai/gs.jpg"),
+
+        ("K-1","K","35 Days","50,000.00","1,200,000.00","/static/ai/k.jpg"),
+        ("K-2","K","35 Days","150,000.00","3,900,000.00","/static/ai/k.jpg"),
+        ("K-3","K","35 Days","450,000.00","12,600,000.00","/static/ai/k.jpg"),
+        ("K-4","K","35 Days","1,000,000.00","30,000,000.00","/static/ai/k.jpg"),
+
+        ("A-1","A","16 Days","30,000.00","48,000.00","/static/ai/a.jpg"),
+
+        ("VIP-1","VIP","20 Days","20,000.00","40,000.00","/static/ai/vip.jpg"),
+        ("VIP-1 PRO","VIP","40 Days","30,000.00","120,000.00","/static/ai/vip.jpg"),
+        ("VIP-1 MAX","VIP","120 Days","200,000.00","6,960,000.00","/static/ai/vip.jpg"),
+        ("VIP-2","VIP","20 Days","50,000.00","110,000.00","/static/ai/vip.jpg"),
+        ("VIP-2 PRO","VIP","40 Days","100,000.00","280,000.00","/static/ai/vip.jpg"),
+        ("VIP-2 MAX","VIP","120 Days","300,000.00","10,800,000.00","/static/ai/vip.jpg")
+    ]
+
+    shown = machines if series == "ALL" else [m for m in machines if m[1] == series]
+
+    html = """
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CODEX700 AI</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+ background:#000;
+ color:#fff;
+ font-family:Georgia,serif;
+ overflow-x:hidden;
+}
+body{
+ background-image:
+ radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);
+ background-size:18px 18px;
+ padding-bottom:78px;
+}
+.ai{
+ min-height:100vh;
+ padding-bottom:90px;
+ background:rgba(0,0,0,.30);
+}
+.tabs{
+ height:76px;
+ display:flex;
+ align-items:flex-end;
+ gap:0;
+ overflow-x:auto;
+ white-space:nowrap;
+ background:#202020;
+ border-bottom:2px solid #075a78;
+ scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+ min-width:118px;
+ height:74px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ color:#fff;
+ text-decoration:none;
+ font-size:21px;
+ position:relative;
+}
+.tab.active{color:#00b9f3}
+.tab.active:after{
+ content:"";
+ position:absolute;
+ left:10px;
+ right:10px;
+ bottom:0;
+ height:5px;
+ background:#00b9f3;
+ border-radius:5px 5px 0 0;
+}
+.cards{padding:10px 12px}
+.machine{font-size:12px;transform:none!important;transition:none!important;
+ position:relative;
+ display:grid;
+ grid-template-columns:36% 64%;
+ height:190px;
+ margin-bottom:10px;
+ overflow:hidden;
+ background:#071018;
+ border:1px solid #075a78;
+ border-radius:18px;
+ box-shadow:0 0 12px rgba(0,180,255,.14);
+}
+.machine:after{
+ content:"";
+ position:absolute;
+ inset:0;
+ pointer-events:none;
+ background-image:radial-gradient(circle,rgba(0,190,255,.20) 1px,transparent 1.7px);
+ background-size:18px 18px;
+ opacity:.28;
+}
+.pic{
+ position:relative;
+ z-index:1;
+ overflow:hidden;
+ background:#111;
+}
+.pic img{
+ width:100%;
+ height:100%;
+ object-fit:contain;
+ display:block;
+}
+.multiplier{
+ position:absolute;
+ top:5px;
+ left:5px;
+ z-index:3;
+ color:#ffe84a;
+ font-size:16px;
+ font-weight:bold;
+ text-shadow:0 0 3px #000;
+}
+.multiplier:first-letter{color:#ffe84a}
+.info{
+ position:relative;
+ z-index:2;
+ padding:10px;
+ background:#071018;
+}
+.code{
+ color:#00aef5;
+ font-size:20px;
+ font-weight:bold;
+ margin-bottom:10px;
+}
+.line{
+ font-size:14px;
+ line-height:1.3;
+ margin-bottom:7px;
+ color:#fff;
+}
+.buy{
+ width:100%;
+ border:1px solid #00b9f3;
+ background:#001923;
+ color:#00b9f3;
+ border-radius:8px;
+ padding:9px;
+ font-family:Georgia,serif;
+ font-size:16px;
+ font-weight:bold;
+}
+.bottom{
+ position:fixed;
+ left:0;
+ right:0;
+ bottom:0;
+ height:68px;
+ z-index:20;
+ display:grid;
+ grid-template-columns:repeat(6,1fr);
+ background:#000;
+ border-top:1px solid #123;
+}
+.bottom a{
+ color:#fff;
+ text-decoration:none;
+ text-align:center;
+ font-size:11px;
+ padding-top:6px;
+}
+.bottom i{
+ display:block;
+ font-style:normal;
+ font-size:25px;
+ line-height:31px;
+}
+.bottom .active{color:#00b9f3}
+@media(max-width:380px){
+ .machine{height:175px}
+ .code{font-size:18px;margin-bottom:8px}
+ .line{font-size:13px;margin-bottom:6px}
+ .tab{min-width:105px;font-size:19px}
+}
+</style>
+</head>
+<body>
+<div class="ai">
+
+<div class="tabs">
+ <a class="tab {{'active' if series=='ALL' else ''}}" href="/invest">All</a>
+ <a class="tab {{'active' if series=='S' else ''}}" href="/invest?series=S">S series</a>
+ <a class="tab {{'active' if series=='H' else ''}}" href="/invest?series=H">H series</a>
+ <a class="tab {{'active' if series=='U' else ''}}" href="/invest?series=U">U series</a>
+ <a class="tab {{'active' if series=='AS' else ''}}" href="/invest?series=AS">AS series</a>
+ <a class="tab {{'active' if series=='GS' else ''}}" href="/invest?series=GS">GS series</a>
+ <a class="tab {{'active' if series=='K' else ''}}" href="/invest?series=K">K series</a>
+ <a class="tab {{'active' if series=='A' else ''}}" href="/invest?series=A">A Series</a>
+ <a class="tab {{'active' if series=='VIP' else ''}}" href="/invest?series=VIP">VIP</a>
+</div>
+
+<div class="cards">
+{% for code, ser, days, price, total, image in shown %}
+<a class="machine" href="/ai/machine/{{code|urlencode}}" style="text-decoration:none;color:inherit;display:grid;transform:none!important;transition:none!important;">
+<div class="pic">
+<img src="{{image}}" alt="{{code}}">
+<div class="multiplier">◉x{{loop.index}}</div>
+</div>
+<div class="info">
+<div class="code">{{code}}</div>
+<div class="line">Lock: {{days}}</div>
+<div class="line">Price: {{price}}</div>
+<div class="line">Total income: {{total}}</div>
+</div>
+</a>
+{% endfor %}
+</div>
+
+</div>
+
+<div class="bottom">
+<a href="/home"><i>⌂</i>Home</a>
+<a href="/raffle"><i>🎁</i>Raffle</a>
+<a href="/support"><i>♟</i>chats</a>
+<a class="active" href="/invest"><i>▣</i>AI</a>
+<a href="/income"><i>◈</i>Income</a>
+<a href="/my"><i>●</i>My</a>
+</div>
+</body>
+</html>
+"""
+    return render_template_string(html, shown=shown, series=series)
+
+
+@app.route("/ai/machine/<path:machine_code>")
+def ai_machine_detail(machine_code):
+    if "uid" not in session:
+        return redirect("/login")
+
+    machines = [
+        ("S-1","S","7 Days","75,000.00","682,500.00","/static/ai/s.jpg"),
+        ("S-2","S","7 Days","210,000.00","2,100,000.00","/static/ai/s.jpg"),
+        ("S-3","S","7 Days","560,000.00","6,160,000.00","/static/ai/s.jpg"),
+        ("S-4","S","7 Days","1,680,000.00","20,160,000.00","/static/ai/s.jpg"),
+        ("S-5","S","7 Days","3,000,000.00","42,000,000.00","/static/ai/s.jpg"),
+        ("H-1","H","10 Days","65,000.00","650,000.00","/static/ai/h.jpg"),
+        ("H-2","H","10 Days","200,000.00","2,200,000.00","/static/ai/h.jpg"),
+        ("H-3","H","10 Days","500,000.00","6,000,000.00","/static/ai/h.jpg"),
+        ("H-4","H","10 Days","1,500,000.00","19,500,000.00","/static/ai/h.jpg"),
+        ("H-5","H","10 Days","3,000,000.00","45,000,000.00","/static/ai/h.jpg"),
+        ("U-1","U","25 Days","50,000.00","1,000,000.00","/static/ai/u.jpg"),
+        ("U-2","U","25 Days","150,000.00","3,150,000.00","/static/ai/u.jpg"),
+        ("U-3","U","25 Days","450,000.00","9,900,000.00","/static/ai/u.jpg"),
+        ("U-4","U","25 Days","1,350,000.00","32,400,000.00","/static/ai/u.jpg"),
+        ("U-5","U","25 Days","3,000,000.00","75,000,000.00","/static/ai/u.jpg"),
+        ("AS-1","AS","30 Days","50,000.00","1,200,000.00","/static/ai/as.jpg"),
+        ("AS-2","AS","30 Days","150,000.00","3,900,000.00","/static/ai/as.jpg"),
+        ("AS-3","AS","30 Days","450,000.00","12,600,000.00","/static/ai/as.jpg"),
+        ("AS-4","AS","30 Days","1,350,000.00","40,500,000.00","/static/ai/as.jpg"),
+        ("GS-1","GS","40 Days","70,000.00","1,400,000.00","/static/ai/gs.jpg"),
+        ("GS-2","GS","40 Days","210,000.00","4,620,000.00","/static/ai/gs.jpg"),
+        ("GS-3","GS","40 Days","600,000.00","14,400,000.00","/static/ai/gs.jpg"),
+        ("GS-4","GS","40 Days","1,500,000.00","39,000,000.00","/static/ai/gs.jpg"),
+        ("GS-5","GS","40 Days","3,000,000.00","84,000,000.00","/static/ai/gs.jpg"),
+        ("K-1","K","35 Days","50,000.00","1,200,000.00","/static/ai/k.jpg"),
+        ("K-2","K","35 Days","150,000.00","3,900,000.00","/static/ai/k.jpg"),
+        ("K-3","K","35 Days","450,000.00","12,600,000.00","/static/ai/k.jpg"),
+        ("K-4","K","35 Days","1,000,000.00","30,000,000.00","/static/ai/k.jpg"),
+        ("A-1","A","16 Days","30,000.00","48,000.00","/static/ai/a.jpg"),
+        ("VIP-1","VIP","20 Days","20,000.00","40,000.00","/static/ai/vip.jpg"),
+        ("VIP-1 PRO","VIP","40 Days","30,000.00","120,000.00","/static/ai/vip.jpg"),
+        ("VIP-1 MAX","VIP","120 Days","200,000.00","6,960,000.00","/static/ai/vip.jpg"),
+        ("VIP-2","VIP","20 Days","50,000.00","110,000.00","/static/ai/vip.jpg"),
+        ("VIP-2 PRO","VIP","40 Days","100,000.00","280,000.00","/static/ai/vip.jpg"),
+        ("VIP-2 MAX","VIP","120 Days","300,000.00","10,800,000.00","/static/ai/vip.jpg")
+    ]
+
+    machine = next((m for m in machines if m[0] == machine_code), None)
+
+    if machine is None:
+        return redirect("/invest")
+
+    code, series, days, price, total, image = machine
+    daily = float(total.replace(",", "")) / int(days.split()[0])
+
+    html = """
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CODEX700 {{code}}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+ background:#000;
+ color:#fff;
+ font-family:Georgia,serif;
+ min-height:100vh;
+ padding-bottom:90px;
+}
+.page{
+ padding:18px 14px;
+ max-width:520px;
+ margin:auto;
+}
+.back{
+ display:inline-block;
+ color:#00b9f3;
+ text-decoration:none;
+ font-size:18px;
+ margin-bottom:15px;
+}
+.card{
+ background:#071018;
+ border:1px solid #075a78;
+ border-radius:18px;
+ overflow:hidden;
+ box-shadow:0 0 15px rgba(0,180,255,.15);
+}
+.hero{
+ width:100%;
+ height:230px;
+ background:#111;
+}
+.hero img{
+ width:100%;
+ height:100%;
+ object-fit:contain;
+ display:block;
+}
+.details{
+ padding:18px;
+}
+.title{
+ color:#00b9f3;
+ font-size:27px;
+ font-weight:bold;
+ margin-bottom:18px;
+}
+.row{
+ display:flex;
+ justify-content:space-between;
+ gap:15px;
+ padding:12px 0;
+ border-bottom:1px solid #123;
+ font-size:16px;
+}
+.row:last-child{border-bottom:0}
+.label{color:#aaa}
+.value{color:#fff;text-align:right;font-weight:bold}
+.daily{color:#42e889}
+.notice{
+ margin-top:16px;
+ padding:12px;
+ border-radius:10px;
+ background:#001923;
+ border:1px solid #075a78;
+ color:#aaa;
+ font-size:14px;
+ line-height:1.5;
+}
+.purchase{
+ margin-top:18px;
+ display:grid;
+ gap:10px;
+}
+.buy{
+ width:100%;
+ border:1px solid #00b9f3;
+ background:#001923;
+ color:#00b9f3;
+ border-radius:10px;
+ padding:13px;

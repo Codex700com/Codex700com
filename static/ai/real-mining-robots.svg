@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#07111d"/><stop offset="1" stop-color="#172a38"/></linearGradient>
+ <linearGradient id="ground" x2="0" y2="1"><stop stop-color="#51483e"/><stop offset="1" stop-color="#161515"/></linearGradient>
+ <linearGradient id="metal"><stop stop-color="#b8c2c8"/><stop offset=".5" stop-color="#48545c"/><stop offset="1" stop-color="#111820"/></linearGradient>
+ <linearGradient id="yellow"><stop stop-color="#ffd84a"/><stop offset=".55" stop-color="#c58a08"/><stop offset="1" stop-color="#4e3500"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <filter id="dust"><feGaussianBlur stdDeviation="18"/></filter>
+</defs>
+
+<rect width="1200" height="700" fill="url(#sky)"/>
+
+<!-- mine walls -->
+<path d="M0 350L130 210 250 300 390 165 510 285 650 170 790 285 930 145 1200 310V700H0Z" fill="#293039"/>
+<path d="M0 430L170 315 300 390 430 270 590 395 730 285 880 400 1040 260 1200 350V700H0Z" fill="#3c3834"/>
+<path d="M0 515Q220 455 430 500T820 485T1200 500V700H0Z" fill="url(#ground)"/>
+
+<!-- distant drilling robots -->
+<g transform="translate(830 315)">
+ <rect x="0" y="70" width="120" height="62" rx="10" fill="url(#metal)" stroke="#0b1014" stroke-width="6"/>
+ <circle cx="25" cy="140" r="18" fill="#090d10"/><circle cx="98" cy="140" r="18" fill="#090d10"/>
+ <path d="M40 75L65 5 88 75" fill="none" stroke="#b8c2c8" stroke-width="13"/>
+ <path d="M65 5V-80" stroke="#d4d9dc" stroke-width="9"/>
+ <circle cx="65" cy="-86" r="10" fill="#ffbd24" filter="url(#glow)"/>
+</g>
+
+<!-- giant excavator -->
+<g transform="translate(400 280)">
+ <rect x="80" y="155" width="260" height="70" rx="18" fill="url(#yellow)" stroke="#171717" stroke-width="8"/>
+ <circle cx="125" cy="235" r="34" fill="#101418"/><circle cx="300" cy="235" r="34" fill="#101418"/>
+ <rect x="135" y="82" width="130" height="100" rx="12" fill="url(#metal)" stroke="#111820" stroke-width="8"/>
+ <rect x="160" y="102" width="70" height="45" fill="#071a27" stroke="#64d7ff" stroke-width="4"/>
+ <path d="M145 90L40 20 15 55 125 145" fill="none" stroke="url(#yellow)" stroke-width="32"/>
+ <path d="M35 25L-80 -65" stroke="#aeb7bd" stroke-width="25"/>
+ <path d="M-80 -65L-130 -25 -85 5 -35 -35Z" fill="#9ca6ab" stroke="#14191d" stroke-width="7"/>
+ <circle cx="176" cy="76" r="9" fill="#ffdf43" filter="url(#glow)"/>
+ <circle cx="242" cy="76" r="9" fill="#ffdf43" filter="url(#glow)"/>
+</g>
+
+<!-- autonomous haul truck -->
+<g transform="translate(40 410)">
+ <path d="M80 40L210 40 285 115 285 185 45 185 20 130Z" fill="url(#metal)" stroke="#0a0e12" stroke-width="9"/>
+ <path d="M105 45L225 45 275 105 125 105Z" fill="#111f28" stroke="#6c7d86" stroke-width="5"/>
+ <rect x="155" y="63" width="48" height="25" fill="#102d3b" stroke="#55dfff" stroke-width="3"/>
+ <circle cx="85" cy="190" r="34" fill="#090c0f"/><circle cx="245" cy="190" r="34" fill="#090c0f"/>
+ <circle cx="85" cy="190" r="14" fill="#59636a"/><circle cx="245" cy="190" r="14" fill="#59636a"/>
+ <path d="M35 75L-30 30 10 145 65 155" fill="url(#yellow)" stroke="#161616" stroke-width="7"/>
+ <circle cx="38" cy="70" r="7" fill="#ffdf43" filter="url(#glow)"/>
+</g>
+
+<!-- robotic mining arm -->
+<g transform="translate(710 455)">
+ <rect x="0" y="80" width="150" height="70" rx="12" fill="url(#metal)" stroke="#111" stroke-width="7"/>
+ <circle cx="25" cy="155" r="22" fill="#080b0e"/><circle cx="125" cy="155" r="22" fill="#080b0e"/>
+ <circle cx="75" cy="75" r="24" fill="#c4cbd0" stroke="#111" stroke-width="7"/>
+ <path d="M75 70L130 5 180 45" fill="none" stroke="#aeb8bd" stroke-width="24"/>
+ <path d="M180 45L220 15" stroke="#d4dadd" stroke-width="18"/>
+ <path d="M215 10L250 35M215 10L238 -5M215 10L260 5" stroke="#d9e0e4" stroke-width="9"/>
+ <circle cx="78" cy="75" r="8" fill="#ffcb27" filter="url(#glow)"/>
+</g>
+
+<!-- control center -->
+<g transform="translate(930 430)">
+ <rect x="0" y="0" width="220" height="155" rx="15" fill="#10171d" stroke="#65737c" stroke-width="7"/>
+ <rect x="25" y="25" width="75" height="55" fill="#061722" stroke="#3dd9ff" stroke-width="4"/>
+ <rect x="120" y="25" width="75" height="55" fill="#061722" stroke="#3dd9ff" stroke-width="4"/>
+ <path d="M35 65L50 45 65 55 85 35M130 65L150 50 165 58 190 38" fill="none" stroke="#46e8ff" stroke-width="4"/>
+ <circle cx="40" cy="110" r="8" fill="#45ff9a" filter="url(#glow)"/>
+ <circle cx="70" cy="110" r="8" fill="#ffcc28" filter="url(#glow)"/>
+ <circle cx="100" cy="110" r="8" fill="#ff4141" filter="url(#glow)"/>
+ <rect x="135" y="100" width="55" height="20" rx="4" fill="#2b3941"/>
+</g>
+
+<!-- conveyor -->
+<path d="M0 610L430 545 800 590 1200 530" fill="none" stroke="#090d10" stroke-width="48"/>
+<path d="M0 600L430 535 800 580 1200 520" fill="none" stroke="#777f83" stroke-width="22"/>
+<g stroke="#20282d" stroke-width="9">
+ <path d="M90 585L110 625M210 565L230 605M340 545L360 585M470 550L490 590M610 560L630 600M760 565L780 605M920 550L940 590M1080 535L1100 575"/>
+</g>
+
+<!-- ore rocks -->
+<g fill="#77716a">
+ <path d="M130 520l28-24 38 10 12 32-30 24-42-8z"/>
+ <path d="M310 565l30-28 42 12 9 35-38 18-40-10z"/>
+ <path d="M560 530l24-25 45 8 15 35-34 25-43-13z"/>
+ <path d="M860 625l28-30 43 13 8 34-35 20-40-12z"/>
+</g>
+
+<!-- dust -->
+<g fill="#b5a38b" opacity=".22" filter="url(#dust)">
+ <ellipse cx="300" cy="490" rx="120" ry="35"/>
+ <ellipse cx="560" cy="460" rx="100" ry="28"/>
+ <ellipse cx="760" cy="570" rx="130" ry="35"/>
+</g>
+
+<!-- warning lights -->
+<g fill="#ffb51b" filter="url(#glow)">
+ <circle cx="115" cy="470" r="7"/><circle cx="440" cy="330" r="7"/>
+ <circle cx="820" cy="350" r="7"/><circle cx="1000" cy="410" r="7"/>
+</g>
+
+<!-- live motion indicators -->
+<g stroke="#55dcff" stroke-width="4" opacity=".8">
+ <path d="M270 440h55M270 450h35"/>
+ <path d="M650 395h55M650 405h35"/>
+ <path d="M1030 610h70M1030 620h45"/>
+</g>
+</svg>

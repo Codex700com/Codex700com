@@ -1,4 +1,3 @@
-import html
 import sqlite3, pathlib, os, random
 from manager_code import setup as setup_manager
 from flask import render_template, render_template_string, Flask, request, redirect, session, g
@@ -38,16 +37,6 @@ def init_db():
   reward_value INTEGER DEFAULT 0,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
  )""")
- c.execute("""CREATE TABLE IF NOT EXISTS ai_machines(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  uid INTEGER,
-  total_income REAL DEFAULT 0,
-  daily_income REAL DEFAULT 0,
-  started_at TEXT,
-  lock_days INTEGER DEFAULT 0,
-  claimed_at TEXT,
-  price REAL DEFAULT 0
- )""")
  c.execute("""CREATE TABLE IF NOT EXISTS raffle_deposit_awards(
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   deposit_id INTEGER NOT NULL,
@@ -56,21 +45,6 @@ def init_db():
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(deposit_id)
  )""")
- # Safe migrations for existing databases
- con=c
- for table, column, definition in [
-  ("users","wallet","REAL DEFAULT 0"),
-  ("ai_machines","name","TEXT DEFAULT ''"),
-  ("ai_machines","status","TEXT DEFAULT 'RUNNING'"),
-  ("ai_machines","series","TEXT"),
-  ("ai_machines","image","TEXT"),
-  ("ai_machines","expires_at","TEXT"),
-  ("ai_machines","payment_source","TEXT")
- ]:
-  cols=[r[1] for r in con.execute(f"PRAGMA table_info({table})").fetchall()]
-  if column not in cols:
-   con.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
-
  c.commit()
  c.close()
 init_db()
@@ -168,66 +142,7 @@ button,a,input,select,textarea{
 .hero-slide{
  position:relative!important;
 }
-</style><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#000000">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="CODEX700">
-<script>
-if (false && "serviceWorker" in navigator) {
-  window.addEventListener("load", function () {
-    // disabled register("/sw.js", {scope:"/"})
-      .catch(function(){});
-  });
-}
-
-/* CODEX700 instant navigation prefetch */
-(function(){
-  var codexPages = [
-    "/home",
-    "/raffle",
-    "/support",
-    "/invest",
-    "/income",
-    "/my",
-    "/account",
-    "/deposit",
-    "/withdraw",
-    "/invite",
-    "/my-team"
-  ];
-
-  function prefetch(url){
-    try{
-      fetch(url, {
-        method:"GET",
-        credentials:"same-origin",
-        cache:"force-cache"
-      }).catch(function(){});
-    }catch(e){}
-  }
-
-  function startPrefetch(){
-    if ("requestIdleCallback" in window) {
-      requestIdleCallback(function(){
-        codexPages.forEach(prefetch);
-      }, {timeout:2000});
-    } else {
-      setTimeout(function(){
-        codexPages.forEach(prefetch);
-      }, 1200);
-    }
-  }
-
-  if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", startPrefetch);
-  }else{
-    startPrefetch();
-  }
-})();
-</script>
+</style><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
 <style>
 html,body{
   touch-action:pan-x pan-y;
@@ -238,7 +153,7 @@ input,select,textarea,button{
   touch-action:manipulation;
 }
 </style>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;color:#fff;font-family:system-ui,sans-serif;overflow-x:hidden}
@@ -274,17 +189,6 @@ document.addEventListener('DOMContentLoaded', function(){
 '''
 
 WAVE='<div class="wave-bg" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;background:#000;pointer-events:none"><canvas id="waveCanvas" style="width:100%;height:100%;display:block"></canvas></div><script>var c=document.getElementById("waveCanvas");var x=c.getContext("2d");var W,H,d=window.devicePixelRatio||1;function R(){W=c.width=innerWidth*d;H=c.height=innerHeight*d;c.style.width=innerWidth+"px";c.style.height=innerHeight+"px"}R();addEventListener("resize",R);var t=0;function D(){t+=1.5;x.clearRect(0,0,W,H);var rows=22,cols=60,sx=W/cols,sy=H*0.7/rows,oy=H*0.5;for(var y=0;y<rows;y++){for(var X=0;X<cols;X++){var px=X*sx,py=oy+y*sy+Math.sin(X*0.18+t+y*0.25)*34+Math.cos(y*0.18+t*0.7)*18,dist=Math.abs(px-W/2)/(W/2),a=1-dist*0.6;if(a<0)a=0;var sz=(1.3+Math.sin(t*2+X*0.15)*0.3)*(1.1+a*1.6)*d;x.beginPath();x.arc(px,py,sz,0,6.283);x.fillStyle="rgba("+(90+a*40)+","+(190+a*40)+",255,"+(0.35+a*0.6)+")";x.shadowBlur=sz*2.5;x.shadowColor="#60a5fa";x.fill();x.shadowBlur=0;if(X<cols-1){var nx=(X+1)*sx,ny=oy+y*sy+Math.sin((X+1)*0.18+t+y*0.25)*34+Math.cos(y*0.18+t*0.7)*18;x.beginPath();x.moveTo(px,py);x.lineTo(nx,ny);x.strokeStyle="rgba(96,165,250,"+(a*0.18)+")";x.lineWidth=0.9*d;x.stroke()}}}requestAnimationFrame(D)}D();</script>'
-
-@app.route("/manifest.json")
-def pwa_manifest():
-    return app.send_static_file("pwa/manifest.json")
-
-@app.route("/sw.js")
-def pwa_service_worker():
-    response = app.send_static_file("pwa/sw.js")
-    response.headers["Content-Type"] = "application/javascript"
-    response.headers["Service-Worker-Allowed"] = "/"
-    return response
 
 @app.route("/")
 def index():
@@ -876,34 +780,6 @@ def my_page():
 
     phone = u["phone"] if u else ""
     balance = float(u["balance"] or 0) if u and "balance" in u.keys() else 0
-    wallet = float(u["wallet"] or 0) if u and "wallet" in u.keys() else 0
-    from datetime import datetime
-    c2 = db()
-    ai_rows = c2.execute(
-        """SELECT total_income, daily_income, started_at, lock_days, claimed_at
-           FROM ai_machines
-           WHERE uid=? AND price>0 AND lock_days>0""",
-        (session["uid"],)
-    ).fetchall()
-    c2.close()
-
-    now = datetime.utcnow()
-    ai_income = 0.0
-    today_earnings = 0.0
-
-    for m in ai_rows:
-        try:
-            daily = float(m["daily_income"] or 0)
-            total = float(m["total_income"] or 0)
-            started = datetime.fromisoformat(str(m["started_at"]))
-            elapsed_days = max(0, (now - started).days)
-            accrued = min(total, daily * elapsed_days)
-            ai_income += accrued
-
-            if m["claimed_at"] is None and elapsed_days < int(m["lock_days"] or 0):
-                today_earnings += daily
-        except Exception:
-            pass
 
     return S + """
 <style>
@@ -1177,7 +1053,7 @@ def my_page():
 <div class="wallet" id="walletBox">
  <div>
   <div class="wallet-title">Wallet</div>
-  <div class="wallet-value">"""+str(wallet)+"""</div>
+  <div class="wallet-value">0.00</div>
  </div>
  <div>
   <div class="wallet-title">Balance</div>
@@ -1187,8 +1063,8 @@ def my_page():
  <div class="wallet-details">
   <div class="wallet-detail"><div class="wallet-detail-title">Deposit</div><div class="wallet-detail-value">0.00</div></div>
   <div class="wallet-detail"><div class="wallet-detail-title">Withdraw</div><div class="wallet-detail-value">0.00</div></div>
-  <div class="wallet-detail"><div class="wallet-detail-title">AI Income</div><div class="wallet-detail-value">"""+str(ai_income)+"""</div></div>
-  <div class="wallet-detail"><div class="wallet-detail-title">Today's earnings</div><div class="wallet-detail-value">"""+str(today_earnings)+"""</div></div>
+  <div class="wallet-detail"><div class="wallet-detail-title">AI Income</div><div class="wallet-detail-value">0.00</div></div>
+  <div class="wallet-detail"><div class="wallet-detail-title">Today's earnings</div><div class="wallet-detail-value">0.00</div></div>
   <div class="wallet-detail"><div class="wallet-detail-title">Invite Count</div><div class="wallet-detail-value">0</div></div>
   <div class="wallet-detail"><div class="wallet-detail-title">Team Count</div><div class="wallet-detail-value">0</div></div>
   <div class="wallet-detail"><div class="wallet-detail-title">Team income</div><div class="wallet-detail-value">0.00</div></div>
@@ -1201,10 +1077,10 @@ def my_page():
 <a class="service" href="/deposit"><div class="icon">▣</div>Deposit</a>
 <a class="service" href="/withdraw"><div class="icon">♢</div>Withdraw</a>
 <a class="service" href="/card"><div class="icon">▤</div>Card</a>
-<a class="service" href="/bills"><div class="icon">$</div>Bill</a>
+<a class="service" href="/home"><div class="icon">$</div>Bill</a>
 <a class="service" href="/invite"><div class="icon">♙</div>Invite</a>
 <a class="service" href="/my-team"><div class="icon">♧</div>My team</a>
-<a class="service" href="/vip-tasks"><div class="icon">☆</div>VIP Task</a>
+<a class="service" href="/home"><div class="icon">☆</div>VIP Task</a>
 <a class="service" href="/reward"><div class="icon">🎁</div>Reward</a>
 <a class="service" href="/reward"><div class="icon">▱</div>Gift code</a>
 <a class="service" href="/raffle"><div class="icon">◇</div>Raffle</a>
@@ -1678,378 +1554,31 @@ body{font-family:Georgia,"Times New Roman",serif}
 setup_manager(app, db, S)
 
 
-
-
-@app.route("/vip-tasks")
-def vip_tasks_page():
-    if "uid" not in session:
-        return redirect("/login")
-
-    return S+"""
-<style>
-.vip-tasks-page{
-    min-height:100vh;
-    box-sizing:border-box;
-    padding:18px 14px 110px;
-    background:#000;
-    color:#fff;
-    font-family:Georgia,serif;
-    background-image:
-      radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);
-    background-size:18px 18px;
-}
-.vip-tasks-head{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    position:relative;
-    margin-bottom:18px;
-}
-.vip-tasks-back{
-    position:absolute;
-    left:0;
-    color:#00b9f3;
-    text-decoration:none;
-    font-size:34px;
-    line-height:1;
-}
-.vip-tasks-title{
-    color:#00b9f3;
-    font-size:24px;
-    font-weight:bold;
-}
-.vip-box{
-    background:#071018;
-    border:1px solid #075a78;
-    border-radius:18px;
-    padding:16px;
-    margin-bottom:14px;
-    box-shadow:0 0 12px rgba(0,180,255,.14);
-}
-.vip-box-title{
-    color:#00b9f3;
-    font-size:18px;
-    font-weight:bold;
-    margin-bottom:13px;
-}
-.vip-rank{
-    text-align:center;
-    color:#00b9f3;
-    font-size:28px;
-    font-weight:bold;
-    padding:8px 0 14px;
-}
-.vip-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    padding:13px 0;
-    border-bottom:1px solid #123;
-    font-size:14px;
-}
-.vip-row:last-child{border-bottom:0}
-.vip-value{
-    color:#00b9f3;
-    font-weight:bold;
-    text-align:right;
-}
-.vip-task{
-    background:#02080d;
-    border:1px solid #123;
-    border-radius:14px;
-    padding:14px;
-    margin-top:10px;
-}
-.vip-task-name{
-    color:#fff;
-    font-size:15px;
-    font-weight:bold;
-}
-.vip-task-desc{
-    color:#aaa;
-    font-size:12px;
-    margin-top:5px;
-    line-height:1.5;
-}
-.vip-task-status{
-    color:#00b9f3;
-    font-size:12px;
-    font-weight:bold;
-    margin-top:8px;
-}
-.vip-action{
-    display:block;
-    width:100%;
-    box-sizing:border-box;
-    margin-top:14px;
-    padding:13px;
-    border:1px solid #00b9f3;
-    border-radius:13px;
-    background:#001923;
-    color:#00b9f3;
-    text-align:center;
-    text-decoration:none;
-    font-size:14px;
-    font-weight:bold;
-}
-.vip-bottom{
-    position:fixed;
-    left:0;
-    right:0;
-    bottom:0;
-    z-index:100;
-    height:68px;
-    display:grid;
-    grid-template-columns:repeat(6,1fr);
-    background:#02070a;
-    border-top:1px solid #123;
-}
-.vip-bottom a{
-    color:#aaa;
-    text-decoration:none;
-    text-align:center;
-    font-size:10px;
-    padding-top:7px;
-}
-.vip-bottom i{
-    display:block;
-    font-style:normal;
-    font-size:24px;
-    line-height:30px;
-}
-.vip-bottom .active{color:#00baff}
-</style>
-
-<div class="vip-tasks-page">
-
-  <div class="vip-tasks-head">
-    <a class="vip-tasks-back" href="/home">‹</a>
-    <div class="vip-tasks-title">VIP Tasks</div>
-  </div>
-
-  <div class="vip-box">
-    <div class="vip-rank">★ VIP 0</div>
-    <div class="vip-row">
-      <span>Active machines</span>
-      <span class="vip-value">0</span>
-    </div>
-    <div class="vip-row">
-      <span>Daily reward</span>
-      <span class="vip-value">UGX 0</span>
-    </div>
-    <div class="vip-row">
-      <span>Monthly salary</span>
-      <span class="vip-value">UGX 0</span>
-    </div>
-  </div>
-
-  <div class="vip-box">
-    <div class="vip-box-title">Team Development Fund</div>
-
-    <div class="vip-row">
-      <span>Team members</span>
-      <span class="vip-value">0</span>
-    </div>
-
-    <div class="vip-row">
-      <span>Team deposits</span>
-      <span class="vip-value">UGX 0</span>
-    </div>
-
-    <div class="vip-row">
-      <span>Team earnings</span>
-      <span class="vip-value">UGX 0</span>
-    </div>
-
-    <a class="vip-action" href="/invite">Build my team</a>
-  </div>
-
-  <div class="vip-box">
-    <div class="vip-box-title">Monthly Agent Salary</div>
-
-    <div class="vip-row">
-      <span>Last month's salary</span>
-      <span class="vip-value">UGX 0</span>
-    </div>
-
-    <div class="vip-row">
-      <span>This month's salary</span>
-      <span class="vip-value">UGX 0</span>
-    </div>
-
-    <div class="vip-row">
-      <span>Invited last month</span>
-      <span class="vip-value">0</span>
-    </div>
-
-    <div class="vip-row">
-      <span>Invited this month</span>
-      <span class="vip-value">0</span>
-    </div>
-
-    <button class="vip-action" type="button">Get last month's salary</button>
-  </div>
-
-  <div class="vip-box">
-    <div class="vip-box-title">Today's Tasks</div>
-
-    <div class="vip-task">
-      <div class="vip-task-name">Daily sign-in</div>
-      <div class="vip-task-desc">Complete your daily activity to keep your account active.</div>
-      <div class="vip-task-status">● AVAILABLE</div>
-    </div>
-
-    <div class="vip-task">
-      <div class="vip-task-name">Invite friends</div>
-      <div class="vip-task-desc">Invite new members through your personal invitation link.</div>
-      <div class="vip-task-status">● AVAILABLE</div>
-    </div>
-
-    <div class="vip-task">
-      <div class="vip-task-name">Team development</div>
-      <div class="vip-task-desc">Grow your team and unlock higher VIP opportunities.</div>
-      <div class="vip-task-status">● AVAILABLE</div>
-    </div>
-  </div>
-
-</div>
-
-<div class="vip-bottom">
-  <a href="/home"><i>⌂</i>Home</a>
-  <a href="/raffle"><i>▣</i>Raffle</a>
-  <a href="/support"><i>▤</i>Chats</a>
-  <a href="/invest"><i>▦</i>AI</a>
-  <a href="/income"><i>₿</i>Income</a>
-  <a class="active" href="/home"><i>☆</i>VIP</a>
-</div>
-"""
-
-
 @app.route("/income")
 def income_page():
     if "uid" not in session:
         return redirect("/login")
 
-    from datetime import datetime
-
-    c = db()
-    rows = c.execute(
-        """SELECT id,name,series,image,price,lock_days,total_income,daily_income,
-                  started_at,expires_at,payment_source,status,claimed_at
-           FROM ai_machines
-           WHERE uid=?
-           ORDER BY id DESC""",
-        (session["uid"],)
-    ).fetchall()
+    c=db()
+    c.execute("CREATE TABLE IF NOT EXISTS ai_machines(id INTEGER PRIMARY KEY AUTOINCREMENT,uid INTEGER NOT NULL,name TEXT NOT NULL,started_at TEXT DEFAULT CURRENT_TIMESTAMP,status TEXT DEFAULT 'RUNNING')")
+    rows=c.execute("SELECT name,started_at,status FROM ai_machines WHERE uid=? ORDER BY id DESC",(session["uid"],)).fetchall()
     c.close()
 
-    now = datetime.utcnow()
-    items = ""
-
+    items=""
     for r in rows:
-        name = html.escape(str(r["name"] or ""))
-        status = str(r["status"] or "RUNNING")
-        price = float(r["price"] or 0)
-        total = float(r["total_income"] or 0)
-        daily = float(r["daily_income"] or 0)
-        lock_days = int(r["lock_days"] or 0)
-        started_text = str(r["started_at"] or "")
-        expires_text = str(r["expires_at"] or "")
-        source = html.escape(str(r["payment_source"] or "").title())
-        image = html.escape(str(r["image"] or ""))
-
-        if price > 0 and lock_days > 0:
-            try:
-                started = datetime.fromisoformat(started_text)
-                elapsed_days = max(0, (now - started).days)
-                accrued = min(total, daily * elapsed_days)
-
-                if r["claimed_at"]:
-                    display_status = "CLAIMED"
-                    status_html = '<span class="claimed">● CLAIMED</span>'
-                elif now >= datetime.fromisoformat(expires_text):
-                    display_status = "READY"
-                    status_html = '<span class="ready">● READY TO CLAIM</span>'
-                else:
-                    display_status = "RUNNING"
-                    status_html = '<span>● RUNNING</span>'
-
-                claim_html = ""
-                if not r["claimed_at"] and now >= datetime.fromisoformat(expires_text):
-                    claim_html = (
-                        '<form method="POST" action="/ai/claim/'+str(r["id"])+'">'
-                        '<button class="claim" type="submit">Claim Ur Income</button>'
-                        '</form>'
-                    )
-
-                items += (
-                    '<div class="machine">'
-                    '<div class="machine-head">'
-                    '<div>'
-                    '<b>▦ '+name+'</b>'
-                    '<small>'+html.escape(str(r["series"] or ""))+' Series</small>'
-                    '</div>'
-                    + status_html +
-                    '</div>'
-                    + ('<img class="machine-img" src="'+image+'" alt="'+name+'">' if image else '') +
-                    '<div class="details">'
-                    '<div><span>Price</span><strong>'+f'{price:,.2f}'+' UGX</strong></div>'
-                    '<div><span>Payment</span><strong>'+source+'</strong></div>'
-                    '<div><span>Lock duration</span><strong>'+str(lock_days)+' Days</strong></div>'
-                    '<div><span>Daily income</span><strong class="income">'+f'{daily:,.2f}'+' UGX</strong></div>'
-                    '<div><span>Total income</span><strong>'+f'{total:,.2f}'+' UGX</strong></div>'
-                    '<div><span>Accrued income</span><strong class="income">'+f'{accrued:,.2f}'+' UGX</strong></div>'
-                    '<div><span>Started</span><strong>'+html.escape(started_text)+'</strong></div>'
-                    '<div><span>Expires</span><strong>'+html.escape(expires_text)+'</strong></div>'
-                    '</div>'
-                    + claim_html +
-                    '</div>'
-                )
-            except Exception:
-                items += (
-                    '<div class="machine">'
-                    '<b>▦ '+name+'</b>'
-                    '<span>● '+html.escape(status)+'</span>'
-                    '<small>Started: '+html.escape(started_text)+'</small>'
-                    '</div>'
-                )
-        else:
-            items += (
-                '<div class="machine">'
-                '<b>▦ '+name+'</b>'
-                '<span>● '+html.escape(status)+'</span>'
-                '<small>Started: '+html.escape(started_text)+'</small>'
-                '</div>'
-            )
+        items += '<div class="machine"><b>▦ '+html.escape(r["name"])+'</b><span>● '+html.escape(r["status"])+'</span><small>Started: '+html.escape(r["started_at"])+'</small></div>'
 
     if not items:
-        items = (
-            '<div class="empty">'
-            '<div>No AI machines yet.</div>'
-            '<small>Purchase an AI machine to see it here.</small>'
-            '<a href="/invest">Browse AI machines</a>'
-            '</div>'
-        )
+        items='<div class="empty"><div>No active machines yet.</div><small>Activate a machine on the AI tab to see it here.</small><a href="/invest">Browse AI machines</a></div>'
 
     page = S + '<style>'
-    page += 'body{margin:0;background:#000;background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);background-size:18px 18px;background-position:0 0;color:#fff;font-family:Georgia,serif}'
+    page += 'body{margin:0;background:#000;background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);background-size:18px 18px;background-position:0 0;;color:#fff;font-family:Georgia,serif}'
     page += '.inc{min-height:100vh;padding:25px 14px 95px}'
     page += '.title{text-align:center;color:#00baff;font-size:30px;font-weight:bold;margin:10px 0 28px}'
-    page += '.machine,.empty{background:#02090e;border:1px solid #078cff;border-radius:22px;padding:18px;margin-bottom:15px}'
-    page += '.machine-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}'
+    page += '.machine,.empty{background:#02090e;border:1px solid #078cff;border-radius:22px;padding:22px;margin-bottom:15px}'
     page += '.machine b{display:block;color:#00baff;font-size:21px}'
-    page += '.machine-head span,.machine>span{display:block;color:#20dc75;margin-top:4px;font-size:13px}'
-    page += '.machine small{display:block;color:#888;margin-top:7px}'
-    page += '.machine-img{width:100%;height:150px;object-fit:contain;margin:12px 0;border-radius:14px;background:#000}'
-    page += '.details{margin-top:12px}'
-    page += '.details div{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #123;font-size:14px}'
-    page += '.details span{color:#999}'
-    page += '.details strong{text-align:right;color:#fff}'
-    page += '.income{color:#42e889!important}'
-    page += '.ready{color:#42e889!important;font-weight:bold}'
-    page += '.claimed{color:#888!important;font-weight:bold}'
-    page += '.claim{width:100%;margin-top:15px;background:#20dc75;color:#000;border:0;border-radius:12px;padding:14px;font-family:Georgia,serif;font-size:17px;font-weight:bold}'
+    page += '.machine span{display:block;color:#20dc75;margin-top:8px}'
+    page += '.machine small{display:block;color:#888;margin-top:8px}'
     page += '.empty{text-align:center;padding:55px 18px}'
     page += '.empty div{font-size:22px;color:#ddd;margin-bottom:15px}'
     page += '.empty small{display:block;color:#aaa;margin-bottom:25px}'
@@ -2060,75 +1589,12 @@ def income_page():
     page += '.active{color:#00baff!important}'
     page += '</style><div class="inc"><div class="title">Income</div>'+items+'</div>'
     page += '<div class="nav"><a href="/home"><i>⌂</i>Home</a><a href="/raffle"><i>▣</i>Raffle</a><a href="/support"><i>▤</i>Chats</a><a href="/invest"><i>▦</i>AI</a><a class="active" href="/income"><i>₿</i>Income</a><a href="/my"><i>♙</i>My</a></div>'
+    return page.replace(
+        "<body>",
+        '<body>',
+        1
+    )
 
-    return page.replace("<body>", "<body>", 1)
-
-
-@app.route("/ai/claim/<int:machine_id>", methods=["POST"])
-def ai_claim_machine(machine_id):
-    if "uid" not in session:
-        return redirect("/login")
-
-    from datetime import datetime
-
-    con = sqlite3.connect(DB)
-    con.row_factory = sqlite3.Row
-
-    try:
-        con.execute("BEGIN IMMEDIATE")
-
-        machine = con.execute(
-            """SELECT id,total_income,expires_at,claimed_at,status
-               FROM ai_machines
-               WHERE id=? AND uid=? AND price>0
-               LIMIT 1""",
-            (machine_id, session["uid"])
-        ).fetchone()
-
-        if not machine:
-            con.rollback()
-            return redirect("/income")
-
-        if machine["claimed_at"]:
-            con.rollback()
-            return redirect("/income")
-
-        expires = datetime.fromisoformat(str(machine["expires_at"]))
-
-        if datetime.utcnow() < expires:
-            con.rollback()
-            return redirect("/income")
-
-        amount = float(machine["total_income"] or 0)
-
-        cur = con.execute(
-            "UPDATE users SET balance=balance+? WHERE id=?",
-            (amount, session["uid"])
-        )
-
-        if cur.rowcount != 1:
-            con.rollback()
-            return redirect("/income")
-
-        claimed_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-
-        con.execute(
-            """UPDATE ai_machines
-               SET status='CLAIMED', claimed_at=?
-               WHERE id=? AND uid=? AND claimed_at IS NULL""",
-            (claimed_at, machine_id, session["uid"])
-        )
-
-        con.commit()
-
-    except Exception:
-        con.rollback()
-        raise
-
-    finally:
-        con.close()
-
-    return redirect("/income")
 
 
 @app.route("/deposit", methods=["GET", "POST"])
@@ -2200,7 +1666,7 @@ def deposit():
 <!doctype html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Deposit</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -2268,20 +1734,6 @@ button{width:100%;height:52px;border:0;border-radius:14px;background:#08aeea;col
  height:30px !important;
 }
 </style>
-
-<style>
-html,body{ touch-action: pan-x pan-y; overscroll-behavior: none; }
-</style>
-<script>
-document.addEventListener('touchmove', function(e){ if(e.scale!==1 && e.scale){ e.preventDefault(); } }, {passive:false});
-document.addEventListener('gesturestart', e=>e.preventDefault());
-let lastTouch=0;
-document.addEventListener('touchend', function(e){
-  let now=Date.now();
-  if(now-lastTouch<=300){ e.preventDefault(); }
-  lastTouch=now;
-},{passive:false});
-</script>
 </head>
 <body>
 <div class="wrap">
@@ -2507,7 +1959,7 @@ transaction_id=transaction_id)
 <!doctype html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Deposit Pending</title>
 <style>
 body{margin:0;background:#000;color:#fff;font-family:Arial;text-align:center}
@@ -2537,7 +1989,7 @@ a{display:block;margin-top:25px;background:#08aeea;color:#fff;text-decoration:no
 <!doctype html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Deposit</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -2590,7 +2042,7 @@ Airtel Money <span>›</span>
 <!doctype html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Deposit</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -2708,621 +2160,415 @@ def invest():
     if "uid" not in session:
         return redirect("/login")
 
-    series = request.args.get("series", "All").upper()
-
     machines = [
-        ("CODEX A1","A","120 Days","50,000.00","2,880,000.00","/static/ai/mining-robot.svg"),
-        ("CODEX A2","A","120 Days","240,000.00","6,000,000.00","/static/ai/mining-robot.svg"),
-        ("CODEX A3","A","120 Days","520,000.00","24,000,000.00","/static/ai/mining-robot.svg"),
-        ("CODEX A4","A","120 Days","1,050,000.00","60,000,000.00","/static/ai/mining-robot.svg"),
-
-        ("H-1","H","100 Days","65,000.00","650,000.00","/static/ai/mining-robot.svg"),
-        ("H-2","H","100 Days","200,000.00","2,200,000.00","/static/ai/mining-robot.svg"),
-        ("H-3","H","100 Days","500,000.00","6,000,000.00","/static/ai/mining-robot.svg"),
-        ("H-4","H","100 Days","1,500,000.00","19,500,000.00","/static/ai/mining-robot.svg"),
-        ("H-5","H","100 Days","3,000,000.00","45,000,000.00","/static/ai/mining-robot.svg"),
-
-        ("U-1","U","25 Days","50,000.00","1,000,000.00","/static/ai/mining-robot.svg"),
-        ("U-2","U","25 Days","150,000.00","3,150,000.00","/static/ai/mining-robot.svg"),
-        ("U-3","U","25 Days","450,000.00","9,900,000.00","/static/ai/mining-robot.svg"),
-        ("U-4","U","25 Days","1,350,000.00","32,400,000.00","/static/ai/mining-robot.svg"),
-        ("U-5","U","25 Days","3,000,000.00","75,000,000.00","/static/ai/mining-robot.svg"),
-
-        ("AS-1","AS","30 Days","50,000.00","1,200,000.00","/static/ai/mining-robot.svg"),
-        ("AS-2","AS","30 Days","150,000.00","3,900,000.00","/static/ai/mining-robot.svg"),
-        ("AS-3","AS","30 Days","450,000.00","12,600,000.00","/static/ai/mining-robot.svg"),
-        ("AS-4","AS","30 Days","1,350,000.00","40,500,000.00","/static/ai/mining-robot.svg"),
-
-        ("GS-1","GS","40 Days","70,000.00","1,400,000.00","/static/ai/mining-robot.svg"),
-        ("GS-2","GS","40 Days","210,000.00","4,620,000.00","/static/ai/mining-robot.svg"),
-        ("GS-3","GS","40 Days","600,000.00","14,400,000.00","/static/ai/mining-robot.svg"),
-        ("GS-4","GS","40 Days","1,500,000.00","39,000,000.00","/static/ai/mining-robot.svg"),
-        ("GS-5","GS","40 Days","3,000,000.00","84,000,000.00","/static/ai/mining-robot.svg"),
-
-        ("K-1","K","35 Days","50,000.00","1,200,000.00","/static/ai/mining-robot.svg"),
-        ("K-2","K","35 Days","150,000.00","3,900,000.00","/static/ai/mining-robot.svg"),
-        ("K-3","K","35 Days","450,000.00","12,600,000.00","/static/ai/mining-robot.svg"),
-        ("K-4","K","35 Days","1,000,000.00","30,000,000.00","/static/ai/mining-robot.svg"),
-
-        ("A-1","A","16 Days","30,000.00","48,000.00","/static/ai/mining-robot.svg"),
-
-        ("VIP-1","VIP","20 Days","20,000.00","40,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-1 PRO","VIP","40 Days","30,000.00","120,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-1 MAX","VIP","120 Days","200,000.00","6,960,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-2","VIP","20 Days","50,000.00","110,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-2 PRO","VIP","40 Days","100,000.00","280,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-2 MAX","VIP","120 Days","300,000.00","10,800,000.00","/static/ai/mining-robot.svg")
+        ("K1", "K Series", "AI Computing System", "ACTIVE"),
+        ("K2", "K Series", "Advanced AI System", "ACTIVE"),
+        ("M1", "M Series", "AI Processing Machine", "ACTIVE"),
+        ("M2", "M Series", "High Performance AI", "ACTIVE"),
+        ("A1", "A Series", "Advanced Computing", "ACTIVE"),
+        ("A2", "A Series", "Neural Computing System", "ACTIVE"),
+        ("GS1", "GS Series", "High Performance System", "ACTIVE"),
+        ("GS2", "GS Series", "Enterprise Computing", "ACTIVE")
     ]
 
-    shown = machines if series == "ALL" else [m for m in machines if m[1] == series]
-
     html = """
-<!doctype html>
+
+
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
 <title>CODEX700 AI</title>
+
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{
- background:#000;
- color:#fff;
- font-family:Georgia,serif;
- overflow-x:hidden;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
 }
+
+html,body{background:#000;background-image:radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);background-size:18px 18px;background-position:0 0;
+    background:#000;
+    color:#fff;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    overflow-x:hidden;
+    touch-action:pan-y;
+}
+
 body{
- background-image:
- radial-gradient(circle,rgba(0,190,255,.45) 1.2px,transparent 1.8px);
- background-size:18px 18px;
- padding-bottom:78px;
+    padding-bottom:90px;
 }
-.ai{
- min-height:100vh;
- padding-bottom:90px;
- background:rgba(0,0,0,.30);
+
+.ai-page{
+    min-height:100vh;
+    background:#000;
+    padding:18px 12px 100px;
 }
-.tabs{
- height:76px;
- display:flex;
- align-items:flex-end;
- gap:0;
- overflow-x:auto;
- white-space:nowrap;
- background:#202020;
- border-bottom:2px solid #075a78;
- scrollbar-width:none;
+
+.ai-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
 }
-.tabs::-webkit-scrollbar{display:none}
-.tab{
- min-width:118px;
- height:74px;
- display:flex;
- align-items:center;
- justify-content:center;
- color:#fff;
- text-decoration:none;
- font-size:21px;
- position:relative;
+
+.ai-logo{
+    font-size:27px;
+    font-weight:900;
+    letter-spacing:1px;
+    color:#fff;
 }
-.tab.active{color:#00b9f3}
-.tab.active:after{
- content:"";
- position:absolute;
- left:10px;
- right:10px;
- bottom:0;
- height:5px;
- background:#00b9f3;
- border-radius:5px 5px 0 0;
+
+.ai-logo span{
+    color:#00b7ff;
 }
-.cards{padding:10px 12px}
-.machine{font-size:12px;transform:none!important;transition:none!important;
- position:relative;
- display:grid;
- grid-template-columns:36% 64%;
- height:190px;
- margin-bottom:10px;
- overflow:hidden;
- background:#071018;
- border:1px solid #075a78;
- border-radius:18px;
- box-shadow:0 0 12px rgba(0,180,255,.14);
+
+.ai-title{
+    text-align:center;
+    font-size:22px;
+    font-weight:800;
+    color:#fff;
+    margin:4px 0 5px;
 }
-.machine:after{
- content:"";
- position:absolute;
- inset:0;
- pointer-events:none;
- background-image:radial-gradient(circle,rgba(0,190,255,.20) 1px,transparent 1.7px);
- background-size:18px 18px;
- opacity:.28;
+
+.ai-subtitle{
+    text-align:center;
+    color:#8ea6b5;
+    font-size:12px;
+    margin-bottom:18px;
 }
-.pic{
- position:relative;
- z-index:1;
- overflow:hidden;
- background:#111;
+
+.series-tabs{
+    width:100%;
+    display:flex;
+    gap:7px;
+    overflow-x:auto;
+    padding:3px 1px 10px;
+    scrollbar-width:none;
 }
-.pic img{
- width:100%;
- height:100%;
- object-fit:contain;
- display:block;
+
+.series-tabs::-webkit-scrollbar{
+    display:none;
 }
- position:absolute;
- top:5px;
- left:5px;
- z-index:3;
- color:#ffe84a;
- font-size:16px;
- font-weight:bold;
- text-shadow:0 0 3px #000;
+
+.series-tab{
+    flex:0 0 auto;
+    border:1px solid rgba(0,183,255,.45);
+    background:#050b10;
+    color:#a9c0cd;
+    border-radius:20px;
+    padding:9px 16px;
+    font-size:12px;
+    font-weight:700;
+    text-decoration:none;
 }
-.info{
- position:relative;
- z-index:2;
- padding:10px;
- background:#071018;
+
+.series-tab.active{
+    color:#00b7ff;
+    border-color:#00b7ff;
+    box-shadow:0 0 12px rgba(0,183,255,.18);
 }
-.code{
- color:#00aef5;
- font-size:20px;
- font-weight:bold;
- margin-bottom:10px;
+
+.machine-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+    margin-top:8px;
 }
-.line{
- font-size:14px;
- line-height:1.3;
- margin-bottom:7px;
- color:#fff;
+
+.machine-card{
+    position:relative;
+    min-width:0;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 50% 20%,rgba(0,174,255,.12),transparent 45%),
+      #05090d;
+    border:1px solid rgba(0,183,255,.35);
+    border-radius:17px;
+    padding:10px;
+    box-shadow:0 0 18px rgba(0,140,255,.08);
 }
-.buy{
- width:100%;
- border:1px solid #00b9f3;
- background:#001923;
- color:#00b9f3;
- border-radius:8px;
- padding:9px;
- font-family:Georgia,serif;
- font-size:16px;
- font-weight:bold;
+
+.machine-card:before{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:linear-gradient(
+      135deg,
+      rgba(0,183,255,.06),
+      transparent 45%,
+      rgba(0,183,255,.03)
+    );
 }
-.bottom{
- position:fixed;
- left:0;
- right:0;
- bottom:0;
- height:68px;
- z-index:20;
- display:grid;
- grid-template-columns:repeat(6,1fr);
- background:#000;
- border-top:1px solid #123;
+
+.machine-image{
+    height:125px;
+    border-radius:12px;
+    border:1px solid rgba(0,183,255,.20);
+    background:
+      radial-gradient(circle at center,rgba(0,183,255,.18),transparent 45%),
+      linear-gradient(135deg,#020609,#07131b);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    overflow:hidden;
+    margin-bottom:10px;
 }
-.bottom a{
- color:#fff;
- text-decoration:none;
- text-align:center;
- font-size:11px;
- padding-top:6px;
+
+.machine-image:after{
+    content:"";
+    position:absolute;
+    width:75%;
+    height:1px;
+    background:rgba(0,183,255,.45);
+    box-shadow:0 0 12px #00b7ff;
 }
-.bottom i{
- display:block;
- font-style:normal;
- font-size:25px;
- line-height:31px;
+
+.machine-code{
+    position:relative;
+    z-index:2;
+    font-size:31px;
+    font-weight:900;
+    color:#00b7ff;
+    letter-spacing:1px;
+    text-shadow:0 0 14px rgba(0,183,255,.7);
 }
-.bottom .active{color:#00b9f3}
+
+.machine-series{
+    color:#00b7ff;
+    font-size:10px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.8px;
+}
+
+.machine-name{
+    margin-top:4px;
+    min-height:34px;
+    font-size:13px;
+    font-weight:800;
+    color:#fff;
+    line-height:1.25;
+}
+
+.machine-status{
+    margin-top:7px;
+    color:#6f8290;
+    font-size:10px;
+}
+
+.machine-status span{
+    color:#00b7ff;
+}
+
+.ai-form{
+    margin-top:10px;
+}
+
+.ai-btn{
+    width:100%;
+    height:43px;
+    border:1px solid #00aaff;
+    border-radius:22px;
+    background:#00aaff;
+    color:#000;
+    font-size:13px;
+    font-weight:900;
+    cursor:pointer;
+    -webkit-appearance:none;
+    appearance:none;
+    outline:none;
+    padding:0;
+}
+
+.ai-btn:active,
+.ai-btn:focus,
+.ai-btn:hover{
+    transform:none!important;
+    scale:1!important;
+}
+
+.bottom-nav{
+    position:fixed;
+    z-index:100;
+    left:0;
+    right:0;
+    bottom:0;
+    height:76px;
+    background:#000;
+    border-top:1px solid rgba(0,174,255,.22);
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    padding-bottom:env(safe-area-inset-bottom);
+}
+
+.nav-item{
+    color:#fff;
+    text-decoration:none;
+    text-align:center;
+    font-size:12px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:3px;
+    min-width:0;
+}
+
+.nav-icon{
+    font-size:27px;
+    line-height:28px;
+}
+
+.nav-item.active{
+    color:#00b7ff;
+}
+
 @media(max-width:380px){
- .machine{height:175px}
- .code{font-size:18px;margin-bottom:8px}
- .line{font-size:13px;margin-bottom:6px}
- .tab{min-width:105px;font-size:19px}
+    .ai-page{
+        padding-left:10px;
+        padding-right:10px;
+    }
+
+    .machine-grid{
+        gap:9px;
+    }
+
+    .machine-image{
+        height:112px;
+    }
+
+    .machine-code{
+        font-size:27px;
+    }
+}
+
+@media(min-width:700px){
+    .machine-grid{
+        grid-template-columns:repeat(4,minmax(0,1fr));
+    }
+
+    .ai-page{
+        max-width:1100px;
+        margin:auto;
+    }
 }
 </style>
 </head>
+
 <body>
-<div class="ai">
 
-<div class="tabs">
- <a class="tab {{'active' if series=='ALL' else ''}}" href="/invest">All</a>
- 
- <a class="tab {{'active' if series=='H' else ''}}" href="/invest?series=H">H series</a>
- <a class="tab {{'active' if series=='U' else ''}}" href="/invest?series=U">U series</a>
- <a class="tab {{'active' if series=='AS' else ''}}" href="/invest?series=AS">AS series</a>
- <a class="tab {{'active' if series=='GS' else ''}}" href="/invest?series=GS">GS series</a>
- <a class="tab {{'active' if series=='K' else ''}}" href="/invest?series=K">K series</a>
- <a class="tab {{'active' if series=='A' else ''}}" href="/invest?series=A">A Series</a>
- <a class="tab {{'active' if series=='VIP' else ''}}" href="/invest?series=VIP">VIP</a>
-</div>
+<div class="ai-page">
 
-<div class="cards">
-{% for code, ser, days, price, total, image in shown %}
-<a class="machine" href="/ai/machine/{{code|urlencode}}" style="text-decoration:none;color:inherit;display:grid;transform:none!important;transition:none!important;">
-<div class="pic">
-<img src="{{image}}" alt="{{code}}">
-</div>
-<div class="info">
-<div class="code">{{code}}</div>
-<div class="line">Lock: {{days}}</div>
-<div class="line">Price: {{price}}</div>
-<div class="line">Total income: {{total}}</div>
-</div>
-</a>
-{% endfor %}
-</div>
+    <div class="ai-header">
+        <div class="ai-logo">CODEX<span>700</span></div>
+    </div>
 
-</div>
+    <div class="ai-title">AI COMPUTING</div>
+    <div class="ai-subtitle">
+        Explore CODEX700 virtual computing systems
+    </div>
 
-<div class="bottom">
-<a href="/home"><i>⌂</i>Home</a>
-<a href="/raffle"><i>🎁</i>Raffle</a>
-<a href="/support"><i>♟</i>chats</a>
-<a class="active" href="/invest"><i>▣</i>AI</a>
-<a href="/income"><i>◈</i>Income</a>
-<a href="/my"><i>●</i>My</a>
-</div>
-</body>
-</html>
-"""
-    return render_template_string(html, shown=shown, series=series)
+    <div class="series-tabs">
+        <a class="series-tab active" href="/invest">All</a>
+        <a class="series-tab" href="/invest?series=K">K Series</a>
+        <a class="series-tab" href="/invest?series=M">M Series</a>
+        <a class="series-tab" href="/invest?series=A">A Series</a>
+        <a class="series-tab" href="/invest?series=GS">GS Series</a>
+    </div>
 
+    <div class="machine-grid">
+    {% for code, series, name, status in machines %}
+        <div class="machine-card">
 
-@app.route("/ai/machine/<path:machine_code>")
-def ai_machine_detail(machine_code):
-    if "uid" not in session:
-        return redirect("/login")
+            <div class="machine-image">
+                <div class="machine-code">{{ code }}</div>
+            </div>
 
-    machines = [
-        ("CODEX A1","A","120 Days","50,000.00","2,880,000.00","/static/ai/mining-robot.svg"),
-        ("CODEX A2","A","120 Days","240,000.00","6,000,000.00","/static/ai/mining-robot.svg"),
-        ("CODEX A3","A","120 Days","520,000.00","24,000,000.00","/static/ai/mining-robot.svg"),
-        ("CODEX A4","A","120 Days","1,050,000.00","60,000,000.00","/static/ai/mining-robot.svg"),
-        ("H-1","H","100 Days","65,000.00","650,000.00","/static/ai/mining-robot.svg"),
-        ("H-2","H","100 Days","200,000.00","2,200,000.00","/static/ai/mining-robot.svg"),
-        ("H-3","H","100 Days","500,000.00","6,000,000.00","/static/ai/mining-robot.svg"),
-        ("H-4","H","100 Days","1,500,000.00","19,500,000.00","/static/ai/mining-robot.svg"),
-        ("H-5","H","100 Days","3,000,000.00","45,000,000.00","/static/ai/mining-robot.svg"),
-        ("U-1","U","25 Days","50,000.00","1,000,000.00","/static/ai/mining-robot.svg"),
-        ("U-2","U","25 Days","150,000.00","3,150,000.00","/static/ai/mining-robot.svg"),
-        ("U-3","U","25 Days","450,000.00","9,900,000.00","/static/ai/mining-robot.svg"),
-        ("U-4","U","25 Days","1,350,000.00","32,400,000.00","/static/ai/mining-robot.svg"),
-        ("U-5","U","25 Days","3,000,000.00","75,000,000.00","/static/ai/mining-robot.svg"),
-        ("AS-1","AS","30 Days","50,000.00","1,200,000.00","/static/ai/mining-robot.svg"),
-        ("AS-2","AS","30 Days","150,000.00","3,900,000.00","/static/ai/mining-robot.svg"),
-        ("AS-3","AS","30 Days","450,000.00","12,600,000.00","/static/ai/mining-robot.svg"),
-        ("AS-4","AS","30 Days","1,350,000.00","40,500,000.00","/static/ai/mining-robot.svg"),
-        ("GS-1","GS","40 Days","70,000.00","1,400,000.00","/static/ai/mining-robot.svg"),
-        ("GS-2","GS","40 Days","210,000.00","4,620,000.00","/static/ai/mining-robot.svg"),
-        ("GS-3","GS","40 Days","600,000.00","14,400,000.00","/static/ai/mining-robot.svg"),
-        ("GS-4","GS","40 Days","1,500,000.00","39,000,000.00","/static/ai/mining-robot.svg"),
-        ("GS-5","GS","40 Days","3,000,000.00","84,000,000.00","/static/ai/mining-robot.svg"),
-        ("K-1","K","35 Days","50,000.00","1,200,000.00","/static/ai/mining-robot.svg"),
-        ("K-2","K","35 Days","150,000.00","3,900,000.00","/static/ai/mining-robot.svg"),
-        ("K-3","K","35 Days","450,000.00","12,600,000.00","/static/ai/mining-robot.svg"),
-        ("K-4","K","35 Days","1,000,000.00","30,000,000.00","/static/ai/mining-robot.svg"),
-        ("A-1","A","16 Days","30,000.00","48,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-1","VIP","20 Days","20,000.00","40,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-1 PRO","VIP","40 Days","30,000.00","120,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-1 MAX","VIP","120 Days","200,000.00","6,960,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-2","VIP","20 Days","50,000.00","110,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-2 PRO","VIP","40 Days","100,000.00","280,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-2 MAX","VIP","120 Days","300,000.00","10,800,000.00","/static/ai/mining-robot.svg")
-    ]
+            <div class="machine-series">{{ series }}</div>
 
-    machine = next((m for m in machines if m[0] == machine_code), None)
+            <div class="machine-name">
+                {{ name }}
+            </div>
 
-    if machine is None:
-        return redirect("/invest")
+            <div class="machine-status">
+                STATUS:
+                <span>{{ status }}</span>
+            </div>
 
-    code, series, days, price, total, image = machine
-    daily = float(total.replace(",", "")) / int(days.split()[0])
+            <form class="ai-form"
+                  method="POST"
+                  action="/ai/activate/Codex_{{ code }}">
+                <input
+                    class="ai-btn"
+                    type="submit"
+                    value="ACTIVATE"
+                >
+            </form>
 
-    html = """
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>CODEX700 {{code}}</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{
- background:#000;
- color:#fff;
- font-family:Georgia,serif;
- min-height:100vh;
- padding-bottom:90px;
-}
-.page{
- padding:18px 14px;
- max-width:520px;
- margin:auto;
-}
-.back{
- display:inline-block;
- color:#00b9f3;
- text-decoration:none;
- font-size:18px;
- margin-bottom:15px;
-}
-.card{
- background:#071018;
- border:1px solid #075a78;
- border-radius:18px;
- overflow:hidden;
- box-shadow:0 0 15px rgba(0,180,255,.15);
-}
-.hero{
- width:100%;
- height:230px;
- background:#111;
-}
-.hero img{
- width:100%;
- height:100%;
- object-fit:contain;
- display:block;
-}
-.details{
- padding:18px;
-}
-.title{
- color:#00b9f3;
- font-size:27px;
- font-weight:bold;
- margin-bottom:18px;
-}
-.row{
- display:flex;
- justify-content:space-between;
- gap:15px;
- padding:12px 0;
- border-bottom:1px solid #123;
- font-size:16px;
-}
-.row:last-child{border-bottom:0}
-.label{color:#aaa}
-.value{color:#fff;text-align:right;font-weight:bold}
-.daily{color:#42e889}
-.notice{
- margin-top:16px;
- padding:12px;
- border-radius:10px;
- background:#001923;
- border:1px solid #075a78;
- color:#aaa;
- font-size:14px;
- line-height:1.5;
-}
-.purchase{
- margin-top:18px;
- display:grid;
- gap:10px;
-}
-.buy{
- width:100%;
- border:1px solid #00b9f3;
- background:#001923;
- color:#00b9f3;
- border-radius:10px;
- padding:13px;
- font-family:Georgia,serif;
- font-size:17px;
- font-weight:bold;
-}
-</style>
-</head>
-<body>
-<div class="page">
-<a class="back" href="/invest">← Back to AI</a>
-<div class="card">
-<div class="hero"><img src="{{image}}" alt="{{code}}"></div>
-<div class="details">
-<div class="title">CODEX {{code}}</div>
-
-<div class="row">
-<span class="label">Series</span>
-<span class="value">{{series}}</span>
-</div>
-
-<div class="row">
-<span class="label">Machine price</span>
-<span class="value">{{price}} UGX</span>
-</div>
-
-<div class="row">
-<span class="label">Lock duration</span>
-<span class="value">{{days}}</span>
-</div>
-
-<div class="row">
-<span class="label">Daily income</span>
-<span class="value daily">{{"{:,.2f}".format(daily)}} UGX</span>
-</div>
-
-<div class="row">
-<span class="label">Total income</span>
-<span class="value">{{total}} UGX</span>
-</div>
-
-{% if purchase_message %}
-<div class="notice" style="color:#42e889;font-weight:bold;">
-{{purchase_message}}
-</div>
-{% else %}
-<div class="notice">
-Choose how you want to pay for this machine. Balance is your earned platform money. Wallet is your deposited money.
-</div>
-{% endif %}
-
-<div class="purchase">
-<form method="POST" action="/ai/purchase/{{code|urlencode}}">
-<input type="hidden" name="source" value="balance">
-<button class="buy" type="submit">Buy with Balance</button>
-</form>
-<form method="POST" action="/ai/purchase/{{code|urlencode}}">
-<input type="hidden" name="source" value="wallet">
-<button class="buy" type="submit">Buy with Wallet</button>
-</form>
-</div>
+        </div>
+    {% endfor %}
+    </div>
 
 </div>
+
+<div class="bottom-nav">
+ <a class="nav-item" href="/home">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><ellipse cx="20" cy="8" rx="12" ry="5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 8v21c0 3 5 6 12 6s12-3 12-6V8M8 18c0 3 5 6 12 6s12-3 12-6M8 28c0 3 5 6 12 6s12-3 12-6" fill="none" stroke="currentColor" stroke-width="3"/></svg></span>
+  <span>Home</span>
+ </a>
+ <a class="nav-item" href="/raffle">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><rect x="6" y="7" width="16" height="16" rx="2" fill="currentColor"/><rect x="18" y="17" width="16" height="16" rx="2" fill="currentColor"/><rect x="10" y="11" width="8" height="8" fill="#000"/></svg></span>
+  <span>Raffle</span>
+ </a>
+ <a class="nav-item" href="/support">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><rect x="5" y="7" width="27" height="20" rx="5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M12 27l-2 7 8-7M12 14h13M12 20h9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="31" cy="29" r="4" fill="currentColor"/></svg></span>
+  <span>chats</span>
+ </a>
+ <a class="nav-item" href="/invest">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><rect x="9" y="8" width="22" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M5 14h4M5 20h4M5 26h4M31 14h4M31 20h4M31 26h4M15 4v4M21 4v4M27 4v4M15 32v4M21 32v4M27 32v4" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><rect x="14" y="14" width="12" height="12" rx="2" fill="currentColor"/></svg></span>
+  <span>AI</span>
+ </a>
+ <a class="nav-item" href="/income">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><path d="M24 5l-3 30M29 10c-3-3-12-3-15 2-4 7 12 5 11 12-1 7-12 8-16 3M12 14h18M9 28h18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  <span>Income</span>
+ </a>
+ <a class="nav-item" href="/my">
+  <span class="nav-icon"><svg viewBox="0 0 40 40" width="30" height="30"><circle cx="20" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 35c0-8 5-12 12-12s12 4 12 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></span>
+  <span>My</span>
+ </a>
 </div>
-</div>
+
 </body>
 </html>
 """
 
-    return render_template_string(
-        html,
-        code=code,
-        series=series,
-        days=days,
-        price=price,
-        total=total,
-        image=image,
-        daily=daily,
-        purchase_message=request.args.get("purchase","")
-    )
-
-
-@app.route("/ai/purchase/<path:machine_code>", methods=["POST"])
-def ai_purchase_machine(machine_code):
-    if "uid" not in session:
-        return redirect("/login")
-
-    machines = [
-        ("CODEX A1","A","120 Days","50,000.00","2,880,000.00","/static/ai/mining-robot.svg"),
-        ("CODEX A2","A","120 Days","240,000.00","6,000,000.00","/static/ai/mining-robot.svg"),
-        ("CODEX A3","A","120 Days","520,000.00","24,000,000.00","/static/ai/mining-robot.svg"),
-        ("CODEX A4","A","120 Days","1,050,000.00","60,000,000.00","/static/ai/mining-robot.svg"),
-        ("H-1","H","100 Days","65,000.00","650,000.00","/static/ai/mining-robot.svg"),
-        ("H-2","H","100 Days","200,000.00","2,200,000.00","/static/ai/mining-robot.svg"),
-        ("H-3","H","100 Days","500,000.00","6,000,000.00","/static/ai/mining-robot.svg"),
-        ("H-4","H","100 Days","1,500,000.00","19,500,000.00","/static/ai/mining-robot.svg"),
-        ("H-5","H","100 Days","3,000,000.00","45,000,000.00","/static/ai/mining-robot.svg"),
-        ("U-1","U","25 Days","50,000.00","1,000,000.00","/static/ai/mining-robot.svg"),
-        ("U-2","U","25 Days","150,000.00","3,150,000.00","/static/ai/mining-robot.svg"),
-        ("U-3","U","25 Days","450,000.00","9,900,000.00","/static/ai/mining-robot.svg"),
-        ("U-4","U","25 Days","1,350,000.00","32,400,000.00","/static/ai/mining-robot.svg"),
-        ("U-5","U","25 Days","3,000,000.00","75,000,000.00","/static/ai/mining-robot.svg"),
-        ("AS-1","AS","30 Days","50,000.00","1,200,000.00","/static/ai/mining-robot.svg"),
-        ("AS-2","AS","30 Days","150,000.00","3,900,000.00","/static/ai/mining-robot.svg"),
-        ("AS-3","AS","30 Days","450,000.00","12,600,000.00","/static/ai/mining-robot.svg"),
-        ("AS-4","AS","30 Days","1,350,000.00","40,500,000.00","/static/ai/mining-robot.svg"),
-        ("GS-1","GS","40 Days","70,000.00","1,400,000.00","/static/ai/mining-robot.svg"),
-        ("GS-2","GS","40 Days","210,000.00","4,620,000.00","/static/ai/mining-robot.svg"),
-        ("GS-3","GS","40 Days","600,000.00","14,400,000.00","/static/ai/mining-robot.svg"),
-        ("GS-4","GS","40 Days","1,500,000.00","39,000,000.00","/static/ai/mining-robot.svg"),
-        ("GS-5","GS","40 Days","3,000,000.00","84,000,000.00","/static/ai/mining-robot.svg"),
-        ("K-1","K","35 Days","50,000.00","1,200,000.00","/static/ai/mining-robot.svg"),
-        ("K-2","K","35 Days","150,000.00","3,900,000.00","/static/ai/mining-robot.svg"),
-        ("K-3","K","35 Days","450,000.00","12,600,000.00","/static/ai/mining-robot.svg"),
-        ("K-4","K","35 Days","1,000,000.00","30,000,000.00","/static/ai/mining-robot.svg"),
-        ("A-1","A","16 Days","30,000.00","48,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-1","VIP","20 Days","20,000.00","40,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-1 PRO","VIP","40 Days","30,000.00","120,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-1 MAX","VIP","120 Days","200,000.00","6,960,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-2","VIP","20 Days","50,000.00","110,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-2 PRO","VIP","40 Days","100,000.00","280,000.00","/static/ai/mining-robot.svg"),
-        ("VIP-2 MAX","VIP","120 Days","300,000.00","10,800,000.00","/static/ai/mining-robot.svg")
-    ]
-
-    machine = next((m for m in machines if m[0] == machine_code), None)
-    if machine is None:
-        return redirect("/invest")
-
-    source = request.form.get("source", "").lower()
-    if source not in ("balance", "wallet"):
-        return redirect(f"/ai/machine/{machine_code}?purchase=Invalid+payment+source")
-
-    code, series, days, price_text, total_text, image = machine
-
-    price = float(price_text.replace(",", ""))
-    total_income = float(total_text.replace(",", ""))
-    lock_days = int(days.split()[0])
-    daily_income = total_income / lock_days
-
-    from datetime import datetime, timedelta
-
-    started = datetime.utcnow()
-    expires = started + timedelta(days=lock_days)
-
-    started_text = started.strftime("%Y-%m-%d %H:%M:%S")
-    expires_text = expires.strftime("%Y-%m-%d %H:%M:%S")
-
-    con = sqlite3.connect(DB)
-    con.row_factory = sqlite3.Row
-
-    try:
-        con.execute("BEGIN IMMEDIATE")
-
-        existing = con.execute(
-            "SELECT id FROM ai_machines WHERE uid=? AND name=? AND price>0 LIMIT 1",
-            (session["uid"], code)
-        ).fetchone()
-
-        if existing:
-            con.rollback()
-            return redirect(f"/ai/machine/{machine_code}?purchase=Purchase+limit+reached")
-
-        column = "balance" if source == "balance" else "wallet"
-
-        cur = con.execute(
-            f"UPDATE users SET {column}={column}-? WHERE id=? AND {column}>=?",
-            (price, session["uid"], price)
-        )
-
-        if cur.rowcount != 1:
-            con.rollback()
-            return redirect(f"/ai/machine/{machine_code}?purchase=Insufficient+funds")
-
-        con.execute(
-            """INSERT INTO ai_machines
-            (uid,name,series,image,price,lock_days,total_income,daily_income,
-             expires_at,payment_source,status,started_at)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
-            (
-                session["uid"],
-                code,
-                series,
-                image,
-                price,
-                lock_days,
-                total_income,
-                daily_income,
-                expires_text,
-                source,
-                "RUNNING",
-                started_text
-            )
-        )
-
-        con.commit()
-
-    except Exception:
-        con.rollback()
-        raise
-
-    finally:
-        con.close()
-
-    return redirect(f"/ai/machine/{machine_code}?purchase=Purchase+successful")
+    return render_template_string(html, machines=machines)
 
 @app.route("/ai/activate/<machine_name>", methods=["POST"])
 def activate_ai_machine(machine_name):
     if "uid" not in session:
         return redirect("/login")
 
-    code = machine_name.replace("Codex_", "").replace("_", " ").strip()
-    if not code:
+    allowed={
+        "Codex_M1":"Codex M1",
+        "Codex_M2":"Codex M2",
+        "Codex_M3":"Codex M3",
+        "Codex_M4":"Codex M4",
+        "Codex_M5":"Codex M5",
+        "Codex_M6":"Codex M6",
+        "Codex_M7":"Codex M7"
+    }
+
+    name=allowed.get(machine_name)
+    if not name:
         return redirect("/invest")
 
-    name = "Codex " + code
-
-    con = sqlite3.connect(DB)
+    con=sqlite3.connect(DB)
     con.execute("""
         CREATE TABLE IF NOT EXISTS ai_machines(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -3332,14 +2578,17 @@ def activate_ai_machine(machine_name):
             status TEXT DEFAULT 'RUNNING'
         )
     """)
+
+    # Keep this as virtual machine activation only.
     con.execute(
         "INSERT INTO ai_machines(uid,name,status) VALUES(?,?,?)",
-        (session["uid"], name, "RUNNING")
+        (session["uid"],name,"RUNNING")
     )
     con.commit()
     con.close()
 
     return redirect("/income")
+
 
 @app.route("/invite")
 def invite_page():
@@ -3360,7 +2609,7 @@ def invite_page():
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Invite Friends</title>
 
 <style>
@@ -5334,6 +4583,7 @@ def redeem_reward():
         "HFCS":40000,
         "CODEX20":20000,
         "WELCOME10":10000,
+        "BONUS5":5000,
         "VIP50":50000
     }
 
@@ -5376,21 +4626,9 @@ def account():
 
     # Add notification preference safely if it does not exist.
     cols = [r[1] for r in con.execute("PRAGMA table_info(users)").fetchall()]
-
-    # Keep Settings compatible with older Render databases.
-    required_user_columns = {
-        "notifications_enabled": "INTEGER DEFAULT 1",
-        "name": "TEXT",
-        "mtn_number": "TEXT",
-        "airtel_number": "TEXT",
-        "usdt_wallet": "TEXT"
-    }
-
-    for col, definition in required_user_columns.items():
-        if col not in cols:
-            con.execute(f"ALTER TABLE users ADD COLUMN {col} {definition}")
-
-    con.commit()
+    if "notifications_enabled" not in cols:
+        con.execute("ALTER TABLE users ADD COLUMN notifications_enabled INTEGER DEFAULT 1")
+        con.commit()
 
     user = con.execute("SELECT * FROM users WHERE id=?", (session["uid"],)).fetchone()
 
@@ -5462,269 +4700,306 @@ def account():
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Settings</title>
+
 <style>
 html,body{
- margin:0;
- padding:0;
- min-height:100%;
- background:#000!important;
- color:#fff;
- font-family:Georgia,serif;
+    margin:0;
+    padding:0;
+    min-height:100%;
+    background:#020204!important;
+    color:#fff;
+    font-family:Georgia,serif;
 }
+
 body{
- background:
- radial-gradient(circle,rgba(0,180,255,.55) 1.2px,transparent 1.8px) 0 0/32px 32px,
- radial-gradient(circle,rgba(0,120,220,.35) 1px,transparent 1.6px) 16px 16px/32px 32px,
- #000!important;
+    background-image:
+      radial-gradient(circle at 20% 20%,rgba(0,190,255,.16) 1px,transparent 2px),
+      radial-gradient(circle at 80% 40%,rgba(0,190,255,.12) 1px,transparent 2px),
+      radial-gradient(circle at 40% 80%,rgba(0,190,255,.10) 1px,transparent 2px);
+    background-size:24px 24px,32px 32px,28px 28px;
+    background-attachment:fixed;
 }
+
 *{
- box-sizing:border-box;
- -webkit-text-size-adjust:100%;
- -webkit-tap-highlight-color:transparent;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
 }
+
 .page{
- width:100%;
- min-height:100vh;
- max-width:none;
- padding-bottom:118px;
+    width:100%;
+    max-width:none;
+    margin:auto;
+    padding-bottom:118px;
 }
+
 .top{
- height:104px;
- width:100%;
- display:flex;
- align-items:center;
- justify-content:center;
- position:relative;
- border-bottom:1px solid #07384a;
- background:rgba(0,0,0,.88);
+    height:104px;
+    display:flex;
+    align-items:center;
+    border-bottom:1px solid #073247;
+    background:#020204;
+    position:sticky;
+    top:0;
+    z-index:20;
 }
+
 .back{
- position:absolute;
- left:4%;
- top:14px;
- width:74px;
- height:74px;
- border:1px solid #00c8ff;
- border-radius:18px;
- background:#02070b;
- color:#00c8ff;
- display:flex;
- align-items:center;
- justify-content:center;
- text-decoration:none;
- font-family:Arial,sans-serif;
- font-size:38px;
- line-height:1;
- box-shadow:0 0 15px rgba(0,200,255,.28);
+    width:64px;
+    height:64px;
+    margin-left:28px;
+    border:1px solid #00b9f3;
+    border-radius:18px;
+    background:#020910;
+    color:#00b9f3;
+    text-decoration:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:Arial,sans-serif;
+    font-size:42px;
+    line-height:1;
+    box-shadow:0 0 12px rgba(0,185,243,.20);
 }
+
 .title{
- color:#00c8ff;
- font-size:21px;
- font-weight:bold;
- text-shadow:0 0 8px rgba(0,200,255,.35);
+    flex:1;
+    text-align:center;
+    margin-right:92px;
+    color:#00b9f3;
+    font-size:27px;
+    font-weight:bold;
 }
+
 .content{
- padding:23px 4% 30px;
+    padding:30px 32px;
 }
+
 .card{
- width:100%;
- background:rgba(0,5,9,.78);
- border:1px solid #00bfff;
- border-radius:19px;
- padding:12px 14px;
- margin-bottom:10px;
- box-shadow:
-  0 0 12px rgba(0,190,255,.18),
-  inset 0 0 22px rgba(0,60,100,.10);
+    background:rgba(0,5,9,.78);
+    border:1px solid #00b9f3;
+    border-radius:18px;
+    padding:27px;
+    margin-bottom:24px;
+    box-shadow:0 0 12px rgba(0,185,243,.22), inset 0 0 20px rgba(0,20,30,.30);
 }
+
 .heading{
- color:#00c8ff;
- font-size:15px;
- font-weight:bold;
- margin:0 0 18px;
- text-shadow:0 0 7px rgba(0,200,255,.25);
+    color:#00b9f3;
+    font-size:24px;
+    font-weight:bold;
+    margin-bottom:25px;
 }
-.field{
- margin-bottom:10px;
-}
-.field:last-child{
- margin-bottom:0;
-}
+
 label{
- display:block;
- color:#fff;
- font-size:16px;
- margin-bottom:4px;
+    display:block;
+    font-size:19px;
+    margin-bottom:12px;
 }
+
 input{
- width:100%;
- height:65px;
- padding:0 12px;
- border:1px solid #00bfff;
- border-radius:9px;
- background:#03111c;
- color:#fff;
- font-family:Georgia,serif;
- font-size:14px;
- outline:none;
- box-shadow:inset 0 0 12px rgba(0,80,130,.13);
+    width:100%;
+    height:68px;
+    border-radius:18px;
+    border:1px solid #00b9f3;
+    background:#03111c;
+    color:#fff;
+    padding:0 22px;
+    font-family:Georgia,serif;
+    font-size:19px;
+    outline:none;
 }
-input::placeholder{
- color:#8c9299;
- opacity:1;
+
+input:focus{
+    border-color:#00b9f3;
 }
+
 .phone{
- color:#aeb4bc;
- font-size:15px;
- margin-top:18px;
+    color:#aab0b8;
+    font-size:18px;
+    margin-top:22px;
 }
+
+.field{
+    margin-bottom:24px;
+}
+
 .toggle-row{
- display:flex;
- align-items:center;
- justify-content:space-between;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
 }
+
 .toggle-text .heading{
- margin-bottom:8px;
+    margin-bottom:10px;
 }
+
 .toggle-sub{
- color:#aeb4bc;
- font-size:15px;
+    color:#aab0b8;
+    font-size:18px;
 }
+
 .switch{
- position:relative;
- display:block;
- width:88px;
- height:50px;
- flex:none;
- margin:0;
+    position:relative;
+    width:88px;
+    height:50px;
+    flex:none;
 }
+
 .switch input{
- display:none;
+    display:none;
 }
+
 .slider{
- position:absolute;
- inset:0;
- border-radius:50px;
- background:#18242b;
- border:1px solid #284552;
+    position:absolute;
+    inset:0;
+    background:#18232a;
+    border-radius:40px;
+    border:1px solid #24404e;
 }
+
 .slider:before{
- content:"";
- position:absolute;
- width:42px;
- height:42px;
- left:3px;
- top:3px;
- border-radius:50%;
- background:#000;
+    content:"";
+    position:absolute;
+    width:42px;
+    height:42px;
+    left:3px;
+    top:3px;
+    background:#05080b;
+    border-radius:50%;
+    transition:.15s;
 }
+
 .switch input:checked + .slider{
- background:#08baf0;
- border-color:#08baf0;
- box-shadow:0 0 10px rgba(0,190,255,.22);
+    background:#08baf0;
+    border-color:#08baf0;
 }
+
 .switch input:checked + .slider:before{
- transform:translateX(38px);
+    transform:translateX(38px);
 }
+
 .save{
- display:block;
- width:100%;
- height:46px;
- margin:0 0 20px;
- border:0;
- border-radius:9px;
- background:#08baf0;
- color:#fff;
- font-family:Georgia,serif;
- font-size:14px;
- font-weight:bold;
- box-shadow:0 0 14px rgba(0,190,255,.25);
+    width:100%;
+    height:78px;
+    border:0;
+    border-radius:16px;
+    background:#08baf0;
+    color:#fff;
+    font-family:Georgia,serif;
+    font-size:24px;
+    font-weight:bold;
+    margin:0 0 27px;
 }
+
 .password-btn{
- margin-top:17px;
- margin-bottom:0;
- background:transparent;
- border:1px solid #00bfff;
- color:#00c8ff;
- box-shadow:none;
+    background:transparent;
+    border:1px solid #00b9f3;
+    color:#00b9f3;
 }
+
 .signout{
- display:flex;
- align-items:center;
- justify-content:center;
- width:100%;
- height:65px;
- border:1px solid #ff2452;
- border-radius:9px;
- background:rgba(0,0,0,.55);
- color:#ff4168;
- text-decoration:none;
- font-size:14px;
- box-shadow:0 0 9px rgba(255,30,80,.12);
+    width:100%;
+    height:68px;
+    border:1px solid #8c1f35;
+    border-radius:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-decoration:none;
+    color:#ff3154;
+    font-size:23px;
+    margin-top:5px;
+    background:rgba(20,0,4,.25);
 }
+
 .notice{
- margin-bottom:10px;
- padding:14px 17px;
- border:1px solid #00bfff;
- border-radius:14px;
- background:#061b25;
- color:#67dcff;
- font-size:14px;
+    border:1px solid #00b9f3;
+    background:#061c25;
+    color:#66dcff;
+    border-radius:14px;
+    padding:15px 18px;
+    margin-bottom:22px;
+    font-size:17px;
 }
+
 .error{
- border-color:#ff3154;
- color:#ff8ca0;
+    border-color:#7d2532;
+    background:#260a0f;
+    color:#ff8fa1;
 }
+
 .bottom{
- position:fixed;
- left:0;
- right:0;
- bottom:0;
- height:108px;
- z-index:100;
- display:flex;
- align-items:center;
- justify-content:space-around;
- background:#000;
- border-top:1px solid #083b4e;
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    height:108px;
+    background:#000;
+    border-top:1px solid #12313e;
+    z-index:50;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
 }
+
 .nav{
- width:16.66%;
- color:#fff;
- text-decoration:none;
- text-align:center;
+    color:#fff;
+    text-decoration:none;
+    text-align:center;
+    min-width:58px;
 }
+
 .nav-icon{
- height:42px;
- display:flex;
- align-items:center;
- justify-content:center;
- font-family:Arial,sans-serif;
- font-size:35px;
- line-height:35px;
+    font-family:Arial,sans-serif;
+    font-size:34px;
+    line-height:35px;
 }
+
 .nav-text{
- font-size:14px;
- margin-top:2px;
+    font-size:16px;
+    margin-top:4px;
 }
+
 @media(max-width:500px){
- .content{
-  padding:23px 4% 30px;
- }
- .card{
-  padding:22px 27px;
- }
+    .content{padding:24px 30px;}
+    .card{padding:22px 27px;margin-bottom:20px;}
+    .heading{font-size:23px;margin-bottom:18px;}
+    label{font-size:19px;margin-bottom:10px;}
+    input{height:64px;font-size:18px;}
+    .phone{font-size:17px;margin-top:18px;}
+
+    .top{height:105px}
+    .back{
+        width:64px;
+        height:64px;
+        margin-left:28px;
+    }
+    .title{
+        font-size:26px;
+        margin-right:92px;
+    }
+    .content{
+        padding:30px 32px;
+    }
+    .card{
+        padding:27px;
+    }
+    input{
+        height:68px;
+    }
 }
 </style>
 </head>
+
 <body>
+
 <div class="page">
 
 <div class="top">
- <a class="back" href="/my">‹</a>
- <div class="title">Settings</div>
+    <a class="back" href="/my">‹</a>
+    <div class="title">Settings</div>
 </div>
 
 <div class="content">
@@ -5732,58 +5007,73 @@ input::placeholder{
 %NOTICE%
 
 <form method="POST">
+
 <div class="card">
- <div class="heading">Profile</div>
- <div class="field">
-  <label>Display name</label>
-  <input type="text" name="name" value="%NAME%" placeholder="">
- </div>
- <div class="phone">Phone: %PHONE%</div>
+    <div class="heading">Profile</div>
+
+    <div class="field">
+        <label>Display name</label>
+        <input type="text" name="name" value="%NAME%" placeholder="">
+    </div>
+
+    <div class="phone">Phone: %PHONE%</div>
 </div>
 
 <div class="card">
- <div class="heading">Payout details</div>
+    <div class="heading">Payout details</div>
 
- <div class="field">
-  <label>MTN Uganda number</label>
-  <input type="text" name="mtn_number" value="%MTN%" placeholder="0770000000">
- </div>
+    <div class="field">
+        <label>MTN Uganda number</label>
+        <input type="text" name="mtn_number" value="%MTN%" placeholder="0770000000">
+    </div>
 
- <div class="field">
-  <label>Airtel Uganda number</label>
-  <input type="text" name="airtel_number" value="%AIRTEL%" placeholder="0750000000">
- </div>
+    <div class="field">
+        <label>Airtel Uganda number</label>
+        <input type="text" name="airtel_number" value="%AIRTEL%" placeholder="0750000000">
+    </div>
 
- <div class="field">
-  <label>USDT TRC20 address</label>
-  <input type="text" name="usdt_wallet" value="%USDT%" placeholder="T...">
- </div>
+    <div class="field" style="margin-bottom:0">
+        <label>USDT TRC20 address</label>
+        <input type="text" name="usdt_wallet" value="%USDT%" placeholder="T...">
+    </div>
 </div>
 
 <div class="card">
- <div class="toggle-row">
-  <div class="toggle-text">
-   <div class="heading">Notifications</div>
-   <div class="toggle-sub">Push &amp; in-app notifications</div>
-  </div>
-  <label class="switch">
-   <input type="checkbox" name="notifications" value="1" %CHECKED%>
-   <span class="slider"></span>
-  </label>
- </div>
+    <div class="toggle-row">
+        <div class="toggle-text">
+            <div class="heading">Notifications</div>
+            <div class="toggle-sub">Push &amp; in-app notifications</div>
+        </div>
+
+        <label class="switch">
+            <input type="checkbox" name="notifications" value="1" %CHECKED%>
+            <span class="slider"></span>
+        </label>
+    </div>
 </div>
 
 <input type="hidden" name="action" value="save">
 <button class="save" type="submit">Save changes</button>
+
 </form>
 
 <div class="card">
- <div class="heading">Change password</div>
- <form method="POST">
-  <input type="password" name="new_password" placeholder="New password" required>
-  <input type="hidden" name="action" value="password">
-  <button class="save password-btn" type="submit">Update password</button>
- </form>
+    <div class="heading">Change password</div>
+
+    <form method="POST">
+        <input
+            type="password"
+            name="new_password"
+            placeholder="New password"
+            required
+        >
+
+        <input type="hidden" name="action" value="password">
+
+        <button class="save password-btn" type="submit">
+            Update password
+        </button>
+    </form>
 </div>
 
 <a class="signout" href="/logout">↪ &nbsp; Sign out</a>
@@ -5792,27 +5082,52 @@ input::placeholder{
 </div>
 
 <div class="bottom">
- <a class="nav" href="/home"><div class="nav-icon">▱</div><div class="nav-text">Home</div></a>
- <a class="nav" href="/raffle"><div class="nav-icon">◧</div><div class="nav-text">Raffle</div></a>
- <a class="nav" href="/support"><div class="nav-icon">▣</div><div class="nav-text">chats</div></a>
- <a class="nav" href="/invest"><div class="nav-icon">▦</div><div class="nav-text">AI</div></a>
- <a class="nav" href="/income"><div class="nav-icon">₿</div><div class="nav-text">Income</div></a>
- <a class="nav" href="/my"><div class="nav-icon">♙</div><div class="nav-text">My</div></a>
+    <a class="nav" href="/home">
+        <div class="nav-icon">▱</div>
+        <div class="nav-text">Home</div>
+    </a>
+
+    <a class="nav" href="/raffle">
+        <div class="nav-icon">◧</div>
+        <div class="nav-text">Raffle</div>
+    </a>
+
+    <a class="nav" href="/support">
+        <div class="nav-icon">▣</div>
+        <div class="nav-text">chats</div>
+    </a>
+
+    <a class="nav" href="/invest">
+        <div class="nav-icon">▦</div>
+        <div class="nav-text">AI</div>
+    </a>
+
+    <a class="nav" href="/income">
+        <div class="nav-icon">₿</div>
+        <div class="nav-text">Income</div>
+    </a>
+
+    <a class="nav" href="/my">
+        <div class="nav-icon">♙</div>
+        <div class="nav-text">My</div>
+    </a>
 </div>
+
 </body>
 </html>
 """
 
-    html=html.replace("%NOTICE%",notice)
-    html=html.replace("%NAME%",str(name).replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace('"',"&quot;"))
-    html=html.replace("%PHONE%",str(phone))
-    html=html.replace("%MTN%",str(mtn_number).replace('"',"&quot;"))
-    html=html.replace("%AIRTEL%",str(airtel_number).replace('"',"&quot;"))
-    html=html.replace("%USDT%",str(usdt_wallet).replace('"',"&quot;"))
-    html=html.replace("%CHECKED%",checked)
+    html = html.replace("%NOTICE%", notice)
+    html = html.replace("%NAME%", str(name).replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace('"',"&quot;"))
+    html = html.replace("%PHONE%", str(phone))
+    html = html.replace("%MTN%", str(mtn_number).replace('"',"&quot;"))
+    html = html.replace("%AIRTEL%", str(airtel_number).replace('"',"&quot;"))
+    html = html.replace("%USDT%", str(usdt_wallet).replace('"',"&quot;"))
+    html = html.replace("%CHECKED%", checked)
 
     con.close()
     return html
+
 
 @app.route("/support")
 def support_page():
@@ -5846,44 +5161,6 @@ body{background:#000;color:#fff;font-family:Georgia,serif}
 </div>"""
 
 
-
-@app.route("/bills")
-def bills_page():
-    conn = db()
-    try:
-        cols = [r[1] for r in conn.execute("PRAGMA table_info(transactions)").fetchall()]
-        rows = []
-
-        if "transactions" in [r[0] for r in conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        ).fetchall()]:
-
-            user_col = None
-            for c in ("user_id", "phone", "user_code", "username"):
-                if c in cols:
-                    user_col = c
-                    break
-
-            value = None
-            for key in ("user_id", "phone", "user_code", "username"):
-                if session.get(key) is not None:
-                    value = session.get(key)
-                    break
-
-            if user_col and value is not None:
-                rows = conn.execute(
-                    f"SELECT * FROM transactions WHERE {user_col}=? ORDER BY rowid DESC",
-                    (value,)
-                ).fetchall()
-            else:
-                rows = conn.execute(
-                    "SELECT * FROM transactions ORDER BY rowid DESC"
-                ).fetchall()
-
-        return render_template("bills.html", rows=rows)
-    finally:
-        conn.close()
-
 @app.route("/withdraw", methods=["GET", "POST"])
 def withdraw_page():
     if "uid" not in session:
@@ -5896,79 +5173,6 @@ def withdraw_page():
     ).fetchone()
 
     balance = float(u["balance"] or 0) if u and "balance" in u.keys() else 0
-
-    # Process withdrawal using the user's own saved payout details.
-    if request.method == "POST":
-        method = request.form.get("method", "MTN UG").strip()
-
-        try:
-            amount = float(request.form.get("amount", "0"))
-        except Exception:
-            amount = 0
-
-        if amount < 5000:
-            c.close()
-            return "<script>alert('Minimum withdrawal is 5,000 UGX.');history.back();</script>"
-
-        if amount > balance:
-            c.close()
-            return "<script>alert('Insufficient balance.');history.back();</script>"
-
-        name = (u["name"] or "").strip() if u and "name" in u.keys() else ""
-        mtn_number = (u["mtn_number"] or "").strip() if u and "mtn_number" in u.keys() else ""
-        airtel_number = (u["airtel_number"] or "").strip() if u and "airtel_number" in u.keys() else ""
-        usdt_wallet = (u["usdt_wallet"] or "").strip() if u and "usdt_wallet" in u.keys() else ""
-
-        if method == "MTN UG":
-            destination = mtn_number
-            destination_type = "MTN Uganda"
-        elif method == "Airtel UG":
-            destination = airtel_number
-            destination_type = "Airtel Uganda"
-        elif method == "USDT TRC20":
-            destination = usdt_wallet
-            destination_type = "USDT TRC20"
-        else:
-            c.close()
-            return "<script>alert('Invalid payout method.');history.back();</script>"
-
-        if not name:
-            c.close()
-            return "<script>alert('Please save your payout name in Settings before withdrawing.');location.href='/account';</script>"
-
-        if not destination:
-            c.close()
-            return "<script>alert('Please save your selected payout details in Settings before withdrawing.');location.href='/account';</script>"
-
-        fee = amount * 0.10
-        receive = amount - fee
-
-        from datetime import datetime
-        date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-        ref = f"{destination_type} | Name: {name} | Destination: {destination} | Receive: {receive:.2f}"
-
-        c.execute(
-            "UPDATE users SET balance=balance-? WHERE id=? AND balance>=?",
-            (amount, session["uid"], amount)
-        )
-
-        if c.execute("SELECT changes()").fetchone()[0] != 1:
-            c.rollback()
-            c.close()
-            return "<script>alert('Unable to process withdrawal. Please try again.');history.back();</script>"
-
-        c.execute(
-            """INSERT INTO transactions
-               (user_id,type,amount,status,date,ref)
-               VALUES (?,?,?,?,?,?)""",
-            (session["uid"], "withdrawal", amount, "Pending", date_now, ref)
-        )
-
-        c.commit()
-        c.close()
-
-        return "<script>alert('Withdrawal request submitted successfully.');location.href='/withdraw';</script>"
 
     # Check whether the user owns an active AI machine.
     try:
@@ -6309,6 +5513,7 @@ body{{font-family:Georgia,serif}}
     box-shadow:0 0 13px rgba(0,190,255,.22);
 }}
 
+.history-box{{
     margin-top:25px;
     padding:28px 18px;
     min-height:380px;
@@ -6424,21 +5629,19 @@ body{{font-family:Georgia,serif}}
         <div class="hint">Minimum withdrawal is 5,000 UGX</div>
 
         <div class="required">
-            <h3>Withdrawal details</h3>
-            <p id="detailsText"></p>
-            <a href="/account">Save payout details</a>
+            <h3>Withdrawal details required</h3>
+            <p>Save your phone number and the name registered on that number on your card before withdrawing.</p>
+            <a href="/account">Save my card details</a>
         </div>
 
-        <label class="field-label">Destination</label>
+        <label class="field-label">Destination phone number</label>
         <input
             class="input"
             type="text"
-            id="destination"
-            value=""
+            value="Saved on your card"
             readonly
-            placeholder="No payout details saved"
         >
-        <div class="hint" id="destinationHint"></div>
+        <div class="hint">Taken from your saved card. Change it on the Card page.</div>
 
         <div class="summary">
             <div class="summary-row">
@@ -6488,48 +5691,12 @@ body{{font-family:Georgia,serif}}
 </div>
 
 <script>
-var payoutDetails = {{
-    "MTN UG": {{
-        number: {__import__('json').dumps((u["mtn_number"] or "") if u and "mtn_number" in u.keys() else "")},
-        label: "MTN Uganda"
-    }},
-    "Airtel UG": {{
-        number: {__import__('json').dumps((u["airtel_number"] or "") if u and "airtel_number" in u.keys() else "")},
-        label: "Airtel Uganda"
-    }},
-    "USDT TRC20": {{
-        number: {__import__('json').dumps((u["usdt_wallet"] or "") if u and "usdt_wallet" in u.keys() else "")},
-        label: "USDT TRC20"
-    }}
-}};
-
-function updateDestination(){{
-    var method = document.getElementById('method').value;
-    var data = payoutDetails[method] || {{}};
-    var destination = data.number || "";
-
-    document.getElementById('destination').value = destination;
-
-    if(destination){{
-        document.getElementById('detailsText').textContent =
-            "Saved payout details for " + data.label + ".";
-        document.getElementById('destinationHint').textContent =
-            "This is the payout destination saved in your Settings.";
-    }}else{{
-        document.getElementById('detailsText').textContent =
-            "No payout details have been saved for this method.";
-        document.getElementById('destinationHint').textContent =
-            "Open Settings to save your payout details before withdrawing.";
-    }}
-}}
-
 function setMethod(btn,name){{
     document.querySelectorAll('.method').forEach(function(x){{
         x.classList.remove('active');
     }});
     btn.classList.add('active');
     document.getElementById('method').value=name;
-    updateDestination();
 }}
 
 function calculate(){{
@@ -6563,119 +5730,11 @@ function validateWithdrawal(){{
     return true;
 }}
 
-updateDestination();
 calculate();
 </script>
-
-<script>
-/* CODEX700 APP-STYLE NAVIGATION V2 */
-(function(){{
-  if(window.__codexAppNavV2){{return;}}
-  window.__codexAppNavV2=true;
-
-  function ok(a){{
-    if(!a || !a.href){{return false;}}
-    if(a.target && a.target !== "_self"){{return false;}}
-    if(a.hasAttribute("download")){{return false;}}
-    if(a.protocol !== location.protocol){{return false;}}
-    if(a.origin !== location.origin){{return false;}}
-
-    var p=a.pathname;
-    var blocked=["/logout","/register","/login","/forgot","/reset","/admin"];
-
-    for(var i=0;i<blocked.length;i++){{
-      if(p===blocked[i] || p.indexOf(blocked[i]+"/")===0){{return false;}}
-    }}
-
-    return true;
-  }}
-
-  function runScripts(root){{
-    root.querySelectorAll("script").forEach(function(oldScript){{
-      var n=document.createElement("script");
-
-      for(var i=0;i<oldScript.attributes.length;i++){{
-        var at=oldScript.attributes[i];
-        n.setAttribute(at.name,at.value);
-      }}
-
-      if(oldScript.src){{
-        n.src=oldScript.src;
-      }}else{{
-        n.textContent=oldScript.textContent;
-      }}
-
-      oldScript.replaceWith(n);
-    }});
-  }}
-
-  async function go(url,push){{
-    try{{
-      var r=await fetch(url,{{
-        credentials:"same-origin",
-        headers:{{"X-CODEX-SPA":"1"}}
-      }});
-
-      if(!r.ok){{throw new Error("navigation");}}
-
-      var text=await r.text();
-      var doc=new DOMParser().parseFromString(text,"text/html");
-
-      if(!doc.body){{throw new Error("body");}}
-
-      var body=doc.body.cloneNode(true);
-
-      body.querySelectorAll("script").forEach(function(sc){{
-        var t=sc.textContent || "";
-        if(
-          t.indexOf("CODEX700 APP-STYLE NAVIGATION V2")!==-1 ||
-          t.indexOf("SUPER FAST BUTTONS")!==-1
-        ){{
-          sc.remove();
-        }}
-      }});
-
-      document.body.replaceWith(body);
-
-      if(doc.title){{document.title=doc.title;}}
-      if(push){{history.pushState({{codex:true}},"",url);}}
-
-      window.scrollTo(0,0);
-      runScripts(document.body);
-
-    }}catch(e){{
-      window.location.href=url;
-    }}
-  }}
-
-  document.addEventListener("click",function(e){{
-    var a=e.target.closest("a");
-
-    if(!ok(a)){{return;}}
-    if(e.ctrlKey || e.metaKey || e.shiftKey || e.altKey){{return;}}
-    if(a.pathname===location.pathname && a.search===location.search){{return;}}
-
-    e.preventDefault();
-    go(a.href,true);
-  }},true);
-
-  window.addEventListener("popstate",function(){{
-    go(location.href,false);
-  }});
-}})();
-</script>
-
 """
 
     return S + html
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0",port=5000,debug=False)
-@app.route('/live_test')
-def live_test():
-    return render_template('live_test.html')
-
-
-@app.route('/announcements')
-def announcements_page():
-    return render_template('announcements.html')

@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 420">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#02080d"/>
+    <stop offset=".55" stop-color="#061923"/>
+    <stop offset="1" stop-color="#001018"/>
+  </linearGradient>
+  <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#dffaff"/>
+    <stop offset=".35" stop-color="#4bc9f5"/>
+    <stop offset="1" stop-color="#075477"/>
+  </linearGradient>
+  <linearGradient id="darkmetal" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#163c4b"/>
+    <stop offset="1" stop-color="#02070a"/>
+  </linearGradient>
+  <filter id="glow">
+    <feGaussianBlur stdDeviation="5" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+</defs>
+
+<rect width="600" height="420" fill="url(#bg)"/>
+
+<g opacity=".35" stroke="#00b9f3" stroke-width="1">
+  <path d="M0 70H600M0 140H600M0 210H600M0 280H600M0 350H600"/>
+  <path d="M75 0V420M150 0V420M225 0V420M300 0V420M375 0V420M450 0V420M525 0V420"/>
+</g>
+
+<g filter="url(#glow)" fill="#00d9ff">
+  <circle cx="70" cy="80" r="3"><animate attributeName="opacity" values=".2;1;.2" dur="1.4s" repeatCount="indefinite"/></circle>
+  <circle cx="530" cy="95" r="3"><animate attributeName="opacity" values="1;.2;1" dur="1.8s" repeatCount="indefinite"/></circle>
+  <circle cx="500" cy="320" r="2"><animate attributeName="opacity" values=".2;1;.2" dur="1.2s" repeatCount="indefinite"/></circle>
+</g>
+
+<!-- moving mining robot -->
+<g>
+  <animateTransform attributeName="transform"
+    type="translate"
+    values="-12 0;12 0;-12 0"
+    dur="2.6s"
+    repeatCount="indefinite"/>
+
+  <!-- shadow -->
+  <ellipse cx="300" cy="370" rx="145" ry="18" fill="#000" opacity=".7"/>
+
+  <!-- legs -->
+  <g fill="url(#darkmetal)" stroke="#19cfff" stroke-width="4">
+    <rect x="205" y="285" width="48" height="65" rx="12"/>
+    <rect x="347" y="285" width="48" height="65" rx="12"/>
+    <rect x="195" y="340" width="70" height="20" rx="8"/>
+    <rect x="335" y="340" width="70" height="20" rx="8"/>
+  </g>
+
+  <!-- body -->
+  <rect x="185" y="175" width="230" height="125" rx="25"
+        fill="url(#metal)" stroke="#00d9ff" stroke-width="6"/>
+
+  <!-- mining processors -->
+  <g fill="#03141c" stroke="#00caff" stroke-width="3">
+    <rect x="205" y="195" width="55" height="38" rx="7"/>
+    <rect x="272" y="195" width="55" height="38" rx="7"/>
+    <rect x="339" y="195" width="55" height="38" rx="7"/>
+  </g>
+
+  <g fill="#00eaff">
+    <circle cx="222" cy="214" r="5"><animate attributeName="opacity" values=".2;1;.2" dur=".7s" repeatCount="indefinite"/></circle>
+    <circle cx="239" cy="214" r="5"><animate attributeName="opacity" values="1;.2;1" dur=".9s" repeatCount="indefinite"/></circle>
+    <circle cx="289" cy="214" r="5"><animate attributeName="opacity" values=".2;1;.2" dur=".6s" repeatCount="indefinite"/></circle>
+    <circle cx="306" cy="214" r="5"><animate attributeName="opacity" values="1;.2;1" dur=".8s" repeatCount="indefinite"/></circle>
+    <circle cx="356" cy="214" r="5"><animate attributeName="opacity" values=".2;1;.2" dur=".5s" repeatCount="indefinite"/></circle>
+    <circle cx="373" cy="214" r="5"><animate attributeName="opacity" values="1;.2;1" dur="1s" repeatCount="indefinite"/></circle>
+  </g>
+
+  <!-- head -->
+  <rect x="220" y="92" width="160" height="105" rx="28"
+        fill="url(#darkmetal)" stroke="#00d9ff" stroke-width="6"/>
+
+  <!-- antenna -->
+  <line x1="300" y1="92" x2="300" y2="55" stroke="#00d9ff" stroke-width="6"/>
+  <circle cx="300" cy="48" r="10" fill="#00eaff" filter="url(#glow)">
+    <animate attributeName="r" values="7;12;7" dur="1s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- eyes -->
+  <rect x="245" y="125" width="38" height="25" rx="8" fill="#00eaff">
+    <animate attributeName="opacity" values=".25;1;.25" dur=".8s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="317" y="125" width="38" height="25" rx="8" fill="#00eaff">
+    <animate attributeName="opacity" values="1;.25;1" dur=".8s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- mouth / status -->
+  <rect x="265" y="163" width="70" height="8" rx="4" fill="#00d9ff">
+    <animate attributeName="width" values="50;70;50" dur="1.2s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- left mining arm -->
+  <g transform="translate(190 190)">
+    <g>
+      <animateTransform attributeName="transform"
+        type="rotate"
+        values="-12 0 0;12 0 0;-12 0 0"
+        dur="1.5s"
+        repeatCount="indefinite"/>
+      <rect x="-62" y="8" width="70" height="22" rx="10"
+            fill="url(#metal)" stroke="#00d9ff" stroke-width="4"/>
+      <circle cx="-67" cy="19" r="15" fill="#06232e" stroke="#00d9ff" stroke-width="4"/>
+      <path d="M-82 5L-105 19L-82 33Z" fill="#00eaff" stroke="#00d9ff" stroke-width="3"/>
+    </g>
+  </g>
+
+  <!-- right mining arm -->
+  <g transform="translate(410 190)">
+    <g>
+      <animateTransform attributeName="transform"
+        type="rotate"
+        values="12 0 0;-12 0 0;12 0 0"
+        dur="1.5s"
+        repeatCount="indefinite"/>
+      <rect x="-8" y="8" width="70" height="22" rx="10"
+            fill="url(#metal)" stroke="#00d9ff" stroke-width="4"/>
+      <circle cx="67" cy="19" r="15" fill="#06232e" stroke="#00d9ff" stroke-width="4"/>
+      <path d="M82 5L105 19L82 33Z" fill="#00eaff" stroke="#00d9ff" stroke-width="3"/>
+    </g>
+  </g>
+
+  <!-- mining sparks -->
+  <g fill="#00eaff" filter="url(#glow)">
+    <circle cx="115" cy="230" r="4">
+      <animate attributeName="cy" values="230;205;230" dur=".9s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0;1" dur=".9s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="485" cy="235" r="4">
+      <animate attributeName="cy" values="235;210;235" dur="1.1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0;1" dur="1.1s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- wheels -->
+  <g fill="#02090d" stroke="#00b9f3" stroke-width="5">
+    <circle cx="220" cy="365" r="27">
+      <animateTransform attributeName="transform" type="rotate" from="0 220 365" to="360 220 365" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="380" cy="365" r="27">
+      <animateTransform attributeName="transform" type="rotate" from="0 380 365" to="360 380 365" dur="1s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</g>
+
+<text x="300" y="405" text-anchor="middle"
+      fill="#00cfff" font-family="Arial,sans-serif"
+      font-size="15" font-weight="bold"
+      letter-spacing="4">CODEX AI MINING</text>
+</svg>
