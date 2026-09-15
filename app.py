@@ -355,7 +355,7 @@ def gift_code():
 @app.route("/ai-mining")
 @required
 def ai_mining():
-    settle_mining_credits(session["uid"]); con=db(); user=con.execute("SELECT points FROM users WHERE id=?",(session["uid"],)).fetchone(); tools=con.execute("SELECT * FROM mining_tools WHERE uid=? ORDER BY id DESC",(session["uid"],)).fetchall(); con.close(); return render_template("ai_mining.html",points=user["points"],tools=tools,tool_catalog=MINING_TOOLS,active="AI")
+    settle_mining_credits(session["uid"]); con=db(); user=con.execute("SELECT points FROM users WHERE id=?",(session["uid"],)).fetchone(); tools=con.execute("SELECT * FROM mining_tools WHERE uid=? ORDER BY id DESC",(session["uid"],)).fetchall(); con.close(); return render_template("ai_mining.html",points=user["points"],tools=tools,tool_catalog=MINING_TOOLS,plans=PLANS,active="AI")
 
 @app.route("/ai-mining/buy/<int:idx>",methods=["POST"])
 @required
