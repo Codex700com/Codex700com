@@ -1,7 +1,7 @@
 import os, sqlite3, secrets, string, hashlib, hmac
 from datetime import datetime, timezone
 from functools import wraps
-from flask import Flask, request, redirect, session, render_template, flash, url_for
+from flask import Flask, request, redirect, session, render_template, flash, url_for, send_from_directory
 
 BASE=os.path.dirname(os.path.abspath(__file__))
 DB=os.path.join(BASE,"codex700.db")
@@ -15,6 +15,12 @@ PLANS={
  "BM-2":{"series":"BM series","price":2000000,"daily":180000,"days":30,"total":5400000},
  "DS-3":{"series":"DS series","price":3500000,"daily":320000,"days":30,"total":9600000},
  "DS-4":{"series":"DS series","price":5000000,"daily":500000,"days":30,"total":15000000},
+ "CX-3":{"series":"CX series","price":7500000,"daily":700000,"days":30,"total":21000000},
+ "CX-4":{"series":"CX series","price":10000000,"daily":950000,"days":30,"total":28500000},
+ "BM-3":{"series":"BM series","price":15000000,"daily":1450000,"days":30,"total":43500000},
+ "BM-4":{"series":"BM series","price":25000000,"daily":2450000,"days":30,"total":73500000},
+ "DS-5":{"series":"DS series","price":50000000,"daily":5000000,"days":30,"total":150000000},
+ "DS-6":{"series":"DS series","price":100000000,"daily":10000000,"days":30,"total":300000000},
 }
 REWARDS=[(120,750000),(100,50000),(60,275000),(30,150000),(15,98000),(6,45000)]
 
@@ -41,19 +47,25 @@ def make_code(con):
 def init_db():
     con=db()
     con.executescript("""
-    CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT,phone TEXT UNIQUE NOT NULL,password TEXT NOT NULL,invite_code TEXT UNIQUE NOT NULL,invited_by INTEGER,balance REAL NOT NULL DEFAULT 0,wallet REAL NOT NULL DEFAULT 0,display_name TEXT NOT NULL DEFAULT '',mtn_number TEXT NOT NULL DEFAULT '',airtel_number TEXT NOT NULL DEFAULT '',usdt_wallet TEXT NOT NULL DEFAULT '',notifications_enabled INTEGER NOT NULL DEFAULT 1,created_at TEXT NOT NULL,is_admin INTEGER NOT NULL DEFAULT 0,salary_claimed_month TEXT,reward_claimed_month TEXT);
+    CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT,phone TEXT UNIQUE NOT NULL,password TEXT NOT NULL,invite_code TEXT UNIQUE NOT NULL,invited_by INTEGER,balance REAL NOT NULL DEFAULT 0,wallet REAL NOT NULL DEFAULT 0,points INTEGER NOT NULL DEFAULT 0,display_name TEXT NOT NULL DEFAULT '',mtn_number TEXT NOT NULL DEFAULT '',airtel_number TEXT NOT NULL DEFAULT '',usdt_wallet TEXT NOT NULL DEFAULT '',notifications_enabled INTEGER NOT NULL DEFAULT 1,created_at TEXT NOT NULL,is_admin INTEGER NOT NULL DEFAULT 0,salary_claimed_month TEXT,reward_claimed_month TEXT);
     CREATE TABLE IF NOT EXISTS transactions(id INTEGER PRIMARY KEY AUTOINCREMENT,uid INTEGER NOT NULL,kind TEXT NOT NULL,amount REAL NOT NULL DEFAULT 0,status TEXT NOT NULL DEFAULT 'PENDING',reference TEXT,created_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS products(id INTEGER PRIMARY KEY AUTOINCREMENT,uid INTEGER NOT NULL,code TEXT NOT NULL,name TEXT NOT NULL,price REAL NOT NULL,daily_income REAL NOT NULL DEFAULT 0,lock_days INTEGER NOT NULL DEFAULT 30,total_income REAL NOT NULL DEFAULT 0,purchased_at TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'ACTIVE');
     CREATE TABLE IF NOT EXISTS support_messages(id INTEGER PRIMARY KEY AUTOINCREMENT,uid INTEGER NOT NULL,sender TEXT NOT NULL,message TEXT NOT NULL,created_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS raffle_tickets(id INTEGER PRIMARY KEY AUTOINCREMENT,uid INTEGER NOT NULL,quantity INTEGER NOT NULL,created_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS reward_box_claims(id INTEGER PRIMARY KEY AUTOINCREMENT,uid INTEGER NOT NULL,box_id INTEGER NOT NULL,amount REAL NOT NULL,created_at TEXT NOT NULL,UNIQUE(uid,box_id));
+    CREATE TABLE IF NOT EXISTS promo_chances(id INTEGER PRIMARY KEY AUTOINCREMENT,uid INTEGER NOT NULL,product_id INTEGER NOT NULL,reward_type TEXT NOT NULL,reward_amount REAL NOT NULL DEFAULT 0,reward_code TEXT,claimed INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL,claimed_at TEXT);
     CREATE TABLE IF NOT EXISTS password_requests(id INTEGER PRIMARY KEY AUTOINCREMENT,phone TEXT NOT NULL,name TEXT,message TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'PENDING',created_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS gift_codes(code TEXT PRIMARY KEY,amount REAL NOT NULL,used_by INTEGER,used_at TEXT);
+    CREATE TABLE IF NOT EXISTS mining_tools(id INTEGER PRIMARY KEY AUTOINCREMENT,uid INTEGER NOT NULL,tool_name TEXT NOT NULL,points_cost INTEGER NOT NULL,rate REAL NOT NULL,capacity REAL NOT NULL DEFAULT 0,purchased_at TEXT NOT NULL,last_credit_at TEXT NOT NULL,earned REAL NOT NULL DEFAULT 0,status TEXT NOT NULL DEFAULT 'ACTIVE');
+    CREATE TABLE IF NOT EXISTS referral_point_awards(id INTEGER PRIMARY KEY AUTOINCREMENT,referrer_uid INTEGER NOT NULL,referred_uid INTEGER UNIQUE NOT NULL,points INTEGER NOT NULL DEFAULT 10,created_at TEXT NOT NULL);
     """)
     # Safe migrations for any copy that already has an older fresh DB.
     cols={r[1] for r in con.execute("PRAGMA table_info(users)").fetchall()}
-    for col,typ in [("display_name","TEXT NOT NULL DEFAULT ''"),("mtn_number","TEXT NOT NULL DEFAULT ''"),("airtel_number","TEXT NOT NULL DEFAULT ''"),("usdt_wallet","TEXT NOT NULL DEFAULT ''"),("notifications_enabled","INTEGER NOT NULL DEFAULT 1"),("salary_claimed_month","TEXT"),("reward_claimed_month","TEXT")]:
+    for col,typ in [("points","INTEGER NOT NULL DEFAULT 0"),("display_name","TEXT NOT NULL DEFAULT ''"),("mtn_number","TEXT NOT NULL DEFAULT ''"),("airtel_number","TEXT NOT NULL DEFAULT ''"),("usdt_wallet","TEXT NOT NULL DEFAULT ''"),("notifications_enabled","INTEGER NOT NULL DEFAULT 1"),("salary_claimed_month","TEXT"),("reward_claimed_month","TEXT")]:
         if col not in cols: con.execute(f"ALTER TABLE users ADD COLUMN {col} {typ}")
+    pcols={r[1] for r in con.execute("PRAGMA table_info(products)").fetchall()}
+    for col,typ in [("last_income_at","TEXT"),("earned_income","REAL NOT NULL DEFAULT 0")]:
+        if col not in pcols: con.execute(f"ALTER TABLE products ADD COLUMN {col} {typ}")
     con.commit(); con.close()
 
 def current_user():
@@ -78,7 +90,31 @@ def invite_counts(uid):
     this=con.execute("SELECT COUNT(*) n FROM users WHERE invited_by=? AND created_at>=?",(uid,cur.isoformat())).fetchone()["n"]
     con.close(); return last,this
 
+def settle_promo_machine_income(uid):
+    """Credit elapsed daily income for promotional DS4 machines only."""
+    con=db(); rows=con.execute("SELECT * FROM products WHERE uid=? AND code='PROMO-DS4' AND status='ACTIVE'",(uid,)).fetchall()
+    n=datetime.now(timezone.utc)
+    for r in rows:
+        try:
+            last=datetime.fromisoformat(r["last_income_at"] or r["purchased_at"])
+            start=datetime.fromisoformat(r["purchased_at"])
+            elapsed_days=max(0,(n-start).days)
+            paid_days=max(0,(last-start).days)
+            due_days=min(r["lock_days"],elapsed_days)-min(r["lock_days"],paid_days)
+            if due_days>0:
+                amount=min(r["total_income"]-r["earned_income"],r["daily_income"]*due_days)
+                if amount>0:
+                    con.execute("UPDATE users SET balance=balance+? WHERE id=?",(amount,uid))
+                    con.execute("UPDATE products SET earned_income=earned_income+?,last_income_at=? WHERE id=?",(amount,n.isoformat(timespec="seconds"),r["id"]))
+                    con.execute("INSERT INTO transactions(uid,kind,amount,status,reference,created_at) VALUES(?,?,?,?,?,?)",(uid,"PROMO_DS4_INCOME",amount,"APPROVED",f"DS4-INCOME-{r['id']}-{elapsed_days}",now()))
+            if elapsed_days>=r["lock_days"]:
+                con.execute("UPDATE products SET status='EXPIRED',last_income_at=? WHERE id=?",(n.isoformat(timespec="seconds"),r["id"]))
+        except Exception:
+            pass
+    con.commit(); con.close()
+
 def active_income(uid):
+    settle_promo_machine_income(uid)
     con=db(); rows=con.execute("SELECT * FROM products WHERE uid=? AND status='ACTIVE'",(uid,)).fetchall(); con.close()
     total=0; today=0
     n=datetime.now(timezone.utc)
@@ -90,6 +126,57 @@ def active_income(uid):
             if days<r["lock_days"]: today+=r["daily_income"]
         except Exception: pass
     return total,today
+
+PROMO_REWARDS=[
+    ("CASH",3000,""),
+    ("CASH",1000,""),
+    ("CASH",5000,""),
+    ("CASH",10000,""),
+    ("CASH",40000,""),
+    ("CASH",50000,""),
+    ("CASH",100000,""),
+    ("CASH",3000,""),
+    ("DS4",0,"PROMO-DS4"),
+]
+
+def create_promo_chances(con,uid,product_id,price):
+    count=con.execute("SELECT COUNT(*) n FROM promo_chances WHERE uid=?",(uid,)).fetchone()["n"]
+    chances=2 if price>=100000 else 1
+    for _ in range(chances):
+        reward=PROMO_REWARDS[count % len(PROMO_REWARDS)]
+        con.execute("INSERT INTO promo_chances(uid,product_id,reward_type,reward_amount,reward_code,created_at) VALUES(?,?,?,?,?,?)",(uid,product_id,reward[0],reward[1],reward[2],now()))
+        count+=1
+
+MINING_TOOLS=[
+    {"name":"Axe Miner","cost":500,"rate":10.0,"capacity":100000},
+    {"name":"Advanced Axe Miner","cost":1000,"rate":50.30,"capacity":500000},
+    {"name":"Power Miner","cost":5000,"rate":500.0,"capacity":2500000},
+    {"name":"Advanced Power Miner","cost":10000,"rate":1000.0,"capacity":5000000},
+    {"name":"Nuclear Core Miner","cost":50000,"rate":5000.0,"capacity":25000000},
+    {"name":"Destroyer Miner","cost":100000,"rate":10000.0,"capacity":50000000},
+]
+
+def settle_mining_credits(uid):
+    con=db(); rows=con.execute("SELECT * FROM mining_tools WHERE uid=? AND status='ACTIVE'",(uid,)).fetchall(); n=datetime.now(timezone.utc)
+    for r in rows:
+        try:
+            last=datetime.fromisoformat(r["last_credit_at"]); seconds=max(0,(n-last).total_seconds()); remaining=max(0,r["capacity"]-r["earned"]); credit=min(remaining,seconds*r["rate"])
+            if credit>0:
+                con.execute("UPDATE mining_tools SET earned=earned+?,last_credit_at=? WHERE id=?",(credit,n.isoformat(timespec="seconds"),r["id"]))
+        except Exception: pass
+    con.commit(); con.close()
+
+def award_referral_points(referred_uid):
+    con=db(); row=con.execute("SELECT invited_by FROM users WHERE id=?",(referred_uid,)).fetchone()
+    if row and row["invited_by"]:
+        exists=con.execute("SELECT 1 FROM referral_point_awards WHERE referred_uid=?",(referred_uid,)).fetchone()
+        if not exists:
+            # Award only after an approved deposit exists for the referred user.
+            approved=con.execute("SELECT 1 FROM transactions WHERE uid=? AND kind='DEPOSIT' AND status='APPROVED' LIMIT 1",(referred_uid,)).fetchone()
+            if approved:
+                con.execute("UPDATE users SET points=points+10 WHERE id=?",(row["invited_by"],))
+                con.execute("INSERT INTO referral_point_awards(referrer_uid,referred_uid,points,created_at) VALUES(?,?,?,?)",(row["invited_by"],referred_uid,10,now()))
+    con.commit(); con.close()
 
 @app.route("/")
 def index(): return redirect(url_for("home") if current_user() else url_for("login"))
@@ -192,14 +279,41 @@ def deposit():
 @app.route("/withdraw",methods=["GET","POST"])
 @required
 def withdraw():
+    u=current_user()
     if request.method=="POST":
+        method=request.form.get("method","MTN UG").strip()
+        destination=request.form.get("destination","").strip()
         try: amount=float(request.form.get("amount") or 0)
-        except: amount=0
-        con=db(); u=con.execute("SELECT balance FROM users WHERE id=?",(session["uid"],)).fetchone()
-        if amount<=0 or amount>u["balance"]: con.close(); flash("Insufficient balance or invalid amount.","error")
+        except (TypeError,ValueError): amount=0
+        allowed={"MTN UG":"mtn_number","Airtel UG":"airtel_number","USDT TRC20":"usdt_wallet"}
+        if method not in allowed:
+            flash("Select a valid payout method.","error")
+        elif amount < 5000:
+            flash("Minimum withdrawal is 5,000 UGX.","error")
         else:
-            ref="WDR-"+secrets.token_hex(4).upper(); con.execute("UPDATE users SET balance=balance-? WHERE id=?",(amount,session["uid"])); con.execute("INSERT INTO transactions(uid,kind,amount,status,reference,created_at) VALUES(?,?,?,?,?,?)",(session["uid"],"WITHDRAW",amount,"PENDING",ref,now())); con.commit(); con.close(); flash("Withdrawal request submitted.","success"); return redirect(url_for("withdraw"))
-    return render_template("form.html",title="Withdraw details",action="/withdraw",fields=[("amount","Amount (UGX)","number")],active="My")
+            con=db(); fresh=con.execute("SELECT * FROM users WHERE id=?",(u["id"],)).fetchone(); saved=(fresh[allowed[method]] or "").strip()
+            if not saved or destination != saved:
+                con.close(); flash("Save your payout details on the Card page before withdrawing.","error")
+            elif amount > fresh["balance"]:
+                con.close(); flash("Insufficient balance for this withdrawal.","error")
+            else:
+                fee=round(amount*0.10,2); receive=round(amount-fee,2); ref="WDR-"+secrets.token_hex(4).upper()
+                con.execute("UPDATE users SET balance=balance-? WHERE id=? AND balance>=?",(amount,u["id"],amount))
+                if con.total_changes != 1:
+                    con.rollback(); con.close(); flash("Withdrawal could not be completed. Please try again.","error")
+                else:
+                    con.execute("INSERT INTO transactions(uid,kind,amount,status,reference,created_at) VALUES(?,?,?,?,?,?)",(u["id"],"WITHDRAW",amount,"PENDING",ref,now()))
+                    con.commit(); con.close(); flash(f"Withdrawal request submitted. Fee: UGX {fee:,.2f}. You receive: UGX {receive:,.2f}.","success"); return redirect(url_for("withdraw"))
+    return render_template("withdraw.html",title="Withdraw",user=current_user(),active="My")
+
+@app.route("/download")
+@required
+def download():
+    return render_template("download.html", active="My")
+
+@app.route("/service-worker.js")
+def service_worker():
+    return send_from_directory(BASE, "service-worker.js", mimetype="application/javascript")
 
 @app.route("/account",methods=["GET","POST"])
 @required
@@ -211,7 +325,7 @@ def account():
 
 @app.route("/card")
 @required
-def card(): return render_template("simple.html",title="Card",content="<h2>Card</h2><p>Save your payout details in Settings. Card-provider integration can be connected later.</p>",active="My")
+def card(): return render_template("card.html",title="Card",user=current_user(),active="My")
 @app.route("/bills")
 @required
 def bills(): return render_template("simple.html",title="Bills",content="<h2>Bills</h2><p>Bill payment providers are not connected yet. No money is charged from this page.</p>",active="My")
@@ -238,6 +352,19 @@ def gift_code():
             con.execute("UPDATE gift_codes SET used_by=?,used_at=? WHERE code=? AND used_by IS NULL",(u["id"],now(),code)); con.execute("UPDATE users SET balance=balance+? WHERE id=?",(g["amount"],u["id"])); con.execute("INSERT INTO transactions(uid,kind,amount,status,reference,created_at) VALUES(?,?,?,?,?,?)",(u["id"],"GIFT_CODE",g["amount"],"APPROVED",code,now())); con.commit(); flash(f"UGX {g['amount']:,.0f} added to your balance.","success")
     con.close(); return render_template("gift.html",active="My")
 
+@app.route("/ai-mining")
+@required
+def ai_mining():
+    settle_mining_credits(session["uid"]); con=db(); user=con.execute("SELECT points FROM users WHERE id=?",(session["uid"],)).fetchone(); tools=con.execute("SELECT * FROM mining_tools WHERE uid=? ORDER BY id DESC",(session["uid"],)).fetchall(); con.close(); return render_template("ai_mining.html",points=user["points"],tools=tools,tool_catalog=MINING_TOOLS,active="AI")
+
+@app.route("/ai-mining/buy/<int:idx>",methods=["POST"])
+@required
+def buy_mining_tool(idx):
+    if idx<0 or idx>=len(MINING_TOOLS): return "Tool not found",404
+    tool=MINING_TOOLS[idx]; con=db(); u=con.execute("SELECT points FROM users WHERE id=?",(session["uid"],)).fetchone()
+    if u["points"]<tool["cost"]: con.close(); flash("Not enough points for this mining tool.","error"); return redirect(url_for("ai_mining"))
+    n=now(); con.execute("UPDATE users SET points=points-? WHERE id=?",(tool["cost"],session["uid"])); con.execute("INSERT INTO mining_tools(uid,tool_name,points_cost,rate,capacity,purchased_at,last_credit_at) VALUES(?,?,?,?,?,?,?)",(session["uid"],tool["name"],tool["cost"],tool["rate"],tool["capacity"],n,n)); con.commit(); con.close(); flash("Mining tool activated. Live promotional credits are now accumulating.","success"); return redirect(url_for("ai_mining"))
+
 @app.route("/invest")
 @required
 def invest(): return render_template("invest.html",plans=PLANS,active="AI")
@@ -252,14 +379,15 @@ def product():
         con=db(); u=con.execute("SELECT balance FROM users WHERE id=?",(session["uid"],)).fetchone()
         if u["balance"]<plan["price"]: con.close(); flash("Purchase failed due to insufficient balance.","error")
         else:
-            con.execute("UPDATE users SET balance=balance-? WHERE id=?",(plan["price"],session["uid"])); con.execute("INSERT INTO products(uid,code,name,price,daily_income,lock_days,total_income,purchased_at) VALUES(?,?,?,?,?,?,?,?)",(session["uid"],code,code+" AI Machine",plan["price"],plan["daily"],plan["days"],plan["total"],now())); con.execute("INSERT INTO transactions(uid,kind,amount,status,reference,created_at) VALUES(?,?,?,?,?,?)",(session["uid"],"AI_PURCHASE",plan["price"],"APPROVED","BUY-"+code,now())); con.commit(); con.close(); flash("Purchase successful.","success")
+            con.execute("UPDATE users SET balance=balance-? WHERE id=?",(plan["price"],session["uid"])); con.execute("INSERT INTO products(uid,code,name,price,daily_income,lock_days,total_income,purchased_at,last_income_at,earned_income) VALUES(?,?,?,?,?,?,?,?,?,?)",(session["uid"],code,code+" AI Machine",plan["price"],plan["daily"],plan["days"],plan["total"],now(),now(),0)); product_id=con.execute("SELECT last_insert_rowid()").fetchone()[0]; create_promo_chances(con,session["uid"],product_id,plan["price"]); con.execute("INSERT INTO transactions(uid,kind,amount,status,reference,created_at) VALUES(?,?,?,?,?,?)",(session["uid"],"AI_PURCHASE",plan["price"],"APPROVED","BUY-"+code,now())); con.commit(); con.close(); flash("Purchase successful. Promotional reveal chance unlocked.","success")
         return redirect(url_for("invest"))
     return render_template("product.html",code=code,plan=plan,active="AI")
 
 @app.route("/income")
 @required
 def income():
-    con=db(); tx=con.execute("SELECT * FROM transactions WHERE uid=? ORDER BY id DESC",(session["uid"],)).fetchall(); con.close(); return render_template("income.html",tx=tx,active="Income")
+    settle_promo_machine_income(session["uid"]); settle_mining_credits(session["uid"])
+    con=db(); tx=con.execute("SELECT * FROM transactions WHERE uid=? ORDER BY id DESC",(session["uid"],)).fetchall(); products=con.execute("SELECT * FROM products WHERE uid=? ORDER BY id DESC",(session["uid"],)).fetchall(); tools=con.execute("SELECT * FROM mining_tools WHERE uid=? ORDER BY id DESC",(session["uid"],)).fetchall(); con.close(); return render_template("income.html",tx=tx,products=products,tools=tools,active="Income")
 
 @app.route("/support",methods=["GET","POST"])
 @required
@@ -274,48 +402,33 @@ def support():
 @app.route("/raffle")
 @required
 def raffle():
-    u=current_user()
-    con=db()
-    # A completed/approved deposit unlocks the promotional reward boxes.
-    deposited=con.execute("SELECT 1 FROM transactions WHERE uid=? AND kind='DEPOSIT' AND status='APPROVED' LIMIT 1",(u["id"],)).fetchone()
-    claims={r["box_id"]: r["amount"] for r in con.execute("SELECT box_id,amount FROM reward_box_claims WHERE uid=?",(u["id"],)).fetchall()}
+    u=current_user(); con=db()
+    chances=con.execute("SELECT * FROM promo_chances WHERE uid=? AND claimed=0 ORDER BY id",(u["id"],)).fetchall()
+    history=con.execute("SELECT * FROM promo_chances WHERE uid=? AND claimed=1 ORDER BY id DESC LIMIT 20",(u["id"],)).fetchall()
+    revealed_id=session.pop("revealed_chance_id",None)
+    revealed=con.execute("SELECT * FROM promo_chances WHERE id=? AND uid=? AND claimed=1",(revealed_id,u["id"])).fetchone() if revealed_id else None
     con.close()
-    boxes=[
-        {"id":1,"amount":10000},
-        {"id":2,"amount":15000},
-        {"id":3,"amount":20000},
-        {"id":4,"amount":30000},
-        {"id":5,"amount":50000},
-        {"id":6,"amount":100000},
-    ]
-    return render_template("raffle.html",eligible=bool(deposited),boxes=boxes,claims=claims,active="Raffle")
+    return render_template("raffle.html",chances=chances,history=history,revealed=revealed,active="Raffle")
 
-@app.route("/raffle/box/<int:box_id>",methods=["POST"])
+@app.route("/raffle/reveal/<int:chance_id>",methods=["POST"])
 @required
-def open_reward_box(box_id):
-    u=current_user()
-    boxes={1:10000,2:15000,3:20000,4:30000,5:50000,6:100000}
-    amount=boxes.get(box_id)
-    if amount is None:
-        flash("Reward box not found.","error")
-        return redirect(url_for("raffle"))
-    con=db()
-    deposited=con.execute("SELECT 1 FROM transactions WHERE uid=? AND kind='DEPOSIT' AND status='APPROVED' LIMIT 1",(u["id"],)).fetchone()
-    if not deposited:
-        con.close()
-        flash("Make and complete a deposit to unlock the reward boxes.","error")
-        return redirect(url_for("raffle"))
-    try:
-        con.execute("INSERT INTO reward_box_claims(uid,box_id,amount,created_at) VALUES(?,?,?,?)",(u["id"],box_id,amount,now()))
-    except sqlite3.IntegrityError:
-        con.close()
-        flash("This reward box has already been opened.","error")
-        return redirect(url_for("raffle"))
-    con.execute("UPDATE users SET balance=balance+? WHERE id=?",(amount,u["id"]))
-    con.execute("INSERT INTO transactions(uid,kind,amount,status,reference,created_at) VALUES(?,?,?,?,?,?)",(u["id"],"REWARD_BOX",amount,"APPROVED",f"BOX-{box_id}-{secrets.token_hex(3).upper()}",now()))
-    con.commit(); con.close()
-    flash(f"UGX {amount:,.0f} reward added to your balance.","success")
-    return redirect(url_for("raffle"))
+def reveal_promo(chance_id):
+    u=current_user(); con=db(); c=con.execute("SELECT * FROM promo_chances WHERE id=? AND uid=? AND claimed=0",(chance_id,u["id"])).fetchone()
+    if not c:
+        con.close(); flash("That promotional chance is no longer available.","error"); return redirect(url_for("raffle"))
+    if c["reward_type"]=="DS4":
+        purchased_at=now()
+        con.execute("INSERT INTO products(uid,code,name,price,daily_income,lock_days,total_income,purchased_at,last_income_at,earned_income,status) VALUES(?,?,?,?,?,?,?,?,?,?,?)",(u["id"],"PROMO-DS4","DS4 AI Machine — Promotional Reward",0,500000,30,15000000,purchased_at,purchased_at,0,"ACTIVE"))
+        product_id=con.execute("SELECT last_insert_rowid()").fetchone()[0]
+        con.execute("INSERT INTO transactions(uid,kind,amount,status,reference,created_at) VALUES(?,?,?,?,?,?)",(u["id"],"PROMO_DS4","0","APPROVED",f"PROMO-DS4-{product_id}",now()))
+        message="DS4 AI Machine awarded and added to your AI products."
+    else:
+        amount=c["reward_amount"]
+        con.execute("UPDATE users SET balance=balance+? WHERE id=?",(amount,u["id"]))
+        con.execute("INSERT INTO transactions(uid,kind,amount,status,reference,created_at) VALUES(?,?,?,?,?,?)",(u["id"],"PROMO_REWARD",amount,"APPROVED",f"PROMO-{c['id']}",now()))
+        message=f"UGX {amount:,.0f} promotional reward added to your balance."
+    con.execute("UPDATE promo_chances SET claimed=1,claimed_at=? WHERE id=?",(now(),chance_id))
+    con.commit(); con.close(); session["revealed_chance_id"]=chance_id; flash(message,"success"); return redirect(url_for("raffle"))
 
 @app.route("/admin")
 @admin_required
@@ -327,13 +440,18 @@ def admin():
 def admin_transaction(tid,action):
     con=db(); t=con.execute("SELECT * FROM transactions WHERE id=?",(tid,)).fetchone()
     if not t or t["status"]!="PENDING": con.close(); return redirect(url_for("admin"))
+    award=False
     if action=="approve":
-        if t["kind"]=="DEPOSIT": con.execute("UPDATE users SET balance=balance+? WHERE id=?",(t["amount"],t["uid"]))
+        if t["kind"]=="DEPOSIT":
+            con.execute("UPDATE users SET balance=balance+? WHERE id=?",(t["amount"],t["uid"]))
+            award=True
         con.execute("UPDATE transactions SET status='APPROVED' WHERE id=?",(tid,))
     elif action=="reject":
         if t["kind"]=="WITHDRAW": con.execute("UPDATE users SET balance=balance+? WHERE id=?",(t["amount"],t["uid"]))
         con.execute("UPDATE transactions SET status='REJECTED' WHERE id=?",(tid,))
-    con.commit(); con.close(); return redirect(url_for("admin"))
+    con.commit(); con.close()
+    if award: award_referral_points(t["uid"])
+    return redirect(url_for("admin"))
 
 @app.route("/admin/support/<int:uid>",methods=["POST"])
 @admin_required

@@ -1,0 +1,10 @@
+{
+  "name":"CODEX AI",
+  "short_name":"CODEX AI",
+  "start_url":"/home",
+  "display":"standalone",
+  "background_color":"#000000",
+  "theme_color":"#000000",
+  "description":"CODEX AI platform",
+  "icons":[{"src":"/static/server.jpg","sizes":"1200x600","type":"image/jpeg","purpose":"any"}]
+}
