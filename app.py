@@ -10,6 +10,8 @@ app.secret_key=os.environ.get("SECRET_KEY","change-this-before-production")
 
 PLANS={
  "CX-1":{"series":"CX series","price":250000,"daily":20000,"days":30,"total":600000},
+ "CXM-1":{"series":"CXM series","price":48000,"daily":9800,"days":20,"total":196000},
+ "CXM-2":{"series":"CXM series","price":88000,"daily":20000,"days":25,"total":500000},
  "CX-2":{"series":"CX series","price":500000,"daily":40000,"days":30,"total":1200000},
  "BM-1":{"series":"BM series","price":1000000,"daily":85000,"days":30,"total":2550000},
  "BM-2":{"series":"BM series","price":2000000,"daily":180000,"days":30,"total":5400000},
@@ -355,7 +357,7 @@ def gift_code():
 @app.route("/ai-mining")
 @required
 def ai_mining():
-    settle_mining_credits(session["uid"]); con=db(); user=con.execute("SELECT points FROM users WHERE id=?",(session["uid"],)).fetchone(); tools=con.execute("SELECT * FROM mining_tools WHERE uid=? ORDER BY id DESC",(session["uid"],)).fetchall(); con.close(); return render_template("ai_mining.html",points=user["points"],tools=tools,tool_catalog=MINING_TOOLS,plans=PLANS,active="AI")
+    settle_mining_credits(session["uid"]); con=db(); user=con.execute("SELECT points FROM users WHERE id=?",(session["uid"],)).fetchone(); tools=con.execute("SELECT * FROM mining_tools WHERE uid=? ORDER BY id DESC",(session["uid"],)).fetchall(); con.close(); return render_template("ai_mining.html",points=user["points"],tools=tools,tool_catalog=MINING_TOOLS,active="AI")
 
 @app.route("/ai-mining/buy/<int:idx>",methods=["POST"])
 @required
