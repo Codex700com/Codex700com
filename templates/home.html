@@ -10,7 +10,7 @@
 .message-icon{font-size:39px;line-height:38px}.message-label{font-size:14px;margin-top:5px}
 .hero2{position:relative;overflow:hidden;border:1px solid #008dcc;border-radius:22px;background:#000;box-shadow:0 0 18px rgba(0,190,255,.14);height:255px;margin-bottom:22px}
 .hero2-slide{position:absolute;inset:0;opacity:0;transition:opacity .3s ease;pointer-events:none}.hero2-slide.active{opacity:1;pointer-events:auto}
-.hero2-slide img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.5)}
+.hero2-slide img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.52);transform-origin:center center}.hero2-slide.active:first-child img{animation:axeAutoMove 4.8s ease-in-out infinite}.hero2-slide.active:nth-child(2) img{animation:heroPan 7s ease-in-out infinite alternate}.hero2-slide.active:nth-child(3) img{animation:heroPan 8s ease-in-out infinite alternate-reverse}@keyframes axeAutoMove{0%{transform:scale(1.02) translate3d(0,0,0) rotate(-1deg)}25%{transform:scale(1.06) translate3d(-2px,-3px,0) rotate(1deg)}50%{transform:scale(1.10) translate3d(3px,0,0) rotate(-1deg)}75%{transform:scale(1.06) translate3d(-2px,3px,0) rotate(1deg)}100%{transform:scale(1.02) translate3d(0,0,0) rotate(-1deg)}}@keyframes heroPan{from{transform:scale(1.03) translateX(-1%)}to{transform:scale(1.10) translateX(1%)}}
 .hero2-overlay{position:absolute;left:18px;right:18px;bottom:20px}.hero2-title{font-size:21px;color:#09c8ff;font-weight:bold;margin-bottom:7px}.hero2-text{font-size:14px;line-height:1.45;color:#fff}
 .hero2-arrow{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border:1px solid #00baff;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;font-size:29px;line-height:34px;z-index:3;cursor:pointer}.hero2-arrow.left{left:10px}.hero2-arrow.right{right:10px}
 .hero2-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:3}.hero2-dot{width:8px;height:8px;border-radius:50%;background:#777}.hero2-dot.active{width:25px;border-radius:7px;background:#08bde8}
@@ -27,7 +27,7 @@
   </div>
 
   <div class="hero2" id="homeHero">
-    <div class="hero2-slide active"><img src="/static/server.jpg" alt="CODEX AI computing centre"><div class="hero2-overlay"><div class="hero2-title">AI Computing Platform</div><div class="hero2-text">Manage your AI machines, income and account from one place.</div></div></div>
+    <div class="hero2-slide active"><img src="/static/codex_a6_axe.jpg" alt="CODEX-A6 AI mining machine"><div class="hero2-overlay"><div class="hero2-title">CODEX-A6 AI MINING</div><div class="hero2-text">Watch the CODEX-A6 machine move automatically while you manage your AI platform.</div></div></div>
     <div class="hero2-slide"><img src="/static/server.jpg" alt="AI machines"><div class="hero2-overlay"><div class="hero2-title">Your AI Machines</div><div class="hero2-text">Open AI to view products, active machines and your mining activity.</div></div></div>
     <div class="hero2-slide"><img src="/static/server.jpg" alt="CODEX AI dashboard"><div class="hero2-overlay"><div class="hero2-title">Stay Connected</div><div class="hero2-text">Use Message for support and the navigation bar to reach every section.</div></div></div>
     <button class="hero2-arrow left" type="button" aria-label="Previous" onclick="heroMove(-1)">‹</button><button class="hero2-arrow right" type="button" aria-label="Next" onclick="heroMove(1)">›</button>
