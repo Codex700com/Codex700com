@@ -1,111 +1,63 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-.home{padding:0 0 10px}
-.home-head{display:flex;align-items:center;justify-content:space-between;padding:8px 2px 26px}
-.home-brand{font-size:34px;font-weight:bold;letter-spacing:.5px}
+.home{padding:0 0 12px;font-family:Georgia,'Times New Roman',serif}
+.home-head{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 18px}
+.home-brand{display:flex;align-items:center;gap:10px;font-size:30px;font-weight:bold;letter-spacing:.4px}
+.brand-mark{width:52px;height:52px;border:1px solid #1683ff;border-radius:15px;background:#061522;display:flex;align-items:center;justify-content:center;color:#00c8ff;font-size:24px;font-weight:bold;box-shadow:0 0 14px rgba(0,190,255,.18)}
+.brand-copy small{display:block;color:#00baff;font-size:12px;letter-spacing:2px;margin-top:2px}
 .message-link{text-decoration:none;color:#fff;text-align:center;min-width:58px}
-.message-icon{font-size:43px;line-height:38px}
-.message-label{font-size:15px;margin-top:7px}
-.hero2{position:relative;overflow:hidden;border:1px solid #008dcc;border-radius:28px;background:#000;box-shadow:0 0 18px rgba(0,190,255,.12);height:375px;margin-bottom:24px}
-.hero2-slide{position:absolute;inset:0;opacity:0;transition:opacity .25s ease;pointer-events:none}
-.hero2-slide.active{opacity:1;pointer-events:auto}
-.hero2-slide img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.55)}
-.hero2-overlay{position:absolute;left:20px;right:20px;bottom:22px}
-.hero2-title{font-size:23px;color:#09c8ff;font-weight:bold;margin-bottom:8px}
-.hero2-text{font-size:16px;line-height:1.55;color:#fff}
-.hero2-arrow{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;border:1px solid #00baff;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;font-size:35px;line-height:42px;z-index:3;cursor:pointer}
-.hero2-arrow.left{left:12px}.hero2-arrow.right{right:12px}
-.hero2-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:3}
-.hero2-dot{width:10px;height:10px;border-radius:50%;background:#aaa}.hero2-dot.active{width:32px;border-radius:8px;background:#08bde8}
-.home-stats{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
-.stat-card{display:block;text-decoration:none;color:#111;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 0 15px rgba(0,190,255,.12);min-height:126px}
-.stat-value{display:flex;align-items:center;justify-content:center;min-height:82px;padding:12px 8px;font-size:27px;font-weight:bold}
-.stat-label{background:#08bde8;color:#fff;text-align:center;padding:12px 6px;font-size:17px;min-height:44px}
-.home-stats.three{grid-template-columns:repeat(3,1fr);gap:12px}
-.home-stats.three .stat-card{min-height:116px}.home-stats.three .stat-value{min-height:70px;font-size:23px}.home-stats.three .stat-label{font-size:14px}
-.news{border:1px solid #008dcc;border-radius:22px;background:rgba(0,0,0,.55);padding:22px;margin-top:4px}
-.news-head{display:flex;align-items:center;gap:12px;font-size:25px;font-weight:bold;margin-bottom:16px}.news-head span{color:#08bde8;font-size:31px}
-.news-item{border:1px solid #123;border-radius:16px;padding:15px;margin-top:12px;background:rgba(0,0,0,.4)}
-.news-item strong{color:#08bde8;display:block;margin-bottom:7px}.news-item p{margin:0;color:#ddd;line-height:1.5}
-@media(max-width:480px){.home-brand{font-size:30px}.hero2{height:365px}.hero2-title{font-size:20px}.hero2-text{font-size:15px}.stat-value{font-size:25px}.stat-label{font-size:16px}.home-stats.three .stat-value{font-size:21px}.home-stats.three .stat-label{font-size:13px}}
+.message-icon{font-size:39px;line-height:38px}.message-label{font-size:14px;margin-top:5px}
+.hero2{position:relative;overflow:hidden;border:1px solid #008dcc;border-radius:22px;background:#000;box-shadow:0 0 18px rgba(0,190,255,.14);height:255px;margin-bottom:22px}
+.hero2-slide{position:absolute;inset:0;opacity:0;transition:opacity .3s ease;pointer-events:none}.hero2-slide.active{opacity:1;pointer-events:auto}
+.hero2-slide img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.5)}
+.hero2-overlay{position:absolute;left:18px;right:18px;bottom:20px}.hero2-title{font-size:21px;color:#09c8ff;font-weight:bold;margin-bottom:7px}.hero2-text{font-size:14px;line-height:1.45;color:#fff}
+.hero2-arrow{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border:1px solid #00baff;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;font-size:29px;line-height:34px;z-index:3;cursor:pointer}.hero2-arrow.left{left:10px}.hero2-arrow.right{right:10px}
+.hero2-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:3}.hero2-dot{width:8px;height:8px;border-radius:50%;background:#777}.hero2-dot.active{width:25px;border-radius:7px;background:#08bde8}
+.home-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}.stat-card{display:block;text-decoration:none;color:#111;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 0 15px rgba(0,190,255,.13);min-height:108px}.stat-value{display:flex;align-items:center;justify-content:center;min-height:68px;padding:10px 6px;font-size:23px;font-weight:bold;word-break:break-word}.stat-label{background:#08bde8;color:#fff;text-align:center;padding:11px 5px;font-size:15px;min-height:40px}
+.home-stats.three{grid-template-columns:repeat(3,1fr);gap:10px}.home-stats.three .stat-card{min-height:105px}.home-stats.three .stat-value{min-height:62px;font-size:20px}.home-stats.three .stat-label{font-size:12px;padding:10px 3px}
+.news{border:1px solid #008dcc;border-radius:20px;background:rgba(0,0,0,.58);padding:20px;margin-top:2px}.news-head{display:flex;align-items:center;gap:10px;font-size:25px;font-weight:bold;margin-bottom:14px}.news-head .more{margin-left:auto;color:#08bde8;text-decoration:none;font-size:15px}.news-head span{color:#08bde8;font-size:29px}.news-item{border:1px solid #123c50;border-radius:15px;padding:14px;margin-top:10px;background:rgba(0,0,0,.42)}.news-item strong{color:#9befff;display:block;margin-bottom:6px}.news-item p{margin:0;color:#ddd;line-height:1.45;font-size:13px}
+@media(max-width:480px){.home-brand{font-size:25px}.brand-mark{width:47px;height:47px}.hero2{height:250px}.hero2-title{font-size:19px}.hero2-text{font-size:13px}.stat-value{font-size:21px}.stat-label{font-size:14px}.home-stats.three .stat-value{font-size:19px}.home-stats.three .stat-label{font-size:11px}}
 </style>
 
 <div class="home">
   <div class="home-head">
-    <div class="home-brand">CODEX AI</div>
-    <a class="message-link" href="/support">
-      <div class="message-icon">♧</div>
-      <div class="message-label">Message</div>
-    </a>
+    <div class="home-brand"><div class="brand-mark">CX</div><div class="brand-copy">CODEX AI<small>AI PLATFORM</small></div></div>
+    <a class="message-link" href="{{ url_for('support') }}" aria-label="Open customer support"><div class="message-icon">♧</div><div class="message-label">Message</div></a>
   </div>
 
   <div class="hero2" id="homeHero">
-    <div class="hero2-slide active">
-      <img src="/static/server.jpg" alt="AI computing centre">
-      <div class="hero2-overlay">
-        <div class="hero2-title">AI Computing Platform</div>
-        <div class="hero2-text">Manage your AI machines, income and account from one place.</div>
-      </div>
-    </div>
-    <div class="hero2-slide">
-      <img src="/static/server.jpg" alt="AI computing centre">
-      <div class="hero2-overlay">
-        <div class="hero2-title">Your machines, your dashboard</div>
-        <div class="hero2-text">Check active machines, income and account activity instantly.</div>
-      </div>
-    </div>
-    <div class="hero2-slide">
-      <img src="/static/server.jpg" alt="AI computing centre">
-      <div class="hero2-overlay">
-        <div class="hero2-title">CODEX AI</div>
-        <div class="hero2-text">Use the navigation below to move directly between every working section.</div>
-      </div>
-    </div>
-    <div class="hero2-slide">
-      <img src="/static/server.jpg" alt="AI computing centre">
-      <div class="hero2-overlay">
-        <div class="hero2-title">News &amp; Announcements</div>
-        <div class="hero2-text">Stay updated from your home dashboard without leaving the page.</div>
-      </div>
-    </div>
-    <button class="hero2-arrow left" type="button" aria-label="Previous" onclick="heroMove(-1)">‹</button>
-    <button class="hero2-arrow right" type="button" aria-label="Next" onclick="heroMove(1)">›</button>
-    <div class="hero2-dots">
-      <span class="hero2-dot active"></span><span class="hero2-dot"></span><span class="hero2-dot"></span><span class="hero2-dot"></span>
-    </div>
+    <div class="hero2-slide active"><img src="/static/server.jpg" alt="CODEX AI computing centre"><div class="hero2-overlay"><div class="hero2-title">AI Computing Platform</div><div class="hero2-text">Manage your AI machines, income and account from one place.</div></div></div>
+    <div class="hero2-slide"><img src="/static/server.jpg" alt="AI machines"><div class="hero2-overlay"><div class="hero2-title">Your AI Machines</div><div class="hero2-text">Open AI to view products, active machines and your mining activity.</div></div></div>
+    <div class="hero2-slide"><img src="/static/server.jpg" alt="CODEX AI dashboard"><div class="hero2-overlay"><div class="hero2-title">Stay Connected</div><div class="hero2-text">Use Message for support and the navigation bar to reach every section.</div></div></div>
+    <button class="hero2-arrow left" type="button" aria-label="Previous" onclick="heroMove(-1)">‹</button><button class="hero2-arrow right" type="button" aria-label="Next" onclick="heroMove(1)">›</button>
+    <div class="hero2-dots"><span class="hero2-dot active"></span><span class="hero2-dot"></span><span class="hero2-dot"></span></div>
   </div>
 
   <div class="home-stats">
-    <a class="stat-card" href="/deposit"><div class="stat-value">UGX {{'{:,.2f}'.format(user.wallet)}}</div><div class="stat-label">Deposit details</div></a>
-    <a class="stat-card" href="/withdraw"><div class="stat-value">UGX {{'{:,.2f}'.format(user.balance)}}</div><div class="stat-label">Withdraw details</div></a>
-    <a class="stat-card" href="/income"><div class="stat-value">UGX {{'{:,.2f}'.format(ai_income)}}</div><div class="stat-label">AI Income</div></a>
-    <a class="stat-card" href="/income"><div class="stat-value">UGX {{'{:,.2f}'.format(today)}}</div><div class="stat-label">Today's earnings</div></a>
+    <a class="stat-card" href="{{ url_for('deposit') }}"><div class="stat-value">UGX {{ '{:,.0f}'.format(user.wallet) }}</div><div class="stat-label">Deposit details</div></a>
+    <a class="stat-card" href="{{ url_for('withdraw') }}"><div class="stat-value">UGX {{ '{:,.0f}'.format(user.balance) }}</div><div class="stat-label">Withdraw details</div></a>
+    <a class="stat-card" href="{{ url_for('income') }}"><div class="stat-value">UGX {{ '{:,.0f}'.format(ai_income) }}</div><div class="stat-label">AI Income</div></a>
+    <a class="stat-card" href="{{ url_for('income') }}"><div class="stat-value">UGX {{ '{:,.0f}'.format(today) }}</div><div class="stat-label">Today's earnings</div></a>
   </div>
 
   <div class="home-stats three">
-    <a class="stat-card" href="/invite"><div class="stat-value">{{invite_count}}</div><div class="stat-label">Invite Count</div></a>
-    <a class="stat-card" href="/my-team"><div class="stat-value">{{invite_count}}</div><div class="stat-label">Team Count</div></a>
-    <a class="stat-card" href="/income"><div class="stat-value">UGX 0.00</div><div class="stat-label">Team income</div></a>
+    <a class="stat-card" href="{{ url_for('invite') }}"><div class="stat-value">{{ invite_count }}</div><div class="stat-label">Invite Count</div></a>
+    <a class="stat-card" href="{{ url_for('my_team') }}"><div class="stat-value">{{ team_count }}</div><div class="stat-label">Team Count</div></a>
+    <a class="stat-card" href="{{ url_for('income') }}"><div class="stat-value">UGX 0</div><div class="stat-label">Team income</div></a>
   </div>
 
   <div class="news">
-    <div class="news-head"><span>♧</span> News &amp; Announcements</div>
-    <div class="news-item"><strong>CODEX AI platform</strong><p>Your dashboard is ready. Deposit, withdraw, manage AI products, view income and manage your referrals from the navigation below.</p></div>
-    <div class="news-item"><strong>Account reminder</strong><p>Keep your payout details updated in Settings so withdrawal requests have the correct information.</p></div>
+    <div class="news-head"><span>♧</span> Message <a class="more" href="{{ url_for('support') }}">More</a></div>
+    <div class="news-item"><strong>Deposit</strong><p>Open Deposit details to submit and track your deposit request.</p></div>
+    <div class="news-item"><strong>Welcome to CODEX AI</strong><p>Your account is ready. Open AI, Income, Referrals, My or Support from the navigation below.</p></div>
   </div>
 </div>
 
 <script>
 (function(){
-  const slides=document.querySelectorAll('.hero2-slide');
-  const dots=document.querySelectorAll('.hero2-dot');
-  let i=0;
-  window.heroMove=function(step){
-    slides[i].classList.remove('active'); dots[i].classList.remove('active');
-    i=(i+step+slides.length)%slides.length;
-    slides[i].classList.add('active'); dots[i].classList.add('active');
-  };
+  const slides=document.querySelectorAll('.hero2-slide'),dots=document.querySelectorAll('.hero2-dot');let i=0;
+  window.heroMove=function(step){slides[i].classList.remove('active');dots[i].classList.remove('active');i=(i+step+slides.length)%slides.length;slides[i].classList.add('active');dots[i].classList.add('active')};
   setInterval(function(){heroMove(1)},6000);
 })();
 </script>

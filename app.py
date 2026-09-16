@@ -230,7 +230,7 @@ def reset():
 def home():
     u=current_user(); con=db(); products=con.execute("SELECT * FROM products WHERE uid=? ORDER BY id DESC",(u["id"],)).fetchall(); con.close(); ai_income,today=active_income(u["id"]); last,this=invite_counts(u["id"])
     show_announcement=session.pop("show_announcement",False)
-    return render_template("home.html",user=u,products=products,ai_income=ai_income,today=today,invite_count=this,show_announcement=show_announcement)
+    return render_template("home.html",user=u,products=products,ai_income=ai_income,today=today,invite_count=this,team_count=this,show_announcement=show_announcement)
 
 @app.route("/my")
 @required
