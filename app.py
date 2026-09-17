@@ -1,6 +1,3 @@
-# CODEX_MASTER_NAVIGATION
-CODEX_NAV = [('home', 'Home', '/home'), ('raffle', 'Raffle', '/raffle'), ('chats', 'Chats', '/support'), ('ai', 'AI', '/ai-mining'), ('income', 'Income', '/income'), ('my', 'My', '/my')]
-
 import os, sqlite3, secrets, string, hashlib, hmac
 from datetime import datetime, timezone
 from functools import wraps
