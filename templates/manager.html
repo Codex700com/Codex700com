@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+.manager-wrap{max-width:560px;margin:20px auto}
+.manager-title{font-size:24px;font-weight:900;margin-bottom:6px}
+.manager-sub{opacity:.72;margin-bottom:20px}
+.manager-card{background:#071426;border:1px solid #29415f;border-radius:18px;padding:18px;margin-bottom:12px}
+.manager-name{font-size:20px;font-weight:900}
+.manager-role{font-size:13px;opacity:.7;margin-top:3px}
+.manager-phone{font-size:18px;font-weight:800;margin-top:10px}
+.manager-btn{width:100%;border:0;border-radius:12px;padding:13px;background:#1683ff;color:#fff;font-weight:800;font-size:15px;margin-top:14px}
+.locked{border-color:#1683ff}
+.notice{font-size:13px;opacity:.7;line-height:1.5;margin-top:14px}
+</style>
+
+<div class="manager-wrap">
+
+<div class="manager-title">My Manager</div>
+
+{% if assigned %}
+
+<div class="manager-sub">
+Your manager has been permanently assigned to your account.
+</div>
+
+<div class="manager-card locked">
+    <div class="manager-name">{{ assigned[0] }}</div>
+    <div class="manager-role">{{ assigned[2] }}</div>
+    <div class="manager-phone">{{ assigned[1] }}</div>
+</div>
+
+<div class="notice">
+This manager is permanently linked to your account. Other managers are no longer
+available for selection.
+</div>
+
+{% else %}
+
+<div class="manager-sub">
+Choose your manager. You can select a manager only once.
+</div>
+
+{% for name,phone,role in managers %}
+
+<div class="manager-card">
+    <div class="manager-name">{{ name }}</div>
+    <div class="manager-role">{{ role }}</div>
+    <div class="manager-phone">{{ phone }}</div>
+
+    <form method="post">
+        <input type="hidden" name="manager_phone" value="{{ phone }}">
+        <button class="manager-btn" type="submit">Choose {{ name }}</button>
+    </form>
+</div>
+
+{% endfor %}
+
+{% endif %}
+
+</div>
+
+{% endblock %}
