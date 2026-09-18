@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+.deposit-wrap{max-width:520px;margin:20px auto}
+.deposit-modal{background:#071426;border:1px solid #1683ff;border-radius:18px;padding:24px;box-shadow:0 12px 35px rgba(0,0,0,.35)}
+.deposit-title{font-size:22px;font-weight:800;margin-bottom:8px}
+.deposit-sub{opacity:.75;margin-bottom:20px}
+.deposit-input{width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid #29415f;background:#030b18;color:#fff;font-size:17px;margin-bottom:14px}
+.deposit-btn{width:100%;border:0;border-radius:12px;padding:14px;background:#1683ff;color:white;font-weight:800;font-size:16px;margin-top:8px}
+.agent{padding:16px;border-radius:14px;background:#030b18;border:1px solid #29415f;margin:14px 0}
+.agent-number{font-size:21px;font-weight:900;margin-top:5px}
+.method-btn{margin-bottom:10px}
+.error{color:#ff6969;margin-bottom:12px}
+.countdown{font-size:25px;font-weight:900;text-align:center;margin:18px 0}
+.note{font-size:13px;opacity:.7;line-height:1.5}
+</style>
+
+<div class="deposit-wrap">
+<div class="deposit-modal">
+
+{% if stage=="amount" %}
+
+<div class="deposit-title">CODEX PAYMENT AGENT 626</div>
+<div class="deposit-sub">Enter the amount you want to deposit.</div>
+
+{% if error %}<div class="error">{{error}}</div>{% endif %}
+
+<form method="post">
+<input type="hidden" name="action" value="start">
+<input class="deposit-input" name="amount" type="number" min="1" step="1" placeholder="Amount (UGX)" required>
+<button class="deposit-btn" type="submit">Continue</button>
+</form>
+
+{% elif stage=="method" %}
+
+<div class="deposit-title">Choose payment method</div>
+<div class="deposit-sub">Select the mobile-money network you will use.</div>
+
+<form method="post">
+<input type="hidden" name="action" value="method">
+<button class="deposit-btn method-btn" name="method" value="Airtel" type="submit">Airtel</button>
+<button class="deposit-btn method-btn" name="method" value="MTN" type="submit">MTN</button>
+</form>
+
+{% elif stage=="agent" %}
+
+<div class="deposit-title">Redirecting to your payment agent...</div>
+<div class="deposit-sub">Please wait.</div>
+
+<div id="redirectBox" style="text-align:center;padding:20px">
+Preparing payment instructions...
+</div>
+
+<div id="agentBox" style="display:none">
+
+<div class="agent">
+<div>Payment agent</div>
+<div class="agent-number">{{deposit.agent}}</div>
+</div>
+
+<div class="agent">
+<div>Amount</div>
+<div class="agent-number">UGX {{ "{:,.0f}".format(deposit.amount) }}</div>
+</div>
+
+<div class="note">
+Use the selected {{deposit.payment_method}} payment method to make the payment to the
+agent shown above. This is an app-provided payment instruction, not a telecom confirmation.
+</div>
+
+<button class="deposit-btn" type="button" onclick="location.reload()">I have made the payment</button>
+
+</div>
+
+<script>
+setTimeout(function(){
+    document.querySelector('.deposit-title').textContent='Payment instructions';
+    document.getElementById('redirectBox').style.display='none';
+    document.getElementById('agentBox').style.display='block';
+},1500);
+</script>
+
+{% elif stage=="proof" %}
+
+<div class="deposit-title">Payment proof</div>
+<div class="deposit-sub">
+Submit your payment proof before the timer expires.
+</div>
+
+<div class="agent">
+<div>Agent</div>
+<div class="agent-number">{{deposit.agent}}</div>
+</div>
+
+<div class="agent">
+<div>Amount</div>
+<div class="agent-number">UGX {{ "{:,.0f}".format(deposit.amount) }}</div>
+</div>
+
+<div id="countdown" class="countdown">30:00</div>
+
+{% if error %}<div class="error">{{error}}</div>{% endif %}
+
+<form method="post" id="proofForm">
+<input type="hidden" name="action" value="proof">
+<textarea class="deposit-input" name="proof" rows="5"
+placeholder="Enter payment proof / transaction ID" required></textarea>
+<button class="deposit-btn" type="submit">Submit Payment Proof</button>
+</form>
+
+<div class="note">
+The 30-minute expiry is controlled by the server and is not reset by refreshing
+the page or navigating away and returning.
+</div>
+
+<script>
+const expiry={{ deposit.expires_at|tojson }};
+
+function updateTimer(){
+    const end=Date.parse(expiry);
+    const left=Math.max(0,end-Date.now());
+
+    if(left<=0){
+        document.getElementById('countdown').textContent='EXPIRED';
+        document.getElementById('proofForm').style.display='none';
+        return;
+    }
+
+    const total=Math.floor(left/1000);
+    const m=Math.floor(total/60);
+    const s=total%60;
+
+    document.getElementById('countdown').textContent=
+        String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+
+updateTimer();
+setInterval(updateTimer,1000);
+</script>
+
+{% endif %}
+
+</div>
+</div>
+
+{% endblock %}
