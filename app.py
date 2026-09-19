@@ -75,7 +75,7 @@ def make_code(con):
 def init_db():
     con=db()
     con.executescript("""
-    CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT,phone TEXT UNIQUE NOT NULL,password TEXT NOT NULL,invite_code TEXT UNIQUE NOT NULL,invited_by INTEGER,balance REAL NOT NULL DEFAULT 0,wallet REAL NOT NULL DEFAULT 0,points INTEGER NOT NULL DEFAULT 0,display_name TEXT NOT NULL DEFAULT '',mtn_number TEXT NOT NULL DEFAULT '',airtel_number TEXT NOT NULL DEFAULT '',usdt_wallet TEXT NOT NULL DEFAULT '',notifications_enabled INTEGER NOT NULL DEFAULT 1,created_at TEXT NOT NULL,is_admin INTEGER NOT NULL DEFAULT 0,salary_claimed_month TEXT,reward_claimed_month TEXT);
+    CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT,phone TEXT UNIQUE NOT NULL,password TEXT NOT NULL,invite_code TEXT UNIQUE NOT NULL,invited_by INTEGER,balance REAL NOT NULL DEFAULT 0,wallet REAL NOT NULL DEFAULT 0,points INTEGER NOT NULL DEFAULT 0,display_name TEXT NOT NULL DEFAULT '',mtn_number TEXT NOT NULL DEFAULT '',airtel_number TEXT NOT NULL DEFAULT '',usdt_wallet TEXT NOT NULL DEFAULT '',notifications_enabled INTEGER NOT NULL DEFAULT 1,created_at TEXT NOT NULL,is_admin INTEGER NOT NULL DEFAULT 0,salary_claimed_month TEXT,reward_claimed_month TEXT,manager_phone TEXT);
     CREATE TABLE IF NOT EXISTS transactions(id INTEGER PRIMARY KEY AUTOINCREMENT,uid INTEGER NOT NULL,kind TEXT NOT NULL,amount REAL NOT NULL DEFAULT 0,status TEXT NOT NULL DEFAULT 'PENDING',reference TEXT,created_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS deposit_sessions(id INTEGER PRIMARY KEY AUTOINCREMENT,uid INTEGER NOT NULL,amount REAL NOT NULL DEFAULT 0,payment_method TEXT,agent TEXT NOT NULL,expires_at TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'WAITING_PROOF',proof TEXT,created_at TEXT NOT NULL);
 
@@ -91,7 +91,7 @@ def init_db():
     """)
     # Safe migrations for any copy that already has an older fresh DB.
     cols={r[1] for r in con.execute("PRAGMA table_info(users)").fetchall()}
-    for col,typ in [("points","INTEGER NOT NULL DEFAULT 0"),("display_name","TEXT NOT NULL DEFAULT ''"),("mtn_number","TEXT NOT NULL DEFAULT ''"),("airtel_number","TEXT NOT NULL DEFAULT ''"),("usdt_wallet","TEXT NOT NULL DEFAULT ''"),("notifications_enabled","INTEGER NOT NULL DEFAULT 1"),("salary_claimed_month","TEXT"),("reward_claimed_month","TEXT")]:
+    for col,typ in [("points","INTEGER NOT NULL DEFAULT 0"),("display_name","TEXT NOT NULL DEFAULT ''"),("mtn_number","TEXT NOT NULL DEFAULT ''"),("airtel_number","TEXT NOT NULL DEFAULT ''"),("usdt_wallet","TEXT NOT NULL DEFAULT ''"),("notifications_enabled","INTEGER NOT NULL DEFAULT 1"),("salary_claimed_month","TEXT"),("reward_claimed_month","TEXT"),("manager_phone","TEXT")]:
         if col not in cols: con.execute(f"ALTER TABLE users ADD COLUMN {col} {typ}")
     pcols={r[1] for r in con.execute("PRAGMA table_info(products)").fetchall()}
     for col,typ in [("last_income_at","TEXT"),("earned_income","REAL NOT NULL DEFAULT 0")]:
@@ -321,8 +321,8 @@ def deposit():
         # Expired sessions can never be revived/reset by refresh.
         con.execute(
             "UPDATE deposit_sessions SET status='EXPIRED' WHERE id=?",
-            (active["id"],)
-        )
+            (active["id"],),
+    )
         con.commit()
         active=None
 
@@ -527,9 +527,80 @@ def bills(): return render_template("simple.html",title="Bills",content="<h2>Bil
 @app.route("/vip-tasks")
 @required
 def vip_tasks(): return render_template("simple.html",title="VIP Task",content="<h2>VIP Tasks</h2><p>No tasks are currently assigned.</p>",active="My")
-@app.route("/manager")
+MANAGERS = [
+    ("Lucy",   "+256 740 062648", "CODEX Manager"),
+    ("Elrie",  "+256 789 590432", "CODEX Manager"),
+    ("Phubie", "+256 749 942060", "CODEX Manager"),
+    ("Happy",  "+256 708 579380", "CODEX Manager"),
+    ("Imran",  "+256 724 018143", "CODEX Manager"),
+    ("Anna",   "+256 700 880252", "CODEX Manager"),
+]
+
+@app.route("/manager", methods=["GET","POST"])
 @required
-def manager(): return render_template("simple.html",title="Manager",content="<h2>Manager</h2><p>Use Chats to contact the manager.</p>",active="My")
+def manager():
+    u=current_user()
+    con=db()
+
+    # Make sure older databases have the persistent column.
+    cols=[r["name"] for r in con.execute("PRAGMA table_info(users)").fetchall()]
+    if "manager_phone" not in cols:
+        con.execute("ALTER TABLE users ADD COLUMN manager_phone TEXT")
+        con.commit()
+
+    if request.method=="POST":
+        phone=request.form.get("manager_phone","").strip()
+
+        valid={m[1]:m for m in MANAGERS}
+        chosen=valid.get(phone)
+
+        current=con.execute(
+            "SELECT manager_phone FROM users WHERE id=?",
+            (u["id"],)
+        ).fetchone()
+
+        if current and current["manager_phone"]:
+            con.close()
+            flash("Your manager has already been permanently assigned.","error")
+            return redirect(url_for("manager"))
+
+        if not chosen:
+            con.close()
+            flash("Please choose a valid manager.","error")
+            return redirect(url_for("manager"))
+
+        con.execute(
+            "UPDATE users SET manager_phone=? WHERE id=? AND (manager_phone IS NULL OR manager_phone='')",
+            (phone,u["id"])
+        )
+        con.commit()
+        con.close()
+
+        flash(f"{chosen[0]} has been permanently assigned as your manager.","success")
+        return redirect(url_for("manager"))
+
+    row=con.execute(
+        "SELECT manager_phone FROM users WHERE id=?",
+        (u["id"],)
+    ).fetchone()
+    con.close()
+
+    assigned=None
+    managers=MANAGERS
+
+    if row and row["manager_phone"]:
+        for m in MANAGERS:
+            if m[1]==row["manager_phone"]:
+                assigned=m
+                break
+        managers=[]
+
+    return render_template(
+        "manager.html",
+        assigned=assigned,
+        managers=managers,
+        active="My"
+    )
 
 @app.route("/reward")
 @required
