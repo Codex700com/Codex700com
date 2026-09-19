@@ -528,12 +528,12 @@ def bills(): return render_template("simple.html",title="Bills",content="<h2>Bil
 @required
 def vip_tasks(): return render_template("simple.html",title="VIP Task",content="<h2>VIP Tasks</h2><p>No tasks are currently assigned.</p>",active="My")
 MANAGERS = [
-    ("Lucy",   "+256 740 062648", "CODEX Manager"),
-    ("Elrie",  "+256 789 590432", "CODEX Manager"),
-    ("Phubie", "+256 749 942060", "CODEX Manager"),
-    ("Happy",  "+256 708 579380", "CODEX Manager"),
-    ("Imran",  "+256 724 018143", "CODEX Manager"),
-    ("Anna",   "+256 700 880252", "CODEX Manager"),
+    {"id":"lucy","name":"Lucy","phone":"+256740062648","role":"CODEX Manager","avatar":"👩🏻"},
+    {"id":"elrie","name":"Elrie","phone":"+256789590432","role":"CODEX Manager","avatar":"👩🏽"},
+    {"id":"phubie","name":"Phubie","phone":"+256749942060","role":"CODEX Manager","avatar":"👩🏾"},
+    {"id":"happy","name":"Happy","phone":"+256708579380","role":"CODEX Manager","avatar":"👩🏼"},
+    {"id":"imran","name":"Imran","phone":"+256724018143","role":"CODEX Manager","avatar":"👩🏿"},
+    {"id":"anna","name":"Anna","phone":"+256700880252","role":"CODEX Manager","avatar":"👩🏻"},
 ]
 
 @app.route("/manager", methods=["GET","POST"])
@@ -542,17 +542,14 @@ def manager():
     u=current_user()
     con=db()
 
-    # Make sure older databases have the persistent column.
     cols=[r["name"] for r in con.execute("PRAGMA table_info(users)").fetchall()]
     if "manager_phone" not in cols:
         con.execute("ALTER TABLE users ADD COLUMN manager_phone TEXT")
         con.commit()
 
     if request.method=="POST":
-        phone=request.form.get("manager_phone","").strip()
-
-        valid={m[1]:m for m in MANAGERS}
-        chosen=valid.get(phone)
+        manager_id=request.form.get("manager_id","").strip()
+        chosen=next((m for m in MANAGERS if m["id"]==manager_id),None)
 
         current=con.execute(
             "SELECT manager_phone FROM users WHERE id=?",
@@ -571,12 +568,11 @@ def manager():
 
         con.execute(
             "UPDATE users SET manager_phone=? WHERE id=? AND (manager_phone IS NULL OR manager_phone='')",
-            (phone,u["id"])
+            (chosen["phone"],u["id"])
         )
         con.commit()
         con.close()
 
-        flash(f"{chosen[0]} has been permanently assigned as your manager.","success")
         return redirect(url_for("manager"))
 
     row=con.execute(
@@ -586,14 +582,15 @@ def manager():
     con.close()
 
     assigned=None
-    managers=MANAGERS
 
     if row and row["manager_phone"]:
-        for m in MANAGERS:
-            if m[1]==row["manager_phone"]:
-                assigned=m
-                break
+        assigned=next(
+            (m for m in MANAGERS if m["phone"]==row["manager_phone"]),
+            None
+        )
         managers=[]
+    else:
+        managers=MANAGERS
 
     return render_template(
         "manager.html",
@@ -601,6 +598,37 @@ def manager():
         managers=managers,
         active="My"
     )
+
+@app.route("/manager/chat/<manager_id>")
+@required
+def manager_chat(manager_id):
+    u=current_user()
+    con=db()
+
+    row=con.execute(
+        "SELECT manager_phone FROM users WHERE id=?",
+        (u["id"],)
+    ).fetchone()
+    con.close()
+
+    if not row or not row["manager_phone"]:
+        flash("Choose your manager first.","error")
+        return redirect(url_for("manager"))
+
+    chosen=next(
+        (m for m in MANAGERS
+         if m["id"]==manager_id and m["phone"]==row["manager_phone"]),
+        None
+    )
+
+    if not chosen:
+        flash("That manager is not assigned to your account.","error")
+        return redirect(url_for("manager"))
+
+    # WhatsApp Click-to-Chat uses the international number without +, spaces or dashes.
+    wa_number=chosen["phone"].replace("+","").replace(" ","").replace("-","")
+
+    return redirect("https://wa.me/"+wa_number)
 
 @app.route("/reward")
 @required
