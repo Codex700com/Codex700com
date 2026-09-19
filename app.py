@@ -511,7 +511,7 @@ def deposit():
                     error="Enter your payment proof."
                 )
 
-            ref="DEP-"+secrets.token_hex(4).upper()
+            ref="DEP-"+secrets.token_hex(4).upper()+"-S"+str(active["id"])
 
             con.execute("""
                 INSERT INTO transactions
@@ -537,6 +537,27 @@ def deposit():
 
             flash("Payment proof submitted. Your deposit is pending approval.","success")
             return redirect(url_for("deposit"))
+
+    review=con.execute("""
+        SELECT * FROM deposit_sessions
+        WHERE uid=? AND status='SUBMITTED'
+        ORDER BY id DESC LIMIT 1
+    """,(u["id"],)).fetchone()
+
+    if review:
+        pending=con.execute("""
+            SELECT * FROM transactions
+            WHERE uid=? AND kind='DEPOSIT' AND status='PENDING'
+            ORDER BY id DESC LIMIT 1
+        """,(u["id"],)).fetchone()
+        if pending:
+            con.close()
+            return render_template(
+                "deposit.html",
+                user=u,
+                stage="review",
+                deposit=review
+            )
 
     con.close()
     return render_template("deposit.html",user=u,stage="amount")
@@ -862,7 +883,20 @@ def admin():
     con=db()
     users=con.execute("SELECT id,phone,balance,created_at,is_admin,is_blocked,last_seen,display_name,manager_phone FROM users ORDER BY id DESC").fetchall()
     tx=con.execute("SELECT t.*,u.phone,u.display_name FROM transactions t LEFT JOIN users u ON u.id=t.uid ORDER BY t.id DESC LIMIT 200").fetchall()
-    deposits=con.execute("SELECT t.*,u.phone,u.display_name FROM transactions t LEFT JOIN users u ON u.id=t.uid WHERE t.kind='DEPOSIT' ORDER BY t.id DESC LIMIT 100").fetchall()
+    deposits=con.execute("""
+        SELECT t.*,u.phone,u.display_name,
+               d.payment_method AS deposit_method,
+               d.agent AS deposit_agent,
+               d.proof AS deposit_proof,
+               d.status AS deposit_status,
+               d.created_at AS deposit_created_at
+        FROM transactions t
+        LEFT JOIN users u ON u.id=t.uid
+        LEFT JOIN deposit_sessions d
+          ON d.id=CAST(substr(t.reference,instr(t.reference,'-S')+2) AS INTEGER)
+        WHERE t.kind='DEPOSIT'
+        ORDER BY t.id DESC LIMIT 100
+    """).fetchall()
     requests=con.execute("SELECT * FROM password_requests ORDER BY id DESC LIMIT 100").fetchall()
     messages=con.execute("SELECT * FROM support_messages ORDER BY id DESC LIMIT 200").fetchall()
     gifts=con.execute("SELECT g.*,COUNT(c.id) AS claims FROM gift_codes g LEFT JOIN gift_code_claims c ON c.code=g.code GROUP BY g.code ORDER BY g.code DESC").fetchall()
@@ -880,10 +914,22 @@ def admin_transaction(tid,action):
     if action=="approve":
         if t["kind"]=="DEPOSIT":
             con.execute("UPDATE users SET balance=balance+? WHERE id=?",(t["amount"],t["uid"]))
+            con.execute("""
+                UPDATE deposit_sessions
+                SET status='APPROVED'
+                WHERE id=CAST(substr(?,instr(?,'-S')+2) AS INTEGER)
+            """,(t["reference"],t["reference"]))
             award=True
         con.execute("UPDATE transactions SET status='APPROVED' WHERE id=?",(tid,))
     elif action=="reject":
-        if t["kind"]=="WITHDRAW": con.execute("UPDATE users SET balance=balance+? WHERE id=?",(t["amount"],t["uid"]))
+        if t["kind"]=="WITHDRAW":
+            con.execute("UPDATE users SET balance=balance+? WHERE id=?",(t["amount"],t["uid"]))
+        if t["kind"]=="DEPOSIT":
+            con.execute("""
+                UPDATE deposit_sessions
+                SET status='REJECTED'
+                WHERE id=CAST(substr(?,instr(?,'-S')+2) AS INTEGER)
+            """,(t["reference"],t["reference"]))
         con.execute("UPDATE transactions SET status='REJECTED' WHERE id=?",(tid,))
     con.commit(); con.close()
     if award: award_referral_points(t["uid"])

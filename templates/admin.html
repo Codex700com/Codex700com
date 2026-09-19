@@ -42,7 +42,12 @@
 <h2>Deposits</h2>
 {% for t in deposits %}
 <div class="row">
-<span>{{t.phone}} — UGX {{'%.0f'|format(t.amount)}} — {{t.status}}</span>
+<div>
+<strong>{{t.phone}}</strong> — UGX {{'%.0f'|format(t.amount)}} — {{t.status}}
+{% if t.deposit_method %}<br><small>Method: {{t.deposit_method}}</small>{% endif %}
+{% if t.deposit_agent %}<br><small>Agent: {{t.deposit_agent}}</small>{% endif %}
+{% if t.deposit_proof %}<br><small>Proof: {{t.deposit_proof}}</small>{% endif %}
+</div>
 {% if t.status=="PENDING" %}
 <span>
 <form method="post" action="/admin/transaction/{{t.id}}/approve" style="display:inline"><button>Approve</button></form>
