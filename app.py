@@ -841,6 +841,7 @@ def reveal_promo(chance_id):
     con.commit(); con.close(); session["revealed_chance_id"]=chance_id; flash(message,"success"); return redirect(url_for("raffle"))
 
 @app.route("/admin")
+@app.route("/admin/")
 @admin_required
 def admin():
     con=db()
