@@ -91,8 +91,46 @@ def init_db():
     """)
     # Safe migrations for any copy that already has an older fresh DB.
     cols={r[1] for r in con.execute("PRAGMA table_info(users)").fetchall()}
-    for col,typ in [("points","INTEGER NOT NULL DEFAULT 0"),("display_name","TEXT NOT NULL DEFAULT ''"),("mtn_number","TEXT NOT NULL DEFAULT ''"),("airtel_number","TEXT NOT NULL DEFAULT ''"),("usdt_wallet","TEXT NOT NULL DEFAULT ''"),("notifications_enabled","INTEGER NOT NULL DEFAULT 1"),("salary_claimed_month","TEXT"),("reward_claimed_month","TEXT"),("manager_phone","TEXT")]:
+    for col,typ in [("points","INTEGER NOT NULL DEFAULT 0"),("display_name","TEXT NOT NULL DEFAULT ''"),("mtn_number","TEXT NOT NULL DEFAULT ''"),("airtel_number","TEXT NOT NULL DEFAULT ''"),("usdt_wallet","TEXT NOT NULL DEFAULT ''"),("notifications_enabled","INTEGER NOT NULL DEFAULT 1"),("salary_claimed_month","TEXT"),("reward_claimed_month","TEXT"),("manager_phone","TEXT"),("is_blocked","INTEGER NOT NULL DEFAULT 0"),("last_seen","TEXT")]:
         if col not in cols: con.execute(f"ALTER TABLE users ADD COLUMN {col} {typ}")
+
+    gcols={r[1] for r in con.execute("PRAGMA table_info(gift_codes)").fetchall()}
+    for col,typ in [("max_uses","INTEGER NOT NULL DEFAULT 1"),("enabled","INTEGER NOT NULL DEFAULT 1")]:
+        if col not in gcols: con.execute(f"ALTER TABLE gift_codes ADD COLUMN {col} {typ}")
+
+    con.executescript("""
+    CREATE TABLE IF NOT EXISTS gift_code_claims(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT NOT NULL,
+        uid INTEGER NOT NULL,
+        claimed_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS managers(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        phone TEXT UNIQUE NOT NULL,
+        role TEXT NOT NULL DEFAULT 'CODEX Manager',
+        avatar TEXT NOT NULL DEFAULT '👤',
+        enabled INTEGER NOT NULL DEFAULT 1
+    );
+
+    CREATE TABLE IF NOT EXISTS admin_activity(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        admin_uid INTEGER NOT NULL,
+        action TEXT NOT NULL,
+        details TEXT NOT NULL,
+        created_at TEXT NOT NULL
+    );
+
+    INSERT OR IGNORE INTO managers(id,name,phone,role,avatar,enabled) VALUES
+    (1,'Lucy','+256 740 062648','CODEX Manager','👩',1),
+    (2,'Elrie','+256 789 590432','CODEX Manager','👩',1),
+    (3,'Phubie','+256 749 942060','CODEX Manager','👩',1),
+    (4,'Happy','+256 708 579380','CODEX Manager','👩',1),
+    (5,'Imran','+256 724 018143','CODEX Manager','👨',1),
+    (6,'Anna','+256 700 880252','CODEX Manager','👩',1);
+    """)
     pcols={r[1] for r in con.execute("PRAGMA table_info(products)").fetchall()}
     for col,typ in [("last_income_at","TEXT"),("earned_income","REAL NOT NULL DEFAULT 0")]:
         if col not in pcols: con.execute(f"ALTER TABLE products ADD COLUMN {col} {typ}")
@@ -890,7 +928,7 @@ def admin_reset_password(uid):
         return redirect(url_for("admin"))
     con=db()
     con.execute("UPDATE users SET password=? WHERE id=?",(pw_hash(password),uid))
-    con.execute("UPDATE password_requests SET status=RESOLVED WHERE uid=?",(uid,))
+    con.execute("UPDATE password_requests SET status=? WHERE uid=?",( "RESOLVED",uid))
     con.execute("INSERT INTO admin_activity(admin_uid,action,details,created_at) VALUES(?,?,?,?)",(current_user()["id"],"PASSWORD_RESET",f"Password reset for user {uid}",now()))
     con.commit(); con.close()
     flash("Password reset successfully.","success")
