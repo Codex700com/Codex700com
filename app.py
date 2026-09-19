@@ -100,11 +100,23 @@ def init_db():
 
 def current_user():
     if "uid" not in session:return None
-    con=db(); u=con.execute("SELECT * FROM users WHERE id=?",(session["uid"],)).fetchone(); con.close(); return u
+    con=db()
+    u=con.execute("SELECT * FROM users WHERE id=?",(session["uid"],)).fetchone()
+    if u:
+        con.execute("UPDATE users SET last_seen=? WHERE id=?",(now(),session["uid"]))
+        con.commit()
+    con.close()
+    return u
 
 def required(fn):
     @wraps(fn)
-    def w(*a,**k): return fn(*a,**k) if current_user() else redirect(url_for("login"))
+    def w(*a,**k):
+        u=current_user()
+        if not u:return redirect(url_for("login"))
+        if "is_blocked" in u.keys() and u["is_blocked"]:
+            session.clear()
+            return "Your account has been blocked. Please contact CODEX support.",403
+        return fn(*a,**k)
     return w
 
 def admin_required(fn):
@@ -542,14 +554,13 @@ def manager():
     u=current_user()
     con=db()
 
-    cols=[r["name"] for r in con.execute("PRAGMA table_info(users)").fetchall()]
-    if "manager_phone" not in cols:
-        con.execute("ALTER TABLE users ADD COLUMN manager_phone TEXT")
-        con.commit()
-
     if request.method=="POST":
         manager_id=request.form.get("manager_id","").strip()
-        chosen=next((m for m in MANAGERS if m["id"]==manager_id),None)
+
+        chosen=con.execute(
+            "SELECT * FROM managers WHERE id=? AND enabled=1",
+            (manager_id,)
+        ).fetchone()
 
         current=con.execute(
             "SELECT manager_phone FROM users WHERE id=?",
@@ -567,30 +578,31 @@ def manager():
             return redirect(url_for("manager"))
 
         con.execute(
-            "UPDATE users SET manager_phone=? WHERE id=? AND (manager_phone IS NULL OR manager_phone='')",
+            "UPDATE users SET manager_phone=? WHERE id=? AND (manager_phone IS NULL OR manager_phone=)",
             (chosen["phone"],u["id"])
         )
         con.commit()
         con.close()
-
         return redirect(url_for("manager"))
 
     row=con.execute(
         "SELECT manager_phone FROM users WHERE id=?",
         (u["id"],)
     ).fetchone()
-    con.close()
-
-    assigned=None
 
     if row and row["manager_phone"]:
-        assigned=next(
-            (m for m in MANAGERS if m["phone"]==row["manager_phone"]),
-            None
-        )
+        assigned=con.execute(
+            "SELECT * FROM managers WHERE phone=?",
+            (row["manager_phone"],)
+        ).fetchone()
         managers=[]
     else:
-        managers=MANAGERS
+        assigned=None
+        managers=con.execute(
+            "SELECT * FROM managers WHERE enabled=1 ORDER BY id"
+        ).fetchall()
+
+    con.close()
 
     return render_template(
         "manager.html",
@@ -637,14 +649,76 @@ def reward(): return render_template("reward.html",rewards=REWARDS,active="My")
 @app.route("/gift-code",methods=["GET","POST"])
 @required
 def gift_code():
-    u=current_user(); con=db()
+    u=current_user()
+    con=db()
+
     if request.method=="POST":
-        code=request.form.get("code","").strip().upper(); g=con.execute("SELECT * FROM gift_codes WHERE code=?",(code,)).fetchone()
-        if not g: flash("Gift code not found.","error")
-        elif g["used_by"]: flash("Gift code has already been used.","error")
+        code=request.form.get("code","").strip().upper()
+        g=con.execute("SELECT * FROM gift_codes WHERE code=?",(code,)).fetchone()
+
+        if not g:
+            flash("Gift code not found.","error")
+
+        elif "enabled" in g.keys() and not g["enabled"]:
+            flash("This gift code has expired or been disabled.","error")
+
         else:
-            con.execute("UPDATE gift_codes SET used_by=?,used_at=? WHERE code=? AND used_by IS NULL",(u["id"],now(),code)); con.execute("UPDATE users SET balance=balance+? WHERE id=?",(g["amount"],u["id"])); con.execute("INSERT INTO transactions(uid,kind,amount,status,reference,created_at) VALUES(?,?,?,?,?,?)",(u["id"],"GIFT_CODE",g["amount"],"APPROVED",code,now())); con.commit(); flash(f"UGX {g['amount']:,.0f} added to your balance.","success")
-    con.close(); return render_template("gift.html",active="My")
+            claims=con.execute(
+                "SELECT COUNT(*) AS n FROM gift_code_claims WHERE code=?",
+                (code,)
+            ).fetchone()["n"]
+
+            already=con.execute(
+                "SELECT 1 FROM gift_code_claims WHERE code=? AND uid=?",
+                (code,u["id"])
+            ).fetchone()
+
+            limit=g["max_uses"] if "max_uses" in g.keys() else 1
+
+            if already:
+                flash("You have already used this gift code.","error")
+
+            elif claims >= limit:
+                con.execute(
+                    "UPDATE gift_codes SET enabled=0 WHERE code=?",
+                    (code,)
+                )
+                con.commit()
+                flash("This gift code has reached its claim limit.","error")
+
+            else:
+                con.execute(
+                    "INSERT INTO gift_code_claims(code,uid,claimed_at) VALUES(?,?,?)",
+                    (code,u["id"],now())
+                )
+
+                con.execute(
+                    "UPDATE users SET balance=balance+? WHERE id=?",
+                    (g["amount"],u["id"])
+                )
+
+                con.execute(
+                    "INSERT INTO transactions(uid,kind,amount,status,reference,created_at) VALUES(?,?,?,?,?,?)",
+                    (u["id"],"GIFT_CODE",g["amount"],"APPROVED",code,now())
+                )
+
+                newclaims=claims+1
+
+                if newclaims >= limit:
+                    con.execute(
+                        "UPDATE gift_codes SET enabled=0 WHERE code=?",
+                        (code,)
+                    )
+
+                con.commit()
+
+                flash(
+                    f"UGX {g[amount]:,.0f} added to your balance.",
+                    "success"
+                )
+
+    con.close()
+    return render_template("gift.html",active="My")
 
 @app.route("/ai-mining")
 @required
@@ -727,7 +801,17 @@ def reveal_promo(chance_id):
 @app.route("/admin")
 @admin_required
 def admin():
-    con=db(); users=con.execute("SELECT id,phone,balance,created_at,is_admin FROM users ORDER BY id DESC").fetchall(); tx=con.execute("SELECT * FROM transactions ORDER BY id DESC LIMIT 100").fetchall(); requests=con.execute("SELECT * FROM password_requests ORDER BY id DESC LIMIT 50").fetchall(); messages=con.execute("SELECT * FROM support_messages ORDER BY id DESC LIMIT 100").fetchall(); con.close(); return render_template("admin.html",users=users,tx=tx,requests=requests,messages=messages)
+    con=db()
+    users=con.execute("SELECT id,phone,balance,created_at,is_admin,is_blocked,last_seen,display_name,manager_phone FROM users ORDER BY id DESC").fetchall()
+    tx=con.execute("SELECT t.*,u.phone,u.display_name FROM transactions t LEFT JOIN users u ON u.id=t.uid ORDER BY t.id DESC LIMIT 200").fetchall()
+    deposits=con.execute("SELECT t.*,u.phone,u.display_name FROM transactions t LEFT JOIN users u ON u.id=t.uid WHERE t.kind='DEPOSIT' ORDER BY t.id DESC LIMIT 100").fetchall()
+    requests=con.execute("SELECT * FROM password_requests ORDER BY id DESC LIMIT 100").fetchall()
+    messages=con.execute("SELECT * FROM support_messages ORDER BY id DESC LIMIT 200").fetchall()
+    gifts=con.execute("SELECT g.*,COUNT(c.id) AS claims FROM gift_codes g LEFT JOIN gift_code_claims c ON c.code=g.code GROUP BY g.code ORDER BY g.code DESC").fetchall()
+    managers=con.execute("SELECT * FROM managers ORDER BY id").fetchall()
+    activity=con.execute("SELECT a.*,u.phone FROM admin_activity a LEFT JOIN users u ON u.id=a.admin_uid ORDER BY a.id DESC LIMIT 100").fetchall()
+    con.close()
+    return render_template("admin.html",users=users,tx=tx,deposits=deposits,requests=requests,messages=messages,gifts=gifts,managers=managers,activity=activity)
 
 @app.route("/admin/transaction/<int:tid>/<action>",methods=["POST"])
 @admin_required
@@ -764,6 +848,175 @@ def admin_gift():
     else:
         code="HUT9-"+''.join(secrets.choice(string.ascii_uppercase+string.digits) for _ in range(8)); con=db(); con.execute("INSERT INTO gift_codes(code,amount) VALUES(?,?)",(code,amount)); con.commit(); con.close(); flash("Gift code created: "+code,"success")
     return redirect(url_for("admin"))
+
+@app.route("/admin/user/<int:uid>/balance",methods=["POST"])
+@admin_required
+def admin_user_balance(uid):
+    try: amount=float(request.form.get("amount") or 0)
+    except: amount=0
+    con=db()
+    con.execute("UPDATE users SET balance=? WHERE id=?",(amount,uid))
+    con.execute("INSERT INTO admin_activity(admin_uid,action,details,created_at) VALUES(?,?,?,?)",(current_user()["id"],"BALANCE_EDIT",f"User {uid} balance set to {amount}",now()))
+    con.commit(); con.close()
+    flash("User balance updated.","success")
+    return redirect(url_for("admin"))
+
+@app.route("/admin/user/<int:uid>/block",methods=["POST"])
+@admin_required
+def admin_user_block(uid):
+    con=db()
+    con.execute("UPDATE users SET is_blocked=1 WHERE id=?",(uid,))
+    con.execute("INSERT INTO admin_activity(admin_uid,action,details,created_at) VALUES(?,?,?,?)",(current_user()["id"],"USER_BLOCK",f"User {uid} blocked",now()))
+    con.commit(); con.close()
+    flash("User blocked.","success")
+    return redirect(url_for("admin"))
+
+@app.route("/admin/user/<int:uid>/unblock",methods=["POST"])
+@admin_required
+def admin_user_unblock(uid):
+    con=db()
+    con.execute("UPDATE users SET is_blocked=0 WHERE id=?",(uid,))
+    con.execute("INSERT INTO admin_activity(admin_uid,action,details,created_at) VALUES(?,?,?,?)",(current_user()["id"],"USER_UNBLOCK",f"User {uid} unblocked",now()))
+    con.commit(); con.close()
+    flash("User unblocked.","success")
+    return redirect(url_for("admin"))
+
+@app.route("/admin/user/<int:uid>/reset-password",methods=["POST"])
+@admin_required
+def admin_reset_password(uid):
+    password=request.form.get("password","").strip()
+    if len(password)<4:
+        flash("Password must be at least 4 characters.","error")
+        return redirect(url_for("admin"))
+    con=db()
+    con.execute("UPDATE users SET password=? WHERE id=?",(pw_hash(password),uid))
+    con.execute("UPDATE password_requests SET status=RESOLVED WHERE uid=?",(uid,))
+    con.execute("INSERT INTO admin_activity(admin_uid,action,details,created_at) VALUES(?,?,?,?)",(current_user()["id"],"PASSWORD_RESET",f"Password reset for user {uid}",now()))
+    con.commit(); con.close()
+    flash("Password reset successfully.","success")
+    return redirect(url_for("admin"))
+
+@app.route("/admin/gift/create",methods=["POST"])
+@admin_required
+def admin_gift_create():
+    try:
+        amount=float(request.form.get("amount") or 0)
+        max_uses=int(request.form.get("max_uses") or 1)
+    except:
+        amount=0
+        max_uses=1
+    code=request.form.get("code","").strip().upper()
+    if not code:
+        code="HUT9-"+"".join(secrets.choice(string.ascii_uppercase+string.digits) for _ in range(8))
+    if amount<=0 or max_uses<1:
+        flash("Enter a valid reward amount and claim limit.","error")
+        return redirect(url_for("admin"))
+    con=db()
+    exists=con.execute("SELECT 1 FROM gift_codes WHERE code=?",(code,)).fetchone()
+    if exists:
+        con.close()
+        flash("That gift code already exists.","error")
+        return redirect(url_for("admin"))
+    con.execute("INSERT INTO gift_codes(code,amount,max_uses,enabled) VALUES(?,?,?,1)",(code,amount,max_uses))
+    con.execute("INSERT INTO admin_activity(admin_uid,action,details,created_at) VALUES(?,?,?,?)",(current_user()["id"],"GIFT_CREATE",f"{code} UGX {amount} limit {max_uses}",now()))
+    con.commit(); con.close()
+    flash(f"Gift code {code} created.","success")
+    return redirect(url_for("admin"))
+
+@app.route("/admin/gift/<code>/toggle",methods=["POST"])
+@admin_required
+def admin_gift_toggle(code):
+    con=db()
+    g=con.execute("SELECT enabled FROM gift_codes WHERE code=?",(code,)).fetchone()
+    if g:
+        new=0 if g["enabled"] else 1
+        con.execute("UPDATE gift_codes SET enabled=? WHERE code=?",(new,code))
+        con.execute("INSERT INTO admin_activity(admin_uid,action,details,created_at) VALUES(?,?,?,?)",(current_user()["id"],"GIFT_TOGGLE",f"{code} enabled={new}",now()))
+        con.commit()
+    con.close()
+    return redirect(url_for("admin"))
+
+@app.route("/admin/gift/<code>/edit",methods=["POST"])
+@admin_required
+def admin_gift_edit(code):
+    try:
+        amount=float(request.form.get("amount") or 0)
+        max_uses=int(request.form.get("max_uses") or 1)
+    except:
+        amount=0
+        max_uses=1
+    if amount<=0 or max_uses<1:
+        flash("Invalid gift-code settings.","error")
+        return redirect(url_for("admin"))
+    con=db()
+    con.execute("UPDATE gift_codes SET amount=?,max_uses=? WHERE code=?",(amount,max_uses,code))
+    con.execute("INSERT INTO admin_activity(admin_uid,action,details,created_at) VALUES(?,?,?,?)",(current_user()["id"],"GIFT_EDIT",f"{code} amount={amount} limit={max_uses}",now()))
+    con.commit(); con.close()
+    flash("Gift code updated.","success")
+    return redirect(url_for("admin"))
+
+@app.route("/admin/manager/edit",methods=["POST"])
+@admin_required
+def admin_manager_edit():
+    mid=request.form.get("id","").strip()
+    name=request.form.get("name","").strip()
+    phone=request.form.get("phone","").strip()
+    role=request.form.get("role","CODEX Manager").strip()
+    avatar=request.form.get("avatar","👤").strip() or "👤"
+    if not mid or not name or not phone:
+        flash("Manager name and phone are required.","error")
+        return redirect(url_for("admin"))
+    con=db()
+    old=con.execute("SELECT phone FROM managers WHERE id=?",(mid,)).fetchone()
+    con.execute("UPDATE managers SET name=?,phone=?,role=?,avatar=? WHERE id=?",(name,phone,role,avatar,mid))
+    if old and old["phone"]!=phone:
+        con.execute("UPDATE users SET manager_phone=? WHERE manager_phone=?",(phone,old["phone"]))
+    con.execute("INSERT INTO admin_activity(admin_uid,action,details,created_at) VALUES(?,?,?,?)",(current_user()["id"],"MANAGER_EDIT",f"Manager {mid} edited",now()))
+    con.commit(); con.close()
+    flash("Manager updated.","success")
+    return redirect(url_for("admin"))
+
+@app.route("/admin/manager/<mid>/toggle",methods=["POST"])
+@admin_required
+def admin_manager_toggle(mid):
+    con=db()
+    m=con.execute("SELECT enabled FROM managers WHERE id=?",(mid,)).fetchone()
+    if m:
+        con.execute("UPDATE managers SET enabled=? WHERE id=?",(0 if m["enabled"] else 1,mid))
+        con.execute("INSERT INTO admin_activity(admin_uid,action,details,created_at) VALUES(?,?,?,?)",(current_user()["id"],"MANAGER_TOGGLE",f"Manager {mid}",now()))
+        con.commit()
+    con.close()
+    return redirect(url_for("admin"))
+
+@app.route("/admin/user/<int:uid>/admin",methods=["POST"])
+@admin_required
+def admin_user_admin(uid):
+    value=1 if request.form.get("value")=="1" else 0
+    if uid==current_user()["id"] and value==0:
+        flash("You cannot remove your own admin access.","error")
+        return redirect(url_for("admin"))
+    con=db()
+    con.execute("UPDATE users SET is_admin=? WHERE id=?",(value,uid))
+    con.execute("INSERT INTO admin_activity(admin_uid,action,details,created_at) VALUES(?,?,?,?)",(current_user()["id"],"ADMIN_ACCESS",f"User {uid} admin={value}",now()))
+    con.commit(); con.close()
+    flash("Admin access updated.","success")
+    return redirect(url_for("admin"))
+
+@app.route("/admin/gift/<code>/claims")
+@admin_required
+def admin_gift_claims(code):
+    con=db()
+    claims=con.execute("SELECT gc.*,u.phone,u.display_name FROM gift_code_claims gc LEFT JOIN users u ON u.id=gc.uid WHERE gc.code=? ORDER BY gc.id DESC",(code,)).fetchall()
+    con.close()
+    return render_template("admin_gift_claims.html",code=code,claims=claims)
+
+@app.route("/admin/activity")
+@admin_required
+def admin_activity():
+    con=db()
+    activity=con.execute("SELECT a.*,u.phone FROM admin_activity a LEFT JOIN users u ON u.id=a.admin_uid ORDER BY a.id DESC LIMIT 200").fetchall()
+    con.close()
+    return render_template("admin_activity.html",activity=activity)
 
 @app.route("/admin/create")
 def admin_create():
