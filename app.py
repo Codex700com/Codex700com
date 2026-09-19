@@ -54,8 +54,9 @@ PLANS.update({
 })
 
 def db():
-    con=sqlite3.connect(DB,timeout=10)
+    con=sqlite3.connect(DB,timeout=30)
     con.row_factory=sqlite3.Row
+    con.execute("PRAGMA busy_timeout=30000")
     return con
 
 def now(): return datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -145,8 +146,14 @@ def current_user():
         if u["phone"] == "0758878297" and not u["is_admin"]:
             con.execute("UPDATE users SET is_admin=1 WHERE id=?",(u["id"],))
             u=con.execute("SELECT * FROM users WHERE id=?",(u["id"],)).fetchone()
-        con.execute("UPDATE users SET last_seen=? WHERE id=?",(now(),session["uid"]))
-        con.commit()
+        try:
+            con.execute("UPDATE users SET last_seen=? WHERE id=?",(now(),session["uid"]))
+            con.commit()
+        except sqlite3.OperationalError as e:
+            if "locked" not in str(e).lower():
+                con.close()
+                raise
+            con.rollback()
     con.close()
     return u
 
