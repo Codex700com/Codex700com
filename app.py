@@ -27,6 +27,32 @@ PLANS={
 REWARDS=[(120,750000),(100,50000),(60,275000),(30,150000),(15,98000),(6,45000)]
 
 
+
+# CODEX_A1_A2_A6
+PLANS.update({
+    "A1": {
+        "series": "AI series",
+        "price": 50000,
+        "daily": 208700.66 / 19,
+        "days": 19,
+        "total": 208700.66
+    },
+    "A2": {
+        "series": "AI series",
+        "price": 100000,
+        "daily": 478000 / 19,
+        "days": 19,
+        "total": 478000
+    },
+    "A6": {
+        "series": "AI series",
+        "price": 1000000,
+        "daily": 2500000 / 3,
+        "days": 3,
+        "total": 2500000
+    },
+})
+
 def db():
     con=sqlite3.connect(DB,timeout=10)
     con.row_factory=sqlite3.Row
