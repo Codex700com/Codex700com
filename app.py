@@ -78,6 +78,7 @@ def init_db():
     con.executescript("""
     CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT,phone TEXT UNIQUE NOT NULL,password TEXT NOT NULL,invite_code TEXT UNIQUE NOT NULL,invited_by INTEGER,balance REAL NOT NULL DEFAULT 0,wallet REAL NOT NULL DEFAULT 0,points INTEGER NOT NULL DEFAULT 0,display_name TEXT NOT NULL DEFAULT '',mtn_number TEXT NOT NULL DEFAULT '',airtel_number TEXT NOT NULL DEFAULT '',usdt_wallet TEXT NOT NULL DEFAULT '',notifications_enabled INTEGER NOT NULL DEFAULT 1,created_at TEXT NOT NULL,is_admin INTEGER NOT NULL DEFAULT 0,salary_claimed_month TEXT,reward_claimed_month TEXT,manager_phone TEXT);
     CREATE TABLE IF NOT EXISTS transactions(id INTEGER PRIMARY KEY AUTOINCREMENT,uid INTEGER NOT NULL,kind TEXT NOT NULL,amount REAL NOT NULL DEFAULT 0,status TEXT NOT NULL DEFAULT 'PENDING',reference TEXT,created_at TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS announcements(id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT NOT NULL,message TEXT NOT NULL,created_at TEXT NOT NULL,enabled INTEGER NOT NULL DEFAULT 1);
     CREATE TABLE IF NOT EXISTS deposit_sessions(id INTEGER PRIMARY KEY AUTOINCREMENT,uid INTEGER NOT NULL,amount REAL NOT NULL DEFAULT 0,payment_method TEXT,agent TEXT NOT NULL,expires_at TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'WAITING_PROOF',proof TEXT,created_at TEXT NOT NULL);
 
     CREATE TABLE IF NOT EXISTS products(id INTEGER PRIMARY KEY AUTOINCREMENT,uid INTEGER NOT NULL,code TEXT NOT NULL,name TEXT NOT NULL,price REAL NOT NULL,daily_income REAL NOT NULL DEFAULT 0,lock_days INTEGER NOT NULL DEFAULT 30,total_income REAL NOT NULL DEFAULT 0,purchased_at TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'ACTIVE');
@@ -92,7 +93,7 @@ def init_db():
     """)
     # Safe migrations for any copy that already has an older fresh DB.
     cols={r[1] for r in con.execute("PRAGMA table_info(users)").fetchall()}
-    for col,typ in [("points","INTEGER NOT NULL DEFAULT 0"),("display_name","TEXT NOT NULL DEFAULT ''"),("mtn_number","TEXT NOT NULL DEFAULT ''"),("airtel_number","TEXT NOT NULL DEFAULT ''"),("usdt_wallet","TEXT NOT NULL DEFAULT ''"),("notifications_enabled","INTEGER NOT NULL DEFAULT 1"),("salary_claimed_month","TEXT"),("reward_claimed_month","TEXT"),("manager_phone","TEXT"),("is_blocked","INTEGER NOT NULL DEFAULT 0"),("last_seen","TEXT")]:
+    for col,typ in [("points","INTEGER NOT NULL DEFAULT 0"),("display_name","TEXT NOT NULL DEFAULT ''"),("mtn_number","TEXT NOT NULL DEFAULT ''"),("airtel_number","TEXT NOT NULL DEFAULT ''"),("usdt_wallet","TEXT NOT NULL DEFAULT ''"),("notifications_enabled","INTEGER NOT NULL DEFAULT 1"),("salary_claimed_month","TEXT"),("reward_claimed_month","TEXT"),("manager_phone","TEXT"),("is_blocked","INTEGER NOT NULL DEFAULT 0"),("last_seen","TEXT"),("announcement_seen_id","INTEGER NOT NULL DEFAULT 0")]:
         if col not in cols: con.execute(f"ALTER TABLE users ADD COLUMN {col} {typ}")
 
     gcols={r[1] for r in con.execute("PRAGMA table_info(gift_codes)").fetchall()}
@@ -325,9 +326,17 @@ def reset():
 @app.route("/home")
 @required
 def home():
-    u=current_user(); con=db(); products=con.execute("SELECT * FROM products WHERE uid=? ORDER BY id DESC",(u["id"],)).fetchall(); con.close(); ai_income,today=active_income(u["id"]); last,this=invite_counts(u["id"])
-    show_announcement=session.pop("show_announcement",False)
-    return render_template("home.html",user=u,products=products,ai_income=ai_income,today=today,invite_count=this,team_count=this,show_announcement=show_announcement)
+    u=current_user()
+    con=db()
+    products=con.execute("SELECT * FROM products WHERE uid=? ORDER BY id DESC",(u["id"],)).fetchall()
+    announcement=con.execute("SELECT * FROM announcements WHERE enabled=1 ORDER BY id DESC LIMIT 1").fetchone()
+    pending_withdrawal=con.execute("SELECT * FROM transactions WHERE uid=? AND kind='WITHDRAW' AND status='PENDING' ORDER BY id DESC LIMIT 1",(u["id"],)).fetchone()
+    latest_deposit=con.execute("SELECT * FROM transactions WHERE uid=? AND kind='DEPOSIT' ORDER BY id DESC LIMIT 1",(u["id"],)).fetchone()
+    con.close()
+    ai_income,today=active_income(u["id"])
+    last,this=invite_counts(u["id"])
+    show_announcement=bool(announcement)
+    return render_template("home.html",user=current_user(),products=products,ai_income=ai_income,today=today,invite_count=this,team_count=this,announcement=announcement,pending_withdrawal=pending_withdrawal,latest_deposit=latest_deposit,show_announcement=show_announcement)
 
 @app.route("/my")
 @required
@@ -565,6 +574,13 @@ def deposit():
 @required
 def withdraw():
     u=current_user()
+    con_check=db()
+    pending=con_check.execute("SELECT * FROM transactions WHERE uid=? AND kind='WITHDRAW' AND status='PENDING' ORDER BY id DESC LIMIT 1",(u["id"],)).fetchone()
+    con_check.close()
+
+    if pending:
+        return render_template("withdraw.html",title="Withdraw",user=current_user(),pending_withdrawal=pending,active="My")
+
     if request.method=="POST":
         method=request.form.get("method","MTN UG").strip()
         destination=request.form.get("destination","").strip()
@@ -791,7 +807,7 @@ def gift_code():
                 con.commit()
 
                 flash(
-                    f"UGX {g[amount]:,.0f} added to your balance.",
+                    f"Reward claimed! UGX {g["amount"]:,.0f} has been added directly to your balance.",
                     "success"
                 )
 
@@ -941,6 +957,46 @@ def admin_support(uid):
     msg=request.form.get("message","").strip()
     if msg:
         con=db(); con.execute("INSERT INTO support_messages(uid,sender,message,created_at) VALUES(?,?,?,?)",(uid,"MANAGER",msg,now())); con.commit(); con.close()
+    return redirect(url_for("admin"))
+
+@app.route("/admin/announcement",methods=["POST"])
+@admin_required
+def admin_announcement():
+    title=(request.form.get("title") or "").strip()
+    message=(request.form.get("message") or "").strip()
+    if not title or not message:
+        flash("Announcement title and message are required.","error")
+        return redirect(url_for("admin"))
+    con=db()
+    con.execute(
+        "INSERT INTO announcements(title,message,created_at,enabled) VALUES(?,?,?,1)",
+        (title,message,now())
+    )
+    con.commit()
+    con.close()
+    flash("Announcement sent successfully.","success")
+    return redirect(url_for("admin"))
+
+@app.route("/admin/support/send",methods=["POST"])
+@admin_required
+def admin_support_send():
+    try:
+        uid=int(request.form.get("uid") or 0)
+    except:
+        uid=0
+    message=(request.form.get("message") or "").strip()
+    if not uid or not message:
+        flash("Select a user and enter a message.","error")
+        return redirect(url_for("admin"))
+    con=db()
+    if con.execute("SELECT 1 FROM users WHERE id=?",(uid,)).fetchone():
+        con.execute(
+            "INSERT INTO support_messages(uid,sender,message,created_at) VALUES(?,?,?,?)",
+            (uid,"MANAGER",message,now())
+        )
+        con.commit()
+        flash("Message sent to user.","success")
+    con.close()
     return redirect(url_for("admin"))
 
 @app.route("/admin/gift",methods=["POST"])
