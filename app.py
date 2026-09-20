@@ -612,7 +612,10 @@ def withdraw():
             flash("Minimum withdrawal is 5,000 UGX.","error")
         else:
             con=db(); fresh=con.execute("SELECT * FROM users WHERE id=?",(u["id"],)).fetchone(); saved=(fresh[allowed[method]] or "").strip()
-            if not saved or destination != saved:
+            machine=con.execute("SELECT 1 FROM products WHERE uid=? AND status='ACTIVE' LIMIT 1",(u["id"],)).fetchone()
+            if not machine:
+                con.close(); flash("You need an active AI machine before you can withdraw.","error")
+            elif not saved or destination != saved:
                 con.close(); flash("Save your payout details on the Card page before withdrawing.","error")
             elif amount > fresh["balance"]:
                 con.close(); flash("Insufficient balance for this withdrawal.","error")
@@ -857,10 +860,10 @@ def product():
     if code not in PLANS:return "Product not found",404
     plan=PLANS[code]
     if request.method=="POST":
-        con=db(); u=con.execute("SELECT balance FROM users WHERE id=?",(session["uid"],)).fetchone()
-        if u["balance"]<plan["price"]: con.close(); flash("Purchase failed due to insufficient balance.","error")
+        con=db(); u=con.execute("SELECT wallet FROM users WHERE id=?",(session["uid"],)).fetchone()
+        if u["wallet"]<plan["price"]: con.close(); flash("Purchase failed due to insufficient wallet balance.","error")
         else:
-            con.execute("UPDATE users SET balance=balance-? WHERE id=?",(plan["price"],session["uid"])); con.execute("INSERT INTO products(uid,code,name,price,daily_income,lock_days,total_income,purchased_at,last_income_at,earned_income) VALUES(?,?,?,?,?,?,?,?,?,?)",(session["uid"],code,code+" AI Machine",plan["price"],plan["daily"],plan["days"],plan["total"],now(),now(),0)); product_id=con.execute("SELECT last_insert_rowid()").fetchone()[0]; create_promo_chances(con,session["uid"],product_id,plan["price"]); con.execute("INSERT INTO transactions(uid,kind,amount,status,reference,created_at) VALUES(?,?,?,?,?,?)",(session["uid"],"AI_PURCHASE",plan["price"],"APPROVED","BUY-"+code,now())); con.commit(); con.close(); flash("Purchase successful. Promotional reveal chance unlocked.","success")
+            con.execute("UPDATE users SET wallet=wallet-? WHERE id=? AND wallet>=?",(plan["price"],session["uid"],plan["price"])); con.execute("INSERT INTO products(uid,code,name,price,daily_income,lock_days,total_income,purchased_at,last_income_at,earned_income) VALUES(?,?,?,?,?,?,?,?,?,?)",(session["uid"],code,code+" AI Machine",plan["price"],plan["daily"],plan["days"],plan["total"],now(),now(),0)); product_id=con.execute("SELECT last_insert_rowid()").fetchone()[0]; create_promo_chances(con,session["uid"],product_id,plan["price"]); con.execute("INSERT INTO transactions(uid,kind,amount,status,reference,created_at) VALUES(?,?,?,?,?,?)",(session["uid"],"AI_PURCHASE",plan["price"],"APPROVED","BUY-"+code,now())); con.commit(); con.close(); flash("Purchase successful. Promotional reveal chance unlocked.","success")
         return redirect(url_for("invest"))
     return render_template("product.html",code=code,plan=plan,active="AI")
 
@@ -919,18 +922,22 @@ def admin():
     users=con.execute("SELECT id,phone,balance,created_at,is_admin,is_blocked,last_seen,display_name,manager_phone FROM users ORDER BY id DESC").fetchall()
     tx=con.execute("SELECT t.*,u.phone,u.display_name FROM transactions t LEFT JOIN users u ON u.id=t.uid ORDER BY t.id DESC LIMIT 200").fetchall()
     deposits=con.execute("""
-        SELECT t.*,u.phone,u.display_name,
+        SELECT t.id,t.uid,t.kind,t.amount,t.status,t.reference,t.created_at,
+               u.phone,u.display_name,
+               d.id AS deposit_session_id,
                d.payment_method AS deposit_method,
                d.agent AS deposit_agent,
                d.proof AS deposit_proof,
                d.status AS deposit_status,
                d.created_at AS deposit_created_at
-        FROM transactions t
-        LEFT JOIN users u ON u.id=t.uid
-        LEFT JOIN deposit_sessions d
-          ON d.id=CAST(substr(t.reference,instr(t.reference,'-S')+2) AS INTEGER)
-        WHERE t.kind='DEPOSIT'
-        ORDER BY t.id DESC LIMIT 100
+        FROM deposit_sessions d
+        LEFT JOIN users u ON u.id=d.uid
+        LEFT JOIN transactions t
+          ON t.uid=d.uid
+         AND t.kind='DEPOSIT'
+         AND t.reference LIKE '%-S' || d.id
+        WHERE d.status IN ('SUBMITTED','APPROVED','REJECTED')
+        ORDER BY d.id DESC LIMIT 100
     """).fetchall()
     requests=con.execute("SELECT * FROM password_requests ORDER BY id DESC LIMIT 100").fetchall()
     messages=con.execute("SELECT * FROM support_messages ORDER BY id DESC LIMIT 200").fetchall()
@@ -949,7 +956,7 @@ def admin_transaction(tid,action):
     award=False
     if action=="approve":
         if t["kind"]=="DEPOSIT":
-            con.execute("UPDATE users SET balance=balance+? WHERE id=?",(t["amount"],t["uid"]))
+            con.execute("UPDATE users SET wallet=wallet+? WHERE id=?",(t["amount"],t["uid"]))
             con.execute("""
                 UPDATE deposit_sessions
                 SET status='APPROVED'
