@@ -302,7 +302,7 @@ def register():
 def login():
     if request.method=="POST":
         phone=request.form.get("phone","").strip(); password=request.form.get("password","")
-        con=db(); u=con.execute("SELECT * FROM users WHERE phone=?",(phone,)).fetchone(); con.close()
+        con=db(); u=con.execute("SELECT * FROM users WHERE phone=?",(phone,)).fetchone()
         if not u or not hmac.compare_digest(u["password"],pw_hash(password)): flash("Invalid phone number or password.","error")
         else:
             session.clear()
@@ -318,6 +318,7 @@ def login():
             else:
                 session["show_announcement"]=False
                 session.pop("announcement_popup",None)
+            con.close()
             return redirect(url_for("home"))
     return render_template("login.html")
 
