@@ -111,6 +111,46 @@
 </div>
 
 <div class="section">
+<h2>Withdraw Requests</h2>
+{% for w in withdrawals %}
+<div class="row" style="display:block;margin-bottom:10px">
+<strong>{{w.phone}}</strong>
+— UGX {{'%.0f'|format(w.amount)}}
+— {{w.status}}
+
+{% if w.reference %}
+<br><small><b>Reference:</b> {{w.reference}}</small>
+{% endif %}
+
+{% if w.mtn_number %}
+<br><small><b>MTN:</b> {{w.mtn_number}}</small>
+{% endif %}
+
+{% if w.airtel_number %}
+<br><small><b>Airtel:</b> {{w.airtel_number}}</small>
+{% endif %}
+
+{% if w.usdt_wallet %}
+<br><small><b>USDT TRC20:</b> {{w.usdt_wallet}}</small>
+{% endif %}
+
+{% if w.status=="PENDING" %}
+<div style="margin-top:8px">
+<form method="post" action="/admin/transaction/{{w.id}}/approve" style="display:inline">
+<button>Approve</button>
+</form>
+<form method="post" action="/admin/transaction/{{w.id}}/reject" style="display:inline">
+<button>Reject</button>
+</form>
+</div>
+{% endif %}
+</div>
+{% else %}
+<p>No withdrawal requests.</p>
+{% endfor %}
+</div>
+
+<div class="section">
 <h2>All Transactions</h2>
 {% for t in tx %}
 <div class="row"><span>{{t.phone}} — {{t.kind}} — UGX {{'%.0f'|format(t.amount)}}</span><span>{{t.status}}</span></div>

@@ -967,6 +967,15 @@ def admin():
     con=db()
     users=con.execute("SELECT id,phone,balance,created_at,is_admin,is_blocked,last_seen,display_name,manager_phone FROM users ORDER BY id DESC").fetchall()
     tx=con.execute("SELECT t.*,u.phone,u.display_name FROM transactions t LEFT JOIN users u ON u.id=t.uid ORDER BY t.id DESC LIMIT 200").fetchall()
+    withdrawals=con.execute("""
+        SELECT t.*,u.phone,u.display_name,
+               u.mtn_number,u.airtel_number,u.usdt_wallet
+        FROM transactions t
+        LEFT JOIN users u ON u.id=t.uid
+        WHERE t.kind='WITHDRAW'
+        ORDER BY t.id DESC
+        LIMIT 100
+    """).fetchall()
     deposits=con.execute("""
         SELECT
             t.id,
@@ -1008,7 +1017,7 @@ def admin():
     activity=con.execute("SELECT a.*,u.phone FROM admin_activity a LEFT JOIN users u ON u.id=a.admin_uid ORDER BY a.id DESC LIMIT 100").fetchall()
     announcements=con.execute("SELECT * FROM announcements ORDER BY id DESC LIMIT 20").fetchall()
     con.close()
-    return render_template("admin.html",users=users,tx=tx,deposits=deposits,requests=requests,messages=messages,gifts=gifts,managers=managers,activity=activity,announcements=announcements)
+    return render_template("admin.html",users=users,tx=tx,withdrawals=withdrawals,deposits=deposits,requests=requests,messages=messages,gifts=gifts,managers=managers,activity=activity,announcements=announcements)
 
 @app.route("/admin/transaction/<int:tid>/<action>",methods=["POST"])
 @admin_required
