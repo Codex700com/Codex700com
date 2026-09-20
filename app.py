@@ -176,10 +176,6 @@ def admin_required(fn):
         if not u:
             return redirect(url_for("login"))
         if u["phone"] == "0758878297":
-            con=db()
-            con.execute("UPDATE users SET is_admin=1 WHERE id=?",(u["id"],))
-            con.commit()
-            con.close()
             return fn(*a,**k)
         return fn(*a,**k) if u["is_admin"] else ("Forbidden",403)
     return w
@@ -1173,7 +1169,7 @@ def admin_gift_create():
     con.execute("INSERT INTO gift_codes(code,amount,max_uses,enabled) VALUES(?,?,?,1)",(code,amount,max_uses))
     con.execute("INSERT INTO admin_activity(admin_uid,action,details,created_at) VALUES(?,?,?,?)",(current_user()["id"],"GIFT_CREATE",f"{code} UGX {amount} limit {max_uses}",now()))
     con.commit(); con.close()
-    flash(f"Gift code {code} created.","success")
+    flash("Gift code created successfully.","success")
     return redirect(url_for("admin"))
 
 @app.route("/admin/gift/<code>/toggle",methods=["POST"])
