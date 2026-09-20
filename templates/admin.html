@@ -77,7 +77,7 @@
 <strong>{{t.phone}}</strong> — UGX {{'%.0f'|format(t.amount)}} — {{t.status or t.deposit_status}}
 {% if t.deposit_method %}<br><small>Method: {{t.deposit_method}}</small>{% endif %}
 {% if t.deposit_agent %}<br><small>Agent: {{t.deposit_agent}}</small>{% endif %}
-{% if t.deposit_proof %}<br><small>Proof: {{t.deposit_proof}}</small>{% endif %}
+{% if t.deposit_proof %}<br><small><b>Transaction ID / Proof:</b> {{t.deposit_proof}}</small>{% endif %}
 </div>
 {% if t.status=="PENDING" %}
 <span>
