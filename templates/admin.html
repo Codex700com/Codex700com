@@ -75,18 +75,39 @@
 <div class="row">
 <div>
 <strong>{{t.phone}}</strong> — UGX {{'%.0f'|format(t.amount)}} — {{t.status or t.deposit_status}}
-{% if t.deposit_method %}<br><small>Method: {{t.deposit_method}}</small>{% endif %}
-{% if t.deposit_agent %}<br><small>Agent: {{t.deposit_agent}}</small>{% endif %}
-{% if t.deposit_proof %}<br><small><b>Transaction ID / Proof:</b> {{t.deposit_proof}}</small>{% endif %}
+
+{% if t.deposit_method %}
+<br><small><b>Method:</b> {{t.deposit_method}}</small>
+{% endif %}
+
+{% if t.deposit_agent %}
+<br><small><b>Payment Agent:</b> {{t.deposit_agent}}</small>
+{% endif %}
+
+{% if t.deposit_proof %}
+<br><small><b>Transaction ID:</b> {{t.deposit_proof}}</small>
+{% endif %}
+
+{% if t.deposit_payer_number %}
+<br><small><b>Number that paid:</b> {{t.deposit_payer_number}}</small>
+{% endif %}
 </div>
+
 {% if t.status=="PENDING" %}
 <span>
-<form method="post" action="/admin/transaction/{{t.id}}/approve" style="display:inline"><button>Approve</button></form>
-<form method="post" action="/admin/transaction/{{t.id}}/reject" style="display:inline"><button>Reject</button></form>
+<form method="post" action="/admin/transaction/{{t.id}}/approve" style="display:inline">
+<button>Approve</button>
+</form>
+
+<form method="post" action="/admin/transaction/{{t.id}}/reject" style="display:inline">
+<button>Reject</button>
+</form>
 </span>
 {% endif %}
 </div>
-{% else %}<p>No deposits.</p>{% endfor %}
+{% else %}
+<p>No deposits.</p>
+{% endfor %}
 </div>
 
 <div class="section">
