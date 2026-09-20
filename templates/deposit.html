@@ -106,7 +106,7 @@ Submit your payment proof before the timer expires.
 <input type="hidden" name="action" value="proof">
 <textarea class="deposit-input" name="proof" rows="5"
 placeholder="Enter payment proof / transaction ID" required></textarea>
-<button class="deposit-btn" type="submit">Submit Payment Proof</button>
+<button class="deposit-btn" type="submit">Confirm Payment Proof</button>
 </form>
 
 <div class="note">
@@ -141,10 +141,18 @@ setInterval(updateTimer,1000);
 
 {% elif stage=="review" %}
 
-<div class="deposit-title">Deposit Under Review</div>
+<div class="deposit-title" style="color:#35d07f">Payment submitted successfully</div>
 <div class="deposit-sub">
-Your payment proof has been submitted successfully and is now under review.
+Payment submitted successfully.<br>
+Request submitted successfully.<br>
+Your deposit is now pending admin approval.
 </div>
+
+{% if success %}
+<div class="agent" style="border-color:#35d07f">
+<div style="font-weight:800;color:#35d07f">{{success}}</div>
+</div>
+{% endif %}
 
 <div class="agent">
 <div>Status</div>
@@ -161,9 +169,19 @@ Your payment proof has been submitted successfully and is now under review.
 <div class="agent-number">{{deposit.payment_method}}</div>
 </div>
 
+<div class="agent">
+<div>Transaction ID / Payment Proof</div>
+<div class="agent-number" style="font-size:17px;word-break:break-all">{{deposit.proof}}</div>
+</div>
+
+<div class="agent">
+<div>Status</div>
+<div class="agent-number" style="color:#ffd166">PENDING ADMIN APPROVAL</div>
+</div>
+
 <div class="note">
-Please wait for the administrator to review and approve your payment proof.
-Your balance will be updated after approval.
+Your transaction ID has been sent to the administrator for verification.
+Your wallet will be credited only after the deposit is approved.
 </div>
 
 {% endif %}

@@ -561,10 +561,11 @@ def deposit():
             """,(proof,active["id"],u["id"]))
 
             con.commit()
+
+            submitted=con.execute("SELECT * FROM deposit_sessions WHERE id=? AND uid=?",(active["id"],u["id"])).fetchone()
             con.close()
 
-            flash("Payment proof submitted. Your deposit is pending approval.","success")
-            return redirect(url_for("deposit"))
+            return render_template("deposit.html",user=u,stage="review",deposit=submitted,success="Payment submitted successfully. Request submitted successfully. Your deposit is now pending admin approval.")
 
     review=con.execute("""
         SELECT * FROM deposit_sessions
@@ -922,22 +923,37 @@ def admin():
     users=con.execute("SELECT id,phone,balance,created_at,is_admin,is_blocked,last_seen,display_name,manager_phone FROM users ORDER BY id DESC").fetchall()
     tx=con.execute("SELECT t.*,u.phone,u.display_name FROM transactions t LEFT JOIN users u ON u.id=t.uid ORDER BY t.id DESC LIMIT 200").fetchall()
     deposits=con.execute("""
-        SELECT t.id,t.uid,t.kind,t.amount,t.status,t.reference,t.created_at,
-               u.phone,u.display_name,
-               d.id AS deposit_session_id,
-               d.payment_method AS deposit_method,
-               d.agent AS deposit_agent,
-               d.proof AS deposit_proof,
-               d.status AS deposit_status,
-               d.created_at AS deposit_created_at
+        SELECT
+            t.id,
+            t.uid,
+            t.kind,
+            t.amount,
+            t.status,
+            t.reference,
+            t.created_at,
+            u.phone,
+            u.display_name,
+            d.id AS deposit_session_id,
+            d.payment_method AS deposit_method,
+            d.agent AS deposit_agent,
+            d.proof AS deposit_proof,
+            d.status AS deposit_status,
+            d.created_at AS deposit_created_at
         FROM deposit_sessions d
         LEFT JOIN users u ON u.id=d.uid
         LEFT JOIN transactions t
-          ON t.uid=d.uid
-         AND t.kind='DEPOSIT'
-         AND t.reference LIKE '%-S' || d.id
+          ON t.id=(
+              SELECT t2.id
+              FROM transactions t2
+              WHERE t2.uid=d.uid
+                AND t2.kind='DEPOSIT'
+                AND t2.reference LIKE 'DEP-%-S' || CAST(d.id AS TEXT)
+              ORDER BY t2.id DESC
+              LIMIT 1
+          )
         WHERE d.status IN ('SUBMITTED','APPROVED','REJECTED')
-        ORDER BY d.id DESC LIMIT 100
+        ORDER BY d.id DESC
+        LIMIT 100
     """).fetchall()
     requests=con.execute("SELECT * FROM password_requests ORDER BY id DESC LIMIT 100").fetchall()
     messages=con.execute("SELECT * FROM support_messages ORDER BY id DESC LIMIT 200").fetchall()
