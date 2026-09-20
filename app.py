@@ -307,7 +307,17 @@ def login():
         else:
             session.clear()
             session["uid"]=u["id"]
-            session["show_announcement"]=True
+            latest=con.execute("SELECT * FROM announcements WHERE enabled=1 ORDER BY id DESC LIMIT 1").fetchone()
+            if latest and int(latest["id"]) > int(u["announcement_seen_id"] or 0):
+                session["show_announcement"]=True
+                session["announcement_popup"]={
+                    "title":latest["title"],
+                    "message":latest["message"],
+                    "id":latest["id"]
+                }
+            else:
+                session["show_announcement"]=False
+                session.pop("announcement_popup",None)
             return redirect(url_for("home"))
     return render_template("login.html")
 
@@ -330,13 +340,21 @@ def home():
     con=db()
     products=con.execute("SELECT * FROM products WHERE uid=? ORDER BY id DESC",(u["id"],)).fetchall()
     announcement=con.execute("SELECT * FROM announcements WHERE enabled=1 ORDER BY id DESC LIMIT 1").fetchone()
-    pending_withdrawal=con.execute("SELECT * FROM transactions WHERE uid=? AND kind='WITHDRAW' AND status='PENDING' ORDER BY id DESC LIMIT 1",(u["id"],)).fetchone()
+    pending_withdrawal=con.execute("SELECT * FROM transactions WHERE uid=? AND kind='WITHDRAW' ORDER BY id DESC LIMIT 1",(u["id"],)).fetchone()
     latest_deposit=con.execute("SELECT * FROM transactions WHERE uid=? AND kind='DEPOSIT' ORDER BY id DESC LIMIT 1",(u["id"],)).fetchone()
     con.close()
     ai_income,today=active_income(u["id"])
     last,this=invite_counts(u["id"])
-    show_announcement=bool(announcement)
-    return render_template("home.html",user=current_user(),products=products,ai_income=ai_income,today=today,invite_count=this,team_count=this,announcement=announcement,pending_withdrawal=pending_withdrawal,latest_deposit=latest_deposit,show_announcement=show_announcement)
+    popup=session.pop("announcement_popup",None)
+    show_announcement=bool(session.pop("show_announcement",False) and popup)
+
+    if popup:
+        con2=db()
+        con2.execute("UPDATE users SET announcement_seen_id=? WHERE id=?",(popup["id"],u["id"]))
+        con2.commit()
+        con2.close()
+
+    return render_template("home.html",user=current_user(),products=products,ai_income=ai_income,today=today,invite_count=this,team_count=this,announcement=announcement,pending_withdrawal=pending_withdrawal,latest_deposit=latest_deposit,show_announcement=show_announcement,announcement_popup=popup)
 
 @app.route("/my")
 @required
@@ -918,8 +936,9 @@ def admin():
     gifts=con.execute("SELECT g.*,COUNT(c.id) AS claims FROM gift_codes g LEFT JOIN gift_code_claims c ON c.code=g.code GROUP BY g.code ORDER BY g.code DESC").fetchall()
     managers=con.execute("SELECT * FROM managers ORDER BY id").fetchall()
     activity=con.execute("SELECT a.*,u.phone FROM admin_activity a LEFT JOIN users u ON u.id=a.admin_uid ORDER BY a.id DESC LIMIT 100").fetchall()
+    announcements=con.execute("SELECT * FROM announcements ORDER BY id DESC LIMIT 20").fetchall()
     con.close()
-    return render_template("admin.html",users=users,tx=tx,deposits=deposits,requests=requests,messages=messages,gifts=gifts,managers=managers,activity=activity)
+    return render_template("admin.html",users=users,tx=tx,deposits=deposits,requests=requests,messages=messages,gifts=gifts,managers=managers,activity=activity,announcements=announcements)
 
 @app.route("/admin/transaction/<int:tid>/<action>",methods=["POST"])
 @admin_required

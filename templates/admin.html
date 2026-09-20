@@ -7,6 +7,37 @@
 {% endwith %}
 
 <div class="section">
+<h2>Send Announcement</h2>
+<form method="post" action="/admin/announcement">
+<input name="title" placeholder="Announcement title" required>
+<textarea name="message" rows="4" placeholder="Write announcement..." required></textarea>
+<button type="submit">SEND ANNOUNCEMENT</button>
+</form>
+
+{% for a in announcements %}
+<div class="row" style="display:block;margin-top:10px">
+<strong>{{a.title}}</strong><br>
+<small>{{a.created_at}}</small><br>
+{{a.message}}
+</div>
+{% endfor %}
+</div>
+
+<div class="section">
+<h2>Send Message To Registered User</h2>
+<form method="post" action="/admin/support/send">
+<select name="uid" required>
+<option value="">Select registered user</option>
+{% for u in users %}
+<option value="{{u.id}}">{{u.display_name or u.phone}} — {{u.phone}}</option>
+{% endfor %}
+</select>
+<textarea name="message" rows="4" placeholder="Welcome to CODEX AI..." required></textarea>
+<button type="submit">SEND MESSAGE</button>
+</form>
+</div>
+
+<div class="section">
 <h2>Users</h2>
 {% for u in users %}
 <div class="row" style="display:block;margin-bottom:12px">

@@ -36,8 +36,29 @@
   </div>
 
   <div class="home-stats">
-    <a class="stat-card" href="{{ url_for('deposit') }}"><div class="stat-value">UGX {{ '{:,.0f}'.format(user.wallet) }}</div><div class="stat-label">Deposit details</div></a>
-    <a class="stat-card" href="{{ url_for('withdraw') }}"><div class="stat-value">UGX {{ '{:,.0f}'.format(user.balance) }}</div><div class="stat-label">Withdraw details</div></a>
+    <a class="stat-card" href="{{ url_for('deposit') }}">
+      <div class="stat-value">
+        {% if latest_deposit %}
+          UGX {{ '{:,.0f}'.format(latest_deposit.amount) }}
+        {% else %}
+          UGX 0
+        {% endif %}
+      </div>
+      <div class="stat-label">Deposit details</div>
+      {% if latest_deposit %}<small>{{ latest_deposit.status }}</small>{% endif %}
+    </a>
+
+    <a class="stat-card" href="{{ url_for('withdraw') }}">
+      <div class="stat-value">
+        {% if pending_withdrawal %}
+          UGX {{ '{:,.0f}'.format(pending_withdrawal.amount) }}
+        {% else %}
+          UGX 0
+        {% endif %}
+      </div>
+      <div class="stat-label">Withdraw details</div>
+      {% if pending_withdrawal %}<small>{{ pending_withdrawal.status }}</small>{% endif %}
+    </a>
     <a class="stat-card" href="{{ url_for('income') }}"><div class="stat-value">UGX {{ '{:,.0f}'.format(ai_income) }}</div><div class="stat-label">AI Income</div></a>
     <a class="stat-card" href="{{ url_for('income') }}"><div class="stat-value">UGX {{ '{:,.0f}'.format(today) }}</div><div class="stat-label">Today's earnings</div></a>
   </div>
@@ -50,8 +71,13 @@
 
   <div class="news">
     <div class="news-head"><span>♧</span> Message <a class="more" href="{{ url_for('support') }}">More</a></div>
+    {% if announcement %}
+    <div class="news-item">
+      <strong>{{ announcement.title }}</strong>
+      <p>{{ announcement.message }}</p>
+    </div>
+    {% endif %}
     <div class="news-item"><strong>Deposit</strong><p>Open Deposit details to submit and track your deposit request.</p></div>
-    <div class="news-item"><strong>Welcome to CODEX AI</strong><p>Your account is ready. Open AI, Income, Referrals, My or Support from the navigation below.</p></div>
   </div>
 </div>
 

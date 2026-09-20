@@ -3,6 +3,19 @@
 <div class="withdraw-page">
   <div class="page-head"><a class="back-btn" href="/my">←</a><h1>Withdraw</h1><div class="head-spacer"></div></div>
 
+  {% if pending_withdrawal %}
+  <section class="withdraw-card" style="margin-bottom:16px">
+    <h2>Withdraw Under Review</h2>
+    <p>Your withdrawal request has been submitted and is waiting for administrator approval.</p>
+    <div class="withdraw-summary">
+      <div><span>Withdrawal amount</span><b>UGX {{ '{:,.2f}'.format(pending_withdrawal.amount) }}</b></div>
+      <div><span>Status</span><b>{{ pending_withdrawal.status }}</b></div>
+      <div><span>Reference</span><b>{{ pending_withdrawal.reference }}</b></div>
+    </div>
+    <p class="helper">The reserved withdrawal amount will return to your balance if the request is rejected.</p>
+  </section>
+  {% endif %}
+
   <section class="balance-card">
     <div class="balance-label">Available balance</div>
     <div class="balance-number">{{ '{:,.2f}'.format(user.balance) }}</div>
