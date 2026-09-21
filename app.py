@@ -640,11 +640,8 @@ def deposit():
 def withdraw():
     u=current_user()
     con_check=db()
-    pending=con_check.execute("SELECT * FROM transactions WHERE uid=? AND kind='WITHDRAW' AND status='PENDING' ORDER BY id DESC LIMIT 1",(u["id"],)).fetchone()
+    pending=None
     con_check.close()
-
-    if pending:
-        return render_template("withdraw.html",title="Withdraw",user=current_user(),pending_withdrawal=pending,active="My")
 
     if request.method=="POST":
         method=request.form.get("method","MTN UG").strip()
@@ -740,7 +737,7 @@ def manager():
             return redirect(url_for("manager"))
 
         con.execute(
-            "UPDATE users SET manager_phone=? WHERE id=? AND (manager_phone IS NULL OR manager_phone=)",
+            "UPDATE users SET manager_phone=? WHERE id=? AND (manager_phone IS NULL OR manager_phone=?)",
             (chosen["phone"],u["id"])
         )
         con.commit()
