@@ -592,6 +592,10 @@ def award_referral_points(referred_uid):
                 con.execute("INSERT INTO referral_point_awards(referrer_uid,referred_uid,points,created_at) VALUES(?,?,?,?)",(row["invited_by"],referred_uid,10,now()))
     con.commit(); con.close()
 
+@app.route("/ping")
+def ping():
+    return "OK Codex Alive - 200", 200
+
 @app.route("/")
 def index(): return redirect(url_for("home") if current_user() else url_for("login"))
 
