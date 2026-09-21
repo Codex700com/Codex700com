@@ -780,17 +780,16 @@ def manager_chat(manager_id):
         "SELECT manager_phone FROM users WHERE id=?",
         (u["id"],)
     ).fetchone()
-    con.close()
 
     if not row or not row["manager_phone"]:
         flash("Choose your manager first.","error")
         return redirect(url_for("manager"))
 
-    chosen=next(
-        (m for m in MANAGERS
-         if m["id"]==manager_id and m["phone"]==row["manager_phone"]),
-        None
-    )
+    chosen=con.execute(
+        "SELECT * FROM managers WHERE id=? AND phone=? AND enabled=1",
+        (manager_id, row["manager_phone"])
+    ).fetchone()
+    con.close()
 
     if not chosen:
         flash("That manager is not assigned to your account.","error")
