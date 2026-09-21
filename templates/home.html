@@ -66,7 +66,7 @@
   <div class="home-stats three">
     <a class="stat-card" href="{{ url_for('invite') }}"><div class="stat-value">{{ invite_count }}</div><div class="stat-label">Invite Count</div></a>
     <a class="stat-card" href="{{ url_for('my_team') }}"><div class="stat-value">{{ team_count }}</div><div class="stat-label">Team Count</div></a>
-    <a class="stat-card" href="{{ url_for('income') }}"><div class="stat-value">UGX 0</div><div class="stat-label">Team income</div></a>
+    <a class="stat-card" href="{{ url_for('income') }}"><div class="stat-value">UGX {{ '{:,.0f}'.format(team_income) }}</div><div class="stat-label">Team income</div></a>
   </div>
 
   <div class="news">

@@ -1,5 +1,6 @@
 import os, sqlite3, secrets, string, hashlib, hmac
 from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 from functools import wraps
 from flask import Flask, request, redirect, session, render_template, flash, url_for, send_from_directory
 
@@ -134,7 +135,7 @@ def init_db():
     (6,'Anna','+256 700 880252','CODEX Manager','👩',1);
     """)
     pcols={r[1] for r in con.execute("PRAGMA table_info(products)").fetchall()}
-    for col,typ in [("last_income_at","TEXT"),("earned_income","REAL NOT NULL DEFAULT 0")]:
+    for col,typ in [("last_income_at","TEXT"),("earned_income","REAL NOT NULL DEFAULT 0"),("earned_days","INTEGER NOT NULL DEFAULT 0")]:
         if col not in pcols: con.execute(f"ALTER TABLE products ADD COLUMN {col} {typ}")
     con.execute("UPDATE users SET is_admin=1 WHERE phone=?",("0758878297",))
     con.commit(); con.close()
@@ -181,10 +182,316 @@ def admin_required(fn):
     return w
 
 def invite_counts(uid):
-    cur=month_start(); prev=previous_month_start(); con=db()
-    last=con.execute("SELECT COUNT(*) n FROM users WHERE invited_by=? AND created_at>=? AND created_at<?",(uid,prev.isoformat(),cur.isoformat())).fetchone()["n"]
-    this=con.execute("SELECT COUNT(*) n FROM users WHERE invited_by=? AND created_at>=?",(uid,cur.isoformat())).fetchone()["n"]
-    con.close(); return last,this
+    cur=month_start()
+    prev=previous_month_start()
+    con=db()
+
+    last=con.execute("""
+        SELECT COUNT(DISTINCT u.id) n
+        FROM users u
+        JOIN transactions t ON t.uid=u.id
+        WHERE u.invited_by=?
+          AND u.created_at>=?
+          AND u.created_at<?
+          AND t.kind='DEPOSIT'
+          AND t.status='APPROVED'
+    """,(uid,prev.isoformat(),cur.isoformat())).fetchone()["n"]
+
+    this=con.execute("""
+        SELECT COUNT(DISTINCT u.id) n
+        FROM users u
+        JOIN transactions t ON t.uid=u.id
+        WHERE u.invited_by=?
+          AND u.created_at>=?
+          AND t.kind='DEPOSIT'
+          AND t.status='APPROVED'
+    """,(uid,cur.isoformat())).fetchone()["n"]
+
+    con.close()
+    return last,this
+
+
+def deposited_team_count(uid):
+    con=db()
+    row=con.execute("""
+        SELECT COUNT(DISTINCT u.id) n
+        FROM users u
+        JOIN transactions t ON t.uid=u.id
+        WHERE u.invited_by=?
+          AND t.kind='DEPOSIT'
+          AND t.status='APPROVED'
+    """,(uid,)).fetchone()
+    con.close()
+    return row["n"]
+
+def uganda_now():
+    return datetime.now(ZoneInfo("Africa/Kampala"))
+
+
+def uganda_date(value):
+    d=datetime.fromisoformat(value)
+    if d.tzinfo is None:
+        d=d.replace(tzinfo=timezone.utc)
+    return d.astimezone(ZoneInfo("Africa/Kampala")).date()
+
+
+def has_approved_deposit(con,uid):
+    return con.execute("""
+        SELECT 1 FROM transactions
+        WHERE uid=? AND kind='DEPOSIT' AND status='APPROVED'
+        LIMIT 1
+    """,(uid,)).fetchone() is not None
+
+
+def award_machine_team_income(purchaser_uid,machine_code,purchase_amount,purchase_tx_id):
+    """
+    LV1 = 20%, LV2 = 5%, LV3 = 0%.
+    Same-machine ownership is required.
+    Purchaser must have an approved deposit.
+    """
+    con=db()
+
+    purchaser=con.execute(
+        "SELECT invited_by FROM users WHERE id=?",
+        (purchaser_uid,)
+    ).fetchone()
+
+    if not purchaser or not has_approved_deposit(con,purchaser_uid):
+        con.close()
+        return
+
+    levels=[]
+
+    lv1=purchaser["invited_by"]
+    if lv1:
+        levels.append((1,lv1,0.20))
+
+        parent=con.execute(
+            "SELECT invited_by FROM users WHERE id=?",
+            (lv1,)
+        ).fetchone()
+
+        lv2=parent["invited_by"] if parent else None
+        if lv2:
+            levels.append((2,lv2,0.05))
+
+    for level,recipient,rate in levels:
+        same=con.execute("""
+            SELECT 1 FROM products
+            WHERE uid=? AND code=?
+            LIMIT 1
+        """,(recipient,machine_code)).fetchone()
+
+        if not same:
+            continue
+
+        amount=round(float(purchase_amount)*rate,2)
+        ref=f"TEAM-LV{level}-{purchase_tx_id}"
+
+        already=con.execute("""
+            SELECT 1 FROM transactions
+            WHERE uid=? AND kind='TEAM_INCOME' AND reference=?
+        """,(recipient,ref)).fetchone()
+
+        if already:
+            continue
+
+        con.execute(
+            "UPDATE users SET balance=balance+? WHERE id=?",
+            (amount,recipient)
+        )
+
+        con.execute("""
+            INSERT INTO transactions
+            (uid,kind,amount,status,reference,created_at)
+            VALUES(?,?,?,?,?,?)
+        """,(
+            recipient,
+            "TEAM_INCOME",
+            amount,
+            "APPROVED",
+            ref,
+            now()
+        ))
+
+    con.commit()
+    con.close()
+
+
+def team_income_for_user(uid):
+    con=db()
+    row=con.execute("""
+        SELECT COALESCE(SUM(amount),0) total
+        FROM transactions
+        WHERE uid=? AND kind='TEAM_INCOME' AND status='APPROVED'
+    """,(uid,)).fetchone()
+    con.close()
+    return float(row["total"] or 0)
+
+
+def settle_team_income(uid):
+    # Kept for existing routes; new commissions are paid immediately.
+    return team_income_for_user(uid)
+
+
+def referral_deposit_commission(referred_uid,deposit_amount,deposit_tx_id):
+    """Direct inviter receives 20% of an approved deposit exactly once."""
+    con=db()
+
+    row=con.execute(
+        "SELECT invited_by FROM users WHERE id=?",
+        (referred_uid,)
+    ).fetchone()
+
+    if not row or not row["invited_by"]:
+        con.close()
+        return
+
+    ref=f"DEP-20-{deposit_tx_id}"
+
+    if con.execute("""
+        SELECT 1 FROM transactions
+        WHERE uid=? AND kind='REFERRAL_DEPOSIT_20' AND reference=?
+    """,(row["invited_by"],ref)).fetchone():
+        con.close()
+        return
+
+    amount=round(float(deposit_amount)*0.20,2)
+
+    con.execute(
+        "UPDATE users SET balance=balance+? WHERE id=?",
+        (amount,row["invited_by"])
+    )
+
+    con.execute("""
+        INSERT INTO transactions
+        (uid,kind,amount,status,reference,created_at)
+        VALUES(?,?,?,?,?,?)
+    """,(
+        row["invited_by"],
+        "REFERRAL_DEPOSIT_20",
+        amount,
+        "APPROVED",
+        ref,
+        now()
+    ))
+
+    con.commit()
+    con.close()
+
+
+def settle_machine_income(uid):
+    """
+    AI machine earnings use Uganda calendar midnight.
+
+    Day 0 = purchase day.
+    Each completed Uganda calendar day adds one daily earning.
+    At the end of the lock period, the accumulated AI income is
+    transferred to Balance exactly once.
+    """
+    con=db()
+    rows=con.execute("""
+        SELECT * FROM products
+        WHERE uid=? AND status='ACTIVE'
+    """,(uid,)).fetchall()
+
+    today=uganda_now().date()
+
+    for r in rows:
+        try:
+            purchase_day=uganda_date(r["purchased_at"])
+            lock_days=int(r["lock_days"])
+            completed=min(
+                max(0,(today-purchase_day).days),
+                lock_days
+            )
+            earned_days=int(r["earned_days"] or 0)
+            due=max(0,completed-earned_days)
+
+            if due>0:
+                remaining=max(
+                    0,
+                    float(r["total_income"])-float(r["earned_income"] or 0)
+                )
+                amount=min(
+                    remaining,
+                    float(r["daily_income"])*due
+                )
+
+                if amount>0:
+                    con.execute("""
+                        UPDATE products
+                        SET earned_income=earned_income+?,
+                            earned_days=?,
+                            last_income_at=?
+                        WHERE id=? AND status='ACTIVE'
+                    """,(amount,completed,now(),r["id"]))
+
+                    con.execute("""
+                        INSERT INTO transactions
+                        (uid,kind,amount,status,reference,created_at)
+                        VALUES(?,?,?,?,?,?)
+                    """,(
+                        uid,
+                        "AI_INCOME",
+                        amount,
+                        "APPROVED",
+                        f"AI-INCOME-{r['id']}-{completed}",
+                        now()
+                    ))
+                else:
+                    con.execute("""
+                        UPDATE products
+                        SET earned_days=?,last_income_at=?
+                        WHERE id=? AND status='ACTIVE'
+                    """,(completed,now(),r["id"]))
+
+            if completed>=lock_days:
+                fresh=con.execute("""
+                    SELECT earned_income,status
+                    FROM products WHERE id=?
+                """,(r["id"],)).fetchone()
+
+                if fresh and fresh["status"]=="ACTIVE":
+                    earned=float(fresh["earned_income"] or 0)
+                    payout_ref=f"AI-PAYOUT-{r['id']}"
+
+                    if earned>0 and not con.execute("""
+                        SELECT 1 FROM transactions
+                        WHERE uid=? AND kind='AI_MACHINE_PAYOUT'
+                          AND reference=?
+                    """,(uid,payout_ref)).fetchone():
+
+                        con.execute(
+                            "UPDATE users SET balance=balance+? WHERE id=?",
+                            (earned,uid)
+                        )
+
+                        con.execute("""
+                            INSERT INTO transactions
+                            (uid,kind,amount,status,reference,created_at)
+                            VALUES(?,?,?,?,?,?)
+                        """,(
+                            uid,
+                            "AI_MACHINE_PAYOUT",
+                            earned,
+                            "APPROVED",
+                            payout_ref,
+                            now()
+                        ))
+
+                    con.execute("""
+                        UPDATE products
+                        SET status='EXPIRED',last_income_at=?
+                        WHERE id=? AND status='ACTIVE'
+                    """,(now(),r["id"]))
+
+        except Exception:
+            pass
+
+    con.commit()
+    con.close()
+
 
 def settle_promo_machine_income(uid):
     """Credit elapsed daily income for promotional DS4 machines only."""
@@ -210,18 +517,29 @@ def settle_promo_machine_income(uid):
     con.commit(); con.close()
 
 def active_income(uid):
+    settle_machine_income(uid)
     settle_promo_machine_income(uid)
-    con=db(); rows=con.execute("SELECT * FROM products WHERE uid=? AND status='ACTIVE'",(uid,)).fetchall(); con.close()
-    total=0; today=0
-    n=datetime.now(timezone.utc)
+
+    con=db()
+    rows=con.execute("""
+        SELECT * FROM products
+        WHERE uid=? AND status='ACTIVE'
+    """,(uid,)).fetchall()
+    con.close()
+
+    total=0
+    today=0
+
     for r in rows:
         try:
-            started=datetime.fromisoformat(r["purchased_at"])
-            days=max(0,(n-started).days)
-            total+=min(r["total_income"],r["daily_income"]*days)
-            if days<r["lock_days"]: today+=r["daily_income"]
-        except Exception: pass
+            total += float(r["earned_income"] or 0)
+            if int(r["earned_days"] or 0) < int(r["lock_days"]):
+                today += float(r["daily_income"])
+        except Exception:
+            pass
+
     return total,today
+
 
 PROMO_REWARDS=[
     ("CASH",3000,""),
@@ -334,6 +652,9 @@ def reset():
 @required
 def home():
     u=current_user()
+    settle_team_income(u["id"])
+    team_count=deposited_team_count(u["id"])
+    team_income=team_income_for_user(u["id"])
     con=db()
     products=con.execute("SELECT * FROM products WHERE uid=? ORDER BY id DESC",(u["id"],)).fetchall()
     announcement=con.execute("SELECT * FROM announcements WHERE enabled=1 ORDER BY id DESC LIMIT 1").fetchone()
@@ -351,7 +672,7 @@ def home():
         con2.commit()
         con2.close()
 
-    return render_template("home.html",user=current_user(),products=products,ai_income=ai_income,today=today,invite_count=this,team_count=this,announcement=announcement,pending_withdrawal=pending_withdrawal,latest_deposit=latest_deposit,show_announcement=show_announcement,announcement_popup=popup)
+    return render_template("home.html",user=current_user(),products=products,ai_income=ai_income,today=today,invite_count=this,team_count=team_count,team_income=team_income,announcement=announcement,pending_withdrawal=pending_withdrawal,latest_deposit=latest_deposit,show_announcement=show_announcement,announcement_popup=popup)
 
 @app.route("/my")
 @required
@@ -386,7 +707,67 @@ def invite():
 @app.route("/my-team")
 @required
 def my_team():
-    u=current_user(); con=db(); rows=con.execute("SELECT phone,created_at FROM users WHERE invited_by=? ORDER BY id DESC",(u["id"],)).fetchall(); con.close(); return render_template("team.html",rows=rows,active="My")
+    u=current_user()
+    con=db()
+
+    users=con.execute("""
+        SELECT DISTINCT
+            u.id,
+            u.phone,
+            u.created_at
+        FROM users u
+        JOIN transactions d ON d.uid=u.id
+        WHERE u.invited_by=?
+          AND d.kind='DEPOSIT'
+          AND d.status='APPROVED'
+        ORDER BY u.id DESC
+    """,(u["id"],)).fetchall()
+
+    rows=[]
+
+    for member in users:
+        machines=con.execute("""
+            SELECT code,name,price,purchased_at,lock_days,status
+            FROM products
+            WHERE uid=?
+            ORDER BY id DESC
+        """,(member["id"],)).fetchall()
+
+        machine_rows=[]
+
+        for machine in machines:
+            try:
+                purchased_day=uganda_date(machine["purchased_at"])
+                remaining=max(
+                    0,
+                    int(machine["lock_days"]) -
+                    max(0,(uganda_now().date()-purchased_day).days)
+                )
+            except Exception:
+                remaining=int(machine["lock_days"])
+
+            machine_rows.append({
+                "code":machine["code"],
+                "name":machine["name"],
+                "price":machine["price"],
+                "purchased_at":machine["purchased_at"],
+                "remaining_days":remaining,
+                "status":machine["status"]
+            })
+
+        rows.append({
+            "phone":member["phone"],
+            "created_at":member["created_at"],
+            "machines":machine_rows
+        })
+
+    con.close()
+
+    return render_template(
+        "team.html",
+        rows=rows,
+        active="My"
+    )
 
 @app.route("/deposit",methods=["GET","POST"])
 @required
@@ -905,7 +1286,12 @@ def product():
         con=db(); u=con.execute("SELECT wallet FROM users WHERE id=?",(session["uid"],)).fetchone()
         if u["wallet"]<plan["price"]: con.close(); flash("Purchase failed due to insufficient wallet balance.","error")
         else:
-            con.execute("UPDATE users SET wallet=wallet-? WHERE id=? AND wallet>=?",(plan["price"],session["uid"],plan["price"])); con.execute("INSERT INTO products(uid,code,name,price,daily_income,lock_days,total_income,purchased_at,last_income_at,earned_income) VALUES(?,?,?,?,?,?,?,?,?,?)",(session["uid"],code,code+" AI Machine",plan["price"],plan["daily"],plan["days"],plan["total"],now(),now(),0)); product_id=con.execute("SELECT last_insert_rowid()").fetchone()[0]; create_promo_chances(con,session["uid"],product_id,plan["price"]); con.execute("INSERT INTO transactions(uid,kind,amount,status,reference,created_at) VALUES(?,?,?,?,?,?)",(session["uid"],"AI_PURCHASE",plan["price"],"APPROVED","BUY-"+code,now())); con.commit(); con.close(); flash("Purchase successful. Promotional reveal chance unlocked.","success")
+            con.execute("UPDATE users SET wallet=wallet-? WHERE id=? AND wallet>=?",(plan["price"],session["uid"],plan["price"])); con.execute("INSERT INTO products(uid,code,name,price,daily_income,lock_days,total_income,purchased_at,last_income_at,earned_income) VALUES(?,?,?,?,?,?,?,?,?,?)",(session["uid"],code,code+" AI Machine",plan["price"],plan["daily"],plan["days"],plan["total"],now(),now(),0)); product_id=con.execute("SELECT last_insert_rowid()").fetchone()[0]; create_promo_chances(con,session["uid"],product_id,plan["price"]); con.execute("INSERT INTO transactions(uid,kind,amount,status,reference,created_at) VALUES(?,?,?,?,?,?)",(session["uid"],"AI_PURCHASE",plan["price"],"APPROVED","BUY-"+code,now()))
+            purchase_tx_id=con.execute("SELECT last_insert_rowid()").fetchone()[0]
+            con.commit()
+            con.close()
+            award_machine_team_income(session["uid"],code,plan["price"],purchase_tx_id)
+            flash("Purchase successful. Promotional reveal chance unlocked.","success")
         return redirect(url_for("invest"))
     return render_template("product.html",code=code,plan=plan,active="AI")
 
@@ -1042,7 +1428,9 @@ def admin_transaction(tid,action):
             """,(t["reference"],t["reference"]))
         con.execute("UPDATE transactions SET status='REJECTED' WHERE id=?",(tid,))
     con.commit(); con.close()
-    if award: award_referral_points(t["uid"])
+    if award:
+        referral_deposit_commission(t["uid"],t["amount"],tid)
+        award_referral_points(t["uid"])
     return redirect(url_for("admin"))
 
 @app.route("/admin/support/<int:uid>",methods=["POST"])
