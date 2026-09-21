@@ -123,3 +123,91 @@ body{position:relative}
     .codex-lightning-bg .bolt,
     .codex-lightning-bg .flash{animation:none}
 }
+
+
+/* Global live green waves — background only */
+.codex-green-waves{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    pointer-events:none;
+    z-index:1;
+    opacity:.72;
+}
+
+.green-wave{
+    position:absolute;
+    left:-12%;
+    width:124%;
+    height:34vh;
+    border-radius:50%;
+    border-top:2px solid rgba(34,255,114,.30);
+    border-bottom:1px solid rgba(34,255,114,.10);
+    box-shadow:
+        0 0 22px rgba(34,255,114,.10),
+        0 0 55px rgba(34,255,114,.055);
+    transform:rotate(-4deg);
+    animation:codexGreenWave 8s ease-in-out infinite alternate;
+}
+
+.green-wave::after{
+    content:"";
+    position:absolute;
+    inset:12% -4%;
+    border-top:1px solid rgba(112,255,173,.18);
+    border-radius:50%;
+}
+
+.wave-a{
+    top:18%;
+    animation-duration:7s;
+}
+
+.wave-b{
+    top:47%;
+    height:30vh;
+    transform:rotate(4deg);
+    animation-duration:10s;
+    animation-delay:-3s;
+}
+
+.wave-c{
+    top:73%;
+    height:27vh;
+    transform:rotate(-3deg);
+    animation-duration:9s;
+    animation-delay:-5s;
+}
+
+@keyframes codexGreenWave{
+    0%{
+        transform:translateX(-4%) rotate(-4deg) scaleY(.92);
+    }
+    50%{
+        transform:translateX(3%) rotate(3deg) scaleY(1.08);
+    }
+    100%{
+        transform:translateX(-2%) rotate(-2deg) scaleY(.96);
+    }
+}
+
+/* Manager and Deposit tabs — match the CODEX Home blue/cyan cards */
+a[href="/manager"],
+a[href="/deposit"]{
+    border:1px solid #008dcc !important;
+    background:linear-gradient(145deg,#061a25,#000) !important;
+    color:#fff !important;
+    box-shadow:0 0 18px rgba(0,190,255,.12);
+}
+
+a[href="/manager"]:hover,
+a[href="/deposit"]:hover{
+    border-color:#00c8ff !important;
+    box-shadow:0 0 24px rgba(0,200,255,.22);
+}
+
+@media (prefers-reduced-motion:reduce){
+    .green-wave{
+        animation:none;
+    }
+}
