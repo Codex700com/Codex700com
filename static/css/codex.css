@@ -25,3 +25,101 @@
 .robot{position:absolute;width:54px;height:118px;bottom:48px;z-index:4;animation:robotWalk 4s ease-in-out infinite alternate}.robot-a{left:13%;}.robot-b{right:16%;animation-delay:-1.4s}.robot-c{left:45%;bottom:60px;transform:scale(.8);animation-delay:-2.4s}.robot-head{width:44px;height:38px;margin:auto;border:2px solid #00c8ff;border-radius:12px;background:#06131b;box-shadow:0 0 14px rgba(0,200,255,.35)}.robot-head i{display:inline-block;width:7px;height:7px;background:#22ff72;border-radius:50%;margin:12px 5px;box-shadow:0 0 8px #22ff72}.robot-body{width:50px;height:52px;margin:4px auto;border:2px solid #008dcc;border-radius:10px;background:linear-gradient(90deg,#05121a,#0a2a38,#05121a)}.robot-arm{position:absolute;width:11px;height:50px;border:2px solid #00baff;border-radius:8px;top:46px;transform-origin:top center}.robot-arm.left{left:-2px;animation:armTap 1.2s ease-in-out infinite alternate}.robot-arm.right{right:-2px;animation:armShake 1s ease-in-out infinite alternate}.computer{position:absolute;left:50%;top:36px;transform:translateX(-50%);z-index:3;animation:computerPulse 2s infinite}.screen{width:120px;height:75px;border:3px solid #00baff;border-radius:8px;background:#001820;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 25px rgba(0,190,255,.25)}.screen span{color:#00e5ff;font-weight:bold}.screen em{font-size:8px;color:#22ff72;margin-top:7px}.desk{width:155px;height:14px;background:#07506a;margin:8px auto;border-radius:5px}.tool-crane{position:absolute;right:5%;top:12px;width:100px;height:3px;background:#087fae;box-shadow:0 0 10px #00baff}.tool-crane:after{content:'⛏';position:absolute;right:10px;top:4px;font-size:30px;color:#00baff;animation:toolSwing 2s ease-in-out infinite alternate}.robot-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.robot-actions span{border:1px solid #075879;border-radius:12px;padding:8px 10px;font-size:10px;color:#9befff;background:#00131b}.mini-robots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.mini-robot{border:1px solid #075879;border-radius:14px;padding:10px;text-align:center;background:#001019}.mini-bot{font-size:25px;animation:miniBob 1.6s ease-in-out infinite}.mini-robot small,.mini-robot span{display:block;color:#aaa;font-size:9px;margin-top:4px}.mini-robot span{color:#22ff72}.points-card{display:flex;justify-content:space-between;align-items:center;gap:15px}.points-value{font-size:38px;color:#00d8ff;font-weight:bold;margin:6px 0}.points-card small{color:#aaa;display:block;max-width:500px}.points-card .button{width:auto;white-space:nowrap}.tool-note{border:1px solid #123c50;border-radius:13px;padding:12px;color:#aaa;font-size:12px;margin-bottom:12px}.tool-note b{color:#00c8ff}.tool-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.tool-card{border:1px solid #075879;border-radius:16px;padding:15px;background:#001018;text-align:center}.tool-icon{font-size:34px;color:#00c8ff}.tool-card h3{margin:8px 0 5px;color:#fff}.tool-cost{color:#ffd34d;font-size:12px}.tool-rate{color:#70ffad;margin-top:8px}.tool-capacity{color:#aaa;font-size:11px;margin-top:6px}.tool-card .button{margin-top:10px}.miner-row{display:flex;justify-content:space-between;align-items:center;border:1px solid #075879;border-radius:14px;padding:13px;margin-top:10px;background:#001018}.miner-row small{display:block;color:#aaa;margin-top:4px}.miner-earned{color:#70ffad;font-weight:bold}.miner-earned span{font-size:18px}
 @keyframes robotWalk{0%{transform:translateX(-5px) rotate(-1deg)}50%{transform:translateX(4px) rotate(1deg)}100%{transform:translateX(9px) rotate(-1deg)}}@keyframes armTap{0%{transform:rotate(18deg)}100%{transform:rotate(70deg)}}@keyframes armShake{0%{transform:rotate(-18deg)}100%{transform:rotate(22deg)}}@keyframes computerPulse{0%,100%{filter:drop-shadow(0 0 3px #00baff)}50%{filter:drop-shadow(0 0 15px #00baff)}}@keyframes toolSwing{0%{transform:rotate(-14deg)}100%{transform:rotate(15deg)}}@keyframes miniBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 @media(max-width:480px){.robot-stage{height:260px}.robot-actions{gap:5px}.robot-actions span{font-size:8px;padding:7px}.mini-robots{grid-template-columns:repeat(2,1fr)}.points-card{display:block}.points-card .button{width:100%}.tool-grid{grid-template-columns:1fr}}
+
+
+/* CODEX GLOBAL LIVE LIGHTNING BACKGROUND */
+body{position:relative}
+.codex-lightning-bg{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    pointer-events:none;
+    z-index:0;
+}
+.codex-lightning-bg .bolt{
+    position:absolute;
+    top:-12%;
+    width:3px;
+    height:135%;
+    opacity:0;
+    transform-origin:top center;
+    background:linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(90,220,255,.95) 18%,
+        #fff 48%,
+        rgba(0,190,255,.9) 72%,
+        transparent 100%
+    );
+    filter:drop-shadow(0 0 4px #00baff) drop-shadow(0 0 12px rgba(0,190,255,.85));
+    clip-path:polygon(
+        50% 0%,58% 8%,42% 17%,63% 25%,45% 34%,
+        67% 43%,43% 52%,60% 62%,39% 72%,57% 82%,
+        44% 91%,50% 100%
+    );
+    animation:codexLightning 6s infinite;
+}
+.codex-lightning-bg .bolt::before,
+.codex-lightning-bg .bolt::after{
+    content:"";
+    position:absolute;
+    width:2px;
+    height:48%;
+    top:20%;
+    background:linear-gradient(to bottom,transparent,#fff,rgba(0,190,255,.85),transparent);
+    filter:drop-shadow(0 0 5px #00baff);
+}
+.codex-lightning-bg .bolt::before{
+    left:-18px;
+    transform:rotate(31deg);
+}
+.codex-lightning-bg .bolt::after{
+    right:-20px;
+    top:43%;
+    transform:rotate(-28deg);
+}
+.codex-lightning-bg .bolt:nth-of-type(1){left:5%;transform:rotate(-9deg);animation-delay:-.8s;animation-duration:5.8s}
+.codex-lightning-bg .bolt:nth-of-type(2){left:15%;transform:rotate(7deg);animation-delay:-4.1s;animation-duration:7.2s}
+.codex-lightning-bg .bolt:nth-of-type(3){left:27%;transform:rotate(-5deg);animation-delay:-2.4s;animation-duration:6.4s}
+.codex-lightning-bg .bolt:nth-of-type(4){left:39%;transform:rotate(8deg);animation-delay:-5.3s;animation-duration:8s}
+.codex-lightning-bg .bolt:nth-of-type(5){left:51%;transform:rotate(-7deg);animation-delay:-1.7s;animation-duration:6.9s}
+.codex-lightning-bg .bolt:nth-of-type(6){left:63%;transform:rotate(6deg);animation-delay:-6s;animation-duration:7.6s}
+.codex-lightning-bg .bolt:nth-of-type(7){left:75%;transform:rotate(-8deg);animation-delay:-3.2s;animation-duration:5.5s}
+.codex-lightning-bg .bolt:nth-of-type(8){left:87%;transform:rotate(7deg);animation-delay:-4.8s;animation-duration:6.7s}
+.codex-lightning-bg .flash{
+    position:absolute;
+    inset:0;
+    background:rgba(80,210,255,.055);
+    opacity:0;
+    animation:codexSkyFlash 4.8s infinite;
+}
+.codex-lightning-bg .flash:nth-child(10){animation-delay:-2.1s}
+.codex-lightning-bg .flash:nth-child(11){animation-delay:-3.7s}
+
+@keyframes codexLightning{
+    0%,88%,100%{opacity:0}
+    89%{opacity:.15}
+    89.4%{opacity:1}
+    89.8%{opacity:.12}
+    90.2%{opacity:.9}
+    90.7%{opacity:.08}
+    91.4%{opacity:.65}
+    92.5%{opacity:0}
+}
+@keyframes codexSkyFlash{
+    0%,88%,100%{opacity:0}
+    89.3%{opacity:.18}
+    89.8%{opacity:0}
+    90.3%{opacity:.12}
+    91%{opacity:0}
+}
+
+/* Keep every real CODEX interface layer above the lightning. */
+.page{position:relative;z-index:2}
+.bottom{z-index:100}
+.announcement-backdrop{z-index:1000}
+
+@media(prefers-reduced-motion:reduce){
+    .codex-lightning-bg .bolt,
+    .codex-lightning-bg .flash{animation:none}
+}
