@@ -663,6 +663,12 @@ def home():
     con.close()
     ai_income,today=active_income(u["id"])
     last,this=invite_counts(u["id"])
+    con_inv=db()
+    invite_count=con_inv.execute(
+        "SELECT COUNT(*) AS n FROM users WHERE invited_by=?",
+        (u["id"],)
+    ).fetchone()["n"]
+    con_inv.close()
     popup=session.pop("announcement_popup",None)
     show_announcement=bool(session.pop("show_announcement",False) and popup)
 
@@ -672,7 +678,7 @@ def home():
         con2.commit()
         con2.close()
 
-    return render_template("home.html",user=current_user(),products=products,ai_income=ai_income,today=today,invite_count=this,team_count=team_count,team_income=team_income,announcement=announcement,pending_withdrawal=pending_withdrawal,latest_deposit=latest_deposit,show_announcement=show_announcement,announcement_popup=popup)
+    return render_template("home.html",user=current_user(),products=products,ai_income=ai_income,today=today,invite_count=invite_count,team_count=team_count,team_income=team_income,announcement=announcement,pending_withdrawal=pending_withdrawal,latest_deposit=latest_deposit,show_announcement=show_announcement,announcement_popup=popup)
 
 @app.route("/my")
 @required
