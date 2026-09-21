@@ -737,7 +737,7 @@ def manager():
             return redirect(url_for("manager"))
 
         con.execute(
-            "UPDATE users SET manager_phone=? WHERE id=? AND (manager_phone IS NULL OR manager_phone=?)",
+            "UPDATE users SET manager_phone=? WHERE id=? AND manager_phone IS NULL",
             (chosen["phone"],u["id"])
         )
         con.commit()
