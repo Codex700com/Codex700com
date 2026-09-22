@@ -324,10 +324,18 @@ textarea{
 }
 
 .page,
-.bottom,
 nav{
     position:relative;
     z-index:2;
+}
+
+/* Bottom navigation must always stay visible */
+.bottom{
+    position:fixed !important;
+    left:0;
+    right:0;
+    bottom:0;
+    z-index:100 !important;
 }
 
 @media (prefers-reduced-motion:reduce){
